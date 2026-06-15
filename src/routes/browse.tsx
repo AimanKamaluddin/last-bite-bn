@@ -12,6 +12,7 @@ import {
   type SampleListing,
 } from "@/lib/sample-data";
 import { ListingCard } from "@/components/listings/ListingCard";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
 import { Search } from "lucide-react";
 
@@ -121,6 +122,10 @@ function Browse() {
           />
         </div>
 
+        <div className="mt-6">
+          <AdSlot size="leaderboard" id="browse-top" label="Sponsored" />
+        </div>
+
         {filtered.length === 0 ? (
           <div className="mx-auto mt-16 max-w-md rounded-3xl border bg-card p-10 text-center">
             <div className="text-lg font-semibold">No food matches your filters</div>
@@ -129,8 +134,15 @@ function Browse() {
           </div>
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((l) => (
-              <ListingCard key={l.id} listing={l} />
+            {filtered.map((l, i) => (
+              <>
+                <ListingCard key={l.id} listing={l} />
+                {(i + 1) % 6 === 0 && i !== filtered.length - 1 && (
+                  <div key={`ad-${i}`} className="sm:col-span-2 lg:col-span-3">
+                    <AdSlot size="billboard" id={`browse-inline-${i}`} label="Sponsored" />
+                  </div>
+                )}
+              </>
             ))}
           </div>
         )}
