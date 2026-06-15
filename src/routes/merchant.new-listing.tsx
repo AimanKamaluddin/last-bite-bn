@@ -26,7 +26,7 @@ function NewListing() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    category: CATEGORIES[0],
+    category: CATEGORIES[0] as string,
     original_price: 10,
     discounted_price: 4,
     quantity_available: 5,

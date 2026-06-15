@@ -24,12 +24,12 @@ function Onboarding() {
 
   const [form, setForm] = useState({
     business_name: "",
-    business_type: CATEGORIES[1],
+    business_type: CATEGORIES[1] as string,
     contact_person: "",
     phone: "",
     email: "",
     address: "",
-    district: DISTRICTS[0],
+    district: DISTRICTS[0] as string,
     halal_status: "halal_certified",
     business_reg_no: "",
     opening_hours: "",
@@ -53,10 +53,7 @@ function Onboarding() {
     if (!user) return;
     setSubmitting(true);
     const { error } = await supabase.from("merchants").insert({ ...form, user_id: user.id, email: form.email || user.email });
-    // grant merchant role (RLS allows admin-only; in demo, we'd handle via server). Use insert with returning.
-    if (!error) {
-      await supabase.from("user_roles").insert({ user_id: user.id, role: "merchant" }).select().then(() => {/* allowed if grant exists */}).catch(() => {});
-    }
+    // Note: 'merchant' role is granted by admin upon approval.
     setSubmitting(false);
     if (error) return toast.error(error.message);
     toast.success("Application submitted! We'll review it shortly.");

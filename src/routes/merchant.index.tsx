@@ -10,7 +10,7 @@ import { formatBND } from "@/lib/sample-data";
 import { Plus, Store, ShoppingBag, TrendingUp, Sprout } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/merchant")({
+export const Route = createFileRoute("/merchant/")({
   component: MerchantDashboard,
 });
 

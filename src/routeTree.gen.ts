@@ -9,13 +9,33 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MerchantIndexRouteImport } from './routes/merchant.index'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
+import { Route as MerchantOnboardingRouteImport } from './routes/merchant.onboarding'
+import { Route as MerchantNewListingRouteImport } from './routes/merchant.new-listing'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalMerchantAgreementRouteImport } from './routes/legal.merchant-agreement'
+import { Route as LegalFoodSafetyRouteImport } from './routes/legal.food-safety'
 import { Route as CheckoutIdRouteImport } from './routes/checkout.$id'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BrowseRoute = BrowseRouteImport.update({
   id: '/browse',
   path: '/browse',
@@ -26,9 +46,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MerchantIndexRoute = MerchantIndexRouteImport.update({
+  id: '/merchant/',
+  path: '/merchant/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrderIdRoute = OrderIdRouteImport.update({
@@ -36,9 +66,39 @@ const OrderIdRoute = OrderIdRouteImport.update({
   path: '/order/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MerchantOnboardingRoute = MerchantOnboardingRouteImport.update({
+  id: '/merchant/onboarding',
+  path: '/merchant/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MerchantNewListingRoute = MerchantNewListingRouteImport.update({
+  id: '/merchant/new-listing',
+  path: '/merchant/new-listing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ListingIdRoute = ListingIdRouteImport.update({
   id: '/listing/$id',
   path: '/listing/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalMerchantAgreementRoute = LegalMerchantAgreementRouteImport.update({
+  id: '/legal/merchant-agreement',
+  path: '/legal/merchant-agreement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalFoodSafetyRoute = LegalFoodSafetyRouteImport.update({
+  id: '/legal/food-safety',
+  path: '/legal/food-safety',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutIdRoute = CheckoutIdRouteImport.update({
@@ -49,67 +109,151 @@ const CheckoutIdRoute = CheckoutIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/dashboard': typeof DashboardRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/checkout/$id': typeof CheckoutIdRoute
+  '/legal/food-safety': typeof LegalFoodSafetyRoute
+  '/legal/merchant-agreement': typeof LegalMerchantAgreementRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/listing/$id': typeof ListingIdRoute
+  '/merchant/new-listing': typeof MerchantNewListingRoute
+  '/merchant/onboarding': typeof MerchantOnboardingRoute
   '/order/$id': typeof OrderIdRoute
+  '/merchant/': typeof MerchantIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/dashboard': typeof DashboardRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/checkout/$id': typeof CheckoutIdRoute
+  '/legal/food-safety': typeof LegalFoodSafetyRoute
+  '/legal/merchant-agreement': typeof LegalMerchantAgreementRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/listing/$id': typeof ListingIdRoute
+  '/merchant/new-listing': typeof MerchantNewListingRoute
+  '/merchant/onboarding': typeof MerchantOnboardingRoute
   '/order/$id': typeof OrderIdRoute
+  '/merchant': typeof MerchantIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/dashboard': typeof DashboardRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/checkout/$id': typeof CheckoutIdRoute
+  '/legal/food-safety': typeof LegalFoodSafetyRoute
+  '/legal/merchant-agreement': typeof LegalMerchantAgreementRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/listing/$id': typeof ListingIdRoute
+  '/merchant/new-listing': typeof MerchantNewListingRoute
+  '/merchant/onboarding': typeof MerchantOnboardingRoute
   '/order/$id': typeof OrderIdRoute
+  '/merchant/': typeof MerchantIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/browse'
+    | '/dashboard'
+    | '/reset-password'
     | '/checkout/$id'
+    | '/legal/food-safety'
+    | '/legal/merchant-agreement'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/listing/$id'
+    | '/merchant/new-listing'
+    | '/merchant/onboarding'
     | '/order/$id'
+    | '/merchant/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/auth'
     | '/browse'
+    | '/dashboard'
+    | '/reset-password'
     | '/checkout/$id'
+    | '/legal/food-safety'
+    | '/legal/merchant-agreement'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/listing/$id'
+    | '/merchant/new-listing'
+    | '/merchant/onboarding'
     | '/order/$id'
+    | '/merchant'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/browse'
+    | '/dashboard'
+    | '/reset-password'
     | '/checkout/$id'
+    | '/legal/food-safety'
+    | '/legal/merchant-agreement'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/listing/$id'
+    | '/merchant/new-listing'
+    | '/merchant/onboarding'
     | '/order/$id'
+    | '/merchant/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
+  DashboardRoute: typeof DashboardRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   CheckoutIdRoute: typeof CheckoutIdRoute
+  LegalFoodSafetyRoute: typeof LegalFoodSafetyRoute
+  LegalMerchantAgreementRoute: typeof LegalMerchantAgreementRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalTermsRoute: typeof LegalTermsRoute
   ListingIdRoute: typeof ListingIdRoute
+  MerchantNewListingRoute: typeof MerchantNewListingRoute
+  MerchantOnboardingRoute: typeof MerchantOnboardingRoute
   OrderIdRoute: typeof OrderIdRoute
+  MerchantIndexRoute: typeof MerchantIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/browse': {
       id: '/browse'
       path: '/browse'
@@ -124,11 +268,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/merchant/': {
+      id: '/merchant/'
+      path: '/merchant'
+      fullPath: '/merchant/'
+      preLoaderRoute: typeof MerchantIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/order/$id': {
@@ -138,11 +296,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/merchant/onboarding': {
+      id: '/merchant/onboarding'
+      path: '/merchant/onboarding'
+      fullPath: '/merchant/onboarding'
+      preLoaderRoute: typeof MerchantOnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/merchant/new-listing': {
+      id: '/merchant/new-listing'
+      path: '/merchant/new-listing'
+      fullPath: '/merchant/new-listing'
+      preLoaderRoute: typeof MerchantNewListingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/listing/$id': {
       id: '/listing/$id'
       path: '/listing/$id'
       fullPath: '/listing/$id'
       preLoaderRoute: typeof ListingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/merchant-agreement': {
+      id: '/legal/merchant-agreement'
+      path: '/legal/merchant-agreement'
+      fullPath: '/legal/merchant-agreement'
+      preLoaderRoute: typeof LegalMerchantAgreementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/food-safety': {
+      id: '/legal/food-safety'
+      path: '/legal/food-safety'
+      fullPath: '/legal/food-safety'
+      preLoaderRoute: typeof LegalFoodSafetyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/$id': {
@@ -157,11 +357,21 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
+  DashboardRoute: DashboardRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   CheckoutIdRoute: CheckoutIdRoute,
+  LegalFoodSafetyRoute: LegalFoodSafetyRoute,
+  LegalMerchantAgreementRoute: LegalMerchantAgreementRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalTermsRoute: LegalTermsRoute,
   ListingIdRoute: ListingIdRoute,
+  MerchantNewListingRoute: MerchantNewListingRoute,
+  MerchantOnboardingRoute: MerchantOnboardingRoute,
   OrderIdRoute: OrderIdRoute,
+  MerchantIndexRoute: MerchantIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
