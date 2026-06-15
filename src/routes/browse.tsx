@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -135,14 +135,14 @@ function Browse() {
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((l, i) => (
-              <>
-                <ListingCard key={l.id} listing={l} />
+              <Fragment key={l.id}>
+                <ListingCard listing={l} />
                 {(i + 1) % 6 === 0 && i !== filtered.length - 1 && (
-                  <div key={`ad-${i}`} className="sm:col-span-2 lg:col-span-3">
+                  <div className="sm:col-span-2 lg:col-span-3">
                     <AdSlot size="billboard" id={`browse-inline-${i}`} label="Sponsored" />
                   </div>
                 )}
-              </>
+              </Fragment>
             ))}
           </div>
         )}
