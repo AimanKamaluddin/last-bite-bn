@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ListingCard } from "@/components/listings/ListingCard";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { sampleListings, sampleMerchants } from "@/lib/sample-data";
 import {
   Accordion,
@@ -101,6 +102,11 @@ function Landing() {
         </div>
       </section>
 
+      {/* AD — below hero */}
+      <div className="container mx-auto px-4">
+        <AdSlot size="billboard" id="home-hero-billboard" label="Hero billboard" />
+      </div>
+
       {/* HOW IT WORKS */}
       <Section
         title="How it works"
@@ -139,6 +145,11 @@ function Landing() {
           ))}
         </div>
       </Section>
+
+      {/* AD — mid page */}
+      <div className="container mx-auto px-4">
+        <AdSlot size="leaderboard" id="home-mid-leaderboard" label="Sponsored" />
+      </div>
 
       {/* FEATURED LISTINGS */}
       <Section title="Available today" subtitle="Reserve a meal before it's gone.">
