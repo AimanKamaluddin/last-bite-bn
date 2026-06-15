@@ -5,6 +5,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { formatBND } from "@/lib/sample-data";
 import { CheckCircle2 } from "lucide-react";
 
 const searchSchema = z.object({ code: z.string().optional(), demo: z.coerce.number().optional() });
