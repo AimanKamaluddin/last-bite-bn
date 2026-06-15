@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { sampleListings, formatBND } from "@/lib/sample-data";
@@ -24,7 +22,6 @@ function Checkout() {
   const navigate = useNavigate();
   const [listing, setListing] = useState<any>(null);
   const [qty, setQty] = useState(1);
-  const [method, setMethod] = useState<"online" | "pay_at_pickup">("online");
   const [placing, setPlacing] = useState(false);
 
   useEffect(() => {
@@ -71,8 +68,8 @@ function Checkout() {
         merchant_payout: payout,
         pickup_code,
         status: "reserved",
-        payment_status: method === "online" ? "paid" : "pending",
-        payment_method: method,
+        payment_status: "pending",
+        payment_method: "pay_at_pickup",
       })
       .select("id")
       .single();
@@ -114,10 +111,9 @@ function Checkout() {
 
           <Card className="rounded-3xl p-5">
             <h2 className="font-semibold">Payment</h2>
-            <RadioGroup value={method} onValueChange={(v) => setMethod(v as any)} className="mt-3 space-y-3">
-              <PayOption value="online" current={method} title="Pay online (demo)" desc="Mock payment for now — real gateway can be plugged in later." />
-              <PayOption value="pay_at_pickup" current={method} title="Pay at pickup" desc="Pay the merchant in cash or by transfer at collection." />
-            </RadioGroup>
+            <p className="mt-2 text-sm text-muted-foreground">
+              You'll pay the merchant in cash or by card when you collect your order.
+            </p>
           </Card>
         </div>
 
@@ -127,12 +123,12 @@ function Checkout() {
             <Row label={`Subtotal × ${qty}`} value={formatBND(total)} />
             <Row label="Service fee" value="B$0.00" />
             <div className="my-3 h-px bg-border" />
-            <Row label={<span className="font-semibold">Total</span>} value={<span className="text-lg font-bold">{formatBND(total)}</span>} />
+            <Row label={<span className="font-semibold">Total to pay at pickup</span>} value={<span className="text-lg font-bold">{formatBND(total)}</span>} />
             <Button onClick={place} disabled={placing} className="mt-5 w-full rounded-full" size="lg">
               {placing ? "Confirming…" : `Confirm reservation`}
             </Button>
             <p className="mt-3 text-xs text-muted-foreground">
-              You can cancel before the merchant cut-off time.
+              You can cancel before the merchant cut-off time. No payment is taken online.
             </p>
           </Card>
         </aside>
@@ -143,18 +139,6 @@ function Checkout() {
 
 function Row({ label, value }: { label: React.ReactNode; value: React.ReactNode }) {
   return <div className="mt-2 flex items-center justify-between text-sm">{label}<span>{value}</span></div>;
-}
-
-function PayOption({ value, current, title, desc }: { value: string; current: string; title: string; desc: string }) {
-  return (
-    <Label className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 ${current === value ? "border-primary bg-primary/5" : ""}`}>
-      <RadioGroupItem value={value} className="mt-1" />
-      <div>
-        <div className="font-medium">{title}</div>
-        <div className="text-sm text-muted-foreground">{desc}</div>
-      </div>
-    </Label>
-  );
 }
 
 function formatTime(t: string) {
