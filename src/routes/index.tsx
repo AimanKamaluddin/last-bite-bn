@@ -146,6 +146,11 @@ function Landing() {
         </div>
       </Section>
 
+      {/* AD — mid page */}
+      <div className="container mx-auto px-4">
+        <AdSlot size="leaderboard" id="home-mid-leaderboard" label="Sponsored" />
+      </div>
+
       {/* FEATURED LISTINGS */}
       <Section title="Available today" subtitle="Reserve a meal before it's gone.">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
