@@ -8,6 +8,7 @@ import { sampleListings, formatBND, halalLabel } from "@/lib/sample-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Clock, MapPin, Star, ShieldCheck, AlertTriangle } from "lucide-react";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/listing/$id")({
@@ -138,9 +139,13 @@ function ListingDetail() {
             <p className="mt-3 text-xs text-muted-foreground">
               Merchant contact details are shared after your reservation is confirmed.
             </p>
-          </Card>
-        </aside>
-      </section>
+            </Card>
+          </aside>
+        </section>
+
+        <section className="container mx-auto px-4 pb-10">
+          <AdSlot size="leaderboard" id="listing-bottom" label="Sponsored" />
+        </section>
     </SiteLayout>
   );
 }
