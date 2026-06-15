@@ -61,13 +61,15 @@ function MerchantDashboard() {
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const ordersToday = orders.filter((o) => new Date(o.created_at) >= today);
-  const revenue = orders.filter((o) => o.payment_status === "paid").reduce((s, o) => s + Number(o.total_price), 0);
+  const revenue = orders.filter((o) => o.status === "collected").reduce((s, o) => s + Number(o.total_price), 0);
   const portions = orders.reduce((s, o) => s + o.quantity, 0);
 
   const setStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("orders").update({ status }).eq("id", id);
+    const update: any = { status };
+    if (status === "collected") update.payment_status = "paid";
+    const { error } = await supabase.from("orders").update(update).eq("id", id);
     if (error) return toast.error(error.message);
-    setOrders((arr) => arr.map((o) => (o.id === id ? { ...o, status } : o)));
+    setOrders((arr) => arr.map((o) => (o.id === id ? { ...o, ...update } : o)));
   };
 
   return (

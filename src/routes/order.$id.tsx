@@ -5,6 +5,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { formatBND } from "@/lib/sample-data";
 import { CheckCircle2 } from "lucide-react";
 
 const searchSchema = z.object({ code: z.string().optional(), demo: z.coerce.number().optional() });
@@ -69,6 +70,13 @@ function OrderConfirmation() {
             <div className="mt-1 text-muted-foreground">{order.merchants?.business_name}</div>
             {order.merchants?.address && <div className="text-muted-foreground">{order.merchants.address}</div>}
             {order.merchants?.phone && <div className="text-muted-foreground">{order.merchants.phone}</div>}
+          </div>
+
+          <div className="mt-6 rounded-2xl bg-cream/60 p-4 text-left text-sm">
+            <p className="font-semibold">Payment</p>
+            <p className="mt-1 text-muted-foreground">
+              Pay <strong>{formatBND(Number(order.total_price))}</strong> in cash or by card when you collect your order.
+            </p>
           </div>
         </Card>
 

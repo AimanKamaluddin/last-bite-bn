@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { Banknote } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -104,6 +105,7 @@ function Dashboard() {
 }
 
 function OrderRow({ o, onCancel }: { o: any; onCancel?: () => void }) {
+  const upcoming = ["reserved", "ready"].includes(o.status);
   return (
     <Card className="flex items-center gap-4 rounded-3xl p-4">
       {o.listings?.image_url && <img src={o.listings.image_url} alt="" className="h-16 w-16 rounded-xl object-cover" />}
@@ -113,6 +115,11 @@ function OrderRow({ o, onCancel }: { o: any; onCancel?: () => void }) {
         <div className="mt-1 flex items-center gap-2">
           <Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge>
           <span className="text-xs text-muted-foreground">Code: <strong>{o.pickup_code}</strong></span>
+          {upcoming && (
+            <Badge variant="outline" className="rounded-full text-xs">
+              <Banknote className="mr-1 h-3 w-3" />Pay at pickup
+            </Badge>
+          )}
         </div>
       </div>
       <div className="text-right">
