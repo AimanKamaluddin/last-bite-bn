@@ -102,6 +102,11 @@ function Landing() {
         </div>
       </section>
 
+      {/* AD — below hero */}
+      <div className="container mx-auto px-4">
+        <AdSlot size="billboard" id="home-hero-billboard" label="Hero billboard" />
+      </div>
+
       {/* HOW IT WORKS */}
       <Section
         title="How it works"
