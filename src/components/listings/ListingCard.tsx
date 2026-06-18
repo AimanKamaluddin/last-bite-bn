@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, MapPin, Star } from "lucide-react";
-import { formatBND, halalLabel } from "@/lib/sample-data";
+import { formatBND } from "@/lib/sample-data";
 
 export type ListingCardData = {
   id: string;
@@ -15,18 +15,15 @@ export type ListingCardData = {
   quantity_available: number;
   pickup_start: string;
   pickup_end: string;
-  halal_info?: string;
   merchant: {
     business_name: string;
     district: string;
     rating: number;
-    halal_status?: string;
   };
 };
 
 const fmtTime = (t: string) => {
   if (!t) return "";
-  // Accept HH:mm or ISO timestamp
   if (t.length <= 5) return t;
   try {
     return new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -79,11 +76,6 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
             <Clock className="h-3.5 w-3.5" />
             {fmtTime(listing.pickup_start)} – {fmtTime(listing.pickup_end)}
           </span>
-          {listing.merchant.halal_status && (
-            <Badge variant="secondary" className="rounded-full">
-              {halalLabel(listing.merchant.halal_status)}
-            </Badge>
-          )}
         </div>
 
         <div className="flex items-end justify-between pt-1">

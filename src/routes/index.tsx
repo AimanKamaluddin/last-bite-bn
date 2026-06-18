@@ -114,7 +114,7 @@ function Landing() {
       >
         <div className="grid gap-6 md:grid-cols-3">
           {[
-            { icon: Search, title: "Discover", body: "Find surprise bags and surplus food near you, filtered by district, halal status and category." },
+            { icon: Search, title: "Discover", body: "Find surprise bags and surplus food near you, filtered by district and category." },
             { icon: ShoppingBag, title: "Reserve", body: "Pay online or at pickup. You'll get a pickup code to show the merchant." },
             { icon: HandCoins, title: "Collect & enjoy", body: "Drop by during the pickup window. Show your code and take the food home." },
           ].map((s) => (
@@ -173,7 +173,6 @@ function Landing() {
             items={[
               "Quality food at up to 70% off",
               "Discover new local favourites",
-              "Halal-friendly filters",
               "Simple pickup with QR code",
             ]}
           />
@@ -207,7 +206,7 @@ function Landing() {
             {[
               {
                 q: "Is the food safe to eat?",
-                a: "Yes. Merchants only list food that is fresh and within safe consumption windows. They are responsible for quality, allergen and halal information.",
+                a: "Yes. Merchants only list food that is fresh and within safe consumption windows. They are responsible for quality and allergen information.",
               },
               {
                 q: "What is a surprise bag?",

@@ -33,7 +33,7 @@ function NewListing() {
     pickup_start: "",
     pickup_end: "",
     allergen_info: "",
-    halal_info: "Halal certified",
+    
     image_url: "",
     visible: true,
   });
@@ -86,7 +86,7 @@ function NewListing() {
             <F label="Pickup end (today)"><Input type="time" value={form.pickup_end} onChange={(e) => setForm({ ...form, pickup_end: e.target.value })} /></F>
             <F label="Description" full><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></F>
             <F label="Allergen info" full><Input value={form.allergen_info} onChange={(e) => setForm({ ...form, allergen_info: e.target.value })} placeholder="Contains: gluten, dairy…" /></F>
-            <F label="Halal info" full><Input value={form.halal_info} onChange={(e) => setForm({ ...form, halal_info: e.target.value })} /></F>
+            
             <F label="Image URL" full><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://…" /></F>
             <div className="sm:col-span-2 flex items-center justify-between rounded-2xl bg-cream/60 p-3">
               <div>

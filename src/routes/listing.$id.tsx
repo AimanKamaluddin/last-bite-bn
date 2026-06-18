@@ -4,10 +4,10 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { sampleListings, formatBND, halalLabel } from "@/lib/sample-data";
+import { sampleListings, formatBND } from "@/lib/sample-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { Clock, MapPin, Star, ShieldCheck, AlertTriangle } from "lucide-react";
+import { Clock, MapPin, Star, AlertTriangle } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { toast } from "sonner";
 
@@ -43,7 +43,6 @@ function ListingDetail() {
             district: data.merchants.district,
             address: data.merchants.address,
             rating: Number(data.merchants.rating ?? 0),
-            halal_status: data.merchants.halal_status,
             business_type: data.merchants.business_type,
             phone: data.merchants.phone,
             email: data.merchants.email,
@@ -91,9 +90,6 @@ function ListingDetail() {
           <div className="mt-4 flex flex-wrap gap-2">
             <Badge variant="secondary" className="rounded-full">{data.category}</Badge>
             <Badge variant="secondary" className="rounded-full">
-              {halalLabel(data.merchant.halal_status ?? data.halal_info ?? "not_specified")}
-            </Badge>
-            <Badge variant="secondary" className="rounded-full">
               <Star className="mr-1 h-3 w-3 fill-sun text-sun" /> {data.merchant.rating?.toFixed(1) ?? "—"}
             </Badge>
           </div>
@@ -106,10 +102,9 @@ function ListingDetail() {
             A surprise selection of unsold items, packed fresh by the merchant. Exact contents vary based on what's available.
           </p>
 
-          <h2 className="mt-8 text-lg font-semibold">Allergen & halal info</h2>
+          <h2 className="mt-8 text-lg font-semibold">Allergen info</h2>
           <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
             <li className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 text-accent" />{data.allergen_info || "Ask the merchant for allergen details."}</li>
-            <li className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 text-primary" />{halalLabel(data.merchant.halal_status ?? "not_specified")}</li>
           </ul>
 
           <h2 className="mt-8 text-lg font-semibold">Pickup location</h2>
