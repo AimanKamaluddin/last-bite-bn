@@ -6,7 +6,6 @@ export type SampleMerchant = {
   business_name: string;
   business_type: string;
   district: string;
-  halal_status: "halal_certified" | "muslim_friendly" | "not_specified";
   rating: number;
   image_url: string;
 };
@@ -24,7 +23,6 @@ export type SampleListing = {
   pickup_end: string;
   image_url: string;
   allergen_info: string;
-  halal_info: string;
 };
 
 const img = (q: string) =>
@@ -36,7 +34,6 @@ export const sampleMerchants: SampleMerchant[] = [
     business_name: "Gadong Bakery House",
     business_type: "Bakery",
     district: "Brunei-Muara",
-    halal_status: "halal_certified",
     rating: 4.8,
     image_url: img("photo-1509440159596-0249088772ff"),
   },
@@ -45,7 +42,6 @@ export const sampleMerchants: SampleMerchant[] = [
     business_name: "Kiulap Cafe Corner",
     business_type: "Cafe",
     district: "Brunei-Muara",
-    halal_status: "muslim_friendly",
     rating: 4.6,
     image_url: img("photo-1453614512568-c4024d13c247"),
   },
@@ -54,7 +50,6 @@ export const sampleMerchants: SampleMerchant[] = [
     business_name: "Seria Fresh Mart",
     business_type: "Supermarket",
     district: "Belait",
-    halal_status: "halal_certified",
     rating: 4.4,
     image_url: img("photo-1542838132-92c53300491e"),
   },
@@ -63,7 +58,6 @@ export const sampleMerchants: SampleMerchant[] = [
     business_name: "Jerudong Hotel Kitchen",
     business_type: "Hotel",
     district: "Brunei-Muara",
-    halal_status: "halal_certified",
     rating: 4.9,
     image_url: img("photo-1414235077428-338989a2e8c0"),
   },
@@ -72,7 +66,6 @@ export const sampleMerchants: SampleMerchant[] = [
     business_name: "Tutong Local Eats",
     business_type: "Local food",
     district: "Tutong",
-    halal_status: "halal_certified",
     rating: 4.7,
     image_url: img("photo-1504674900247-0877df9cc836"),
   },
@@ -81,7 +74,6 @@ export const sampleMerchants: SampleMerchant[] = [
     business_name: "Muara Seafood Kitchen",
     business_type: "Restaurant",
     district: "Brunei-Muara",
-    halal_status: "halal_certified",
     rating: 4.5,
     image_url: img("photo-1467003909585-2f8a72700288"),
   },
@@ -101,7 +93,6 @@ export const sampleListings: SampleListing[] = [
     pickup_end: "19:00",
     image_url: img("photo-1555507036-ab1f4038808a"),
     allergen_info: "Contains: gluten, dairy, eggs",
-    halal_info: "Halal certified",
   },
   {
     id: "l2",
@@ -116,7 +107,6 @@ export const sampleListings: SampleListing[] = [
     pickup_end: "21:30",
     image_url: img("photo-1604908176997-125f25cc6f3d"),
     allergen_info: "Contains: peanuts",
-    halal_info: "Halal certified",
   },
   {
     id: "l3",
@@ -131,7 +121,6 @@ export const sampleListings: SampleListing[] = [
     pickup_end: "22:45",
     image_url: img("photo-1546069901-ba9599a7e63c"),
     allergen_info: "May contain: soy, sesame",
-    halal_info: "Halal certified",
   },
   {
     id: "l4",
@@ -146,7 +135,6 @@ export const sampleListings: SampleListing[] = [
     pickup_end: "19:30",
     image_url: img("photo-1509440159596-0249088772ff"),
     allergen_info: "Contains: gluten",
-    halal_info: "Halal certified",
   },
   {
     id: "l5",
@@ -161,7 +149,6 @@ export const sampleListings: SampleListing[] = [
     pickup_end: "20:30",
     image_url: img("photo-1488477181946-6428a0291777"),
     allergen_info: "Contains: dairy, gluten, eggs, nuts",
-    halal_info: "Muslim-friendly",
   },
   {
     id: "l6",
@@ -176,7 +163,6 @@ export const sampleListings: SampleListing[] = [
     pickup_end: "20:00",
     image_url: img("photo-1542838132-92c53300491e"),
     allergen_info: "Varies by item",
-    halal_info: "Halal certified",
   },
 ];
 
@@ -191,14 +177,6 @@ export const CATEGORIES = [
   "Desserts",
   "Groceries",
 ] as const;
-export const HALAL_STATUSES = [
-  { value: "halal_certified", label: "Halal certified" },
-  { value: "muslim_friendly", label: "Muslim-friendly" },
-  { value: "not_specified", label: "Not specified" },
-] as const;
-
-export const halalLabel = (v: string) =>
-  HALAL_STATUSES.find((h) => h.value === v)?.label ?? "Not specified";
 
 export const formatBND = (n: number) =>
   `B$${n.toFixed(2)}`;

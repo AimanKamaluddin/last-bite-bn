@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   CATEGORIES,
   DISTRICTS,
-  HALAL_STATUSES,
   sampleListings,
   type SampleListing,
 } from "@/lib/sample-data";
@@ -20,7 +19,7 @@ export const Route = createFileRoute("/browse")({
   head: () => ({
     meta: [
       { title: "Browse surplus food in Brunei — Last Bite" },
-      { name: "description", content: "Discover discounted surplus food from Brunei merchants. Filter by district, category and halal status." },
+      { name: "description", content: "Discover discounted surplus food from Brunei merchants. Filter by district and category." },
     ],
   }),
   component: Browse,
@@ -32,7 +31,7 @@ function Browse() {
   const [q, setQ] = useState("");
   const [district, setDistrict] = useState<string>("");
   const [category, setCategory] = useState<string>("");
-  const [halal, setHalal] = useState<string>("");
+  
   const [live, setLive] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +39,7 @@ function Browse() {
     (async () => {
       const { data } = await supabase
         .from("listings")
-        .select("*, merchants!inner(business_name, district, rating, halal_status, approval_status)")
+        .select("*, merchants!inner(business_name, district, rating, approval_status)")
         .eq("visible", true)
         .eq("status", "active")
         .eq("merchants.approval_status", "approved")
@@ -62,13 +61,11 @@ function Browse() {
               d.image_url ||
               "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=70",
             allergen_info: d.allergen_info ?? "",
-            halal_info: d.halal_info ?? "",
             merchant: {
               id: d.merchant_id,
               business_name: d.merchants.business_name,
               business_type: "",
               district: d.merchants.district,
-              halal_status: d.merchants.halal_status,
               rating: Number(d.merchants.rating ?? 0),
               image_url: "",
             },
@@ -87,10 +84,9 @@ function Browse() {
       if (q && !`${l.title} ${l.merchant.business_name}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (district && l.merchant.district !== district) return false;
       if (category && l.category !== category) return false;
-      if (halal && l.merchant.halal_status !== halal) return false;
       return true;
     });
-  }, [all, q, district, category, halal]);
+  }, [all, q, district, category]);
 
   return (
     <SiteLayout>
@@ -113,13 +109,6 @@ function Browse() {
 
           <FilterRow label="District" value={district} onChange={setDistrict} options={DISTRICTS as readonly string[]} />
           <FilterRow label="Category" value={category} onChange={setCategory} options={CATEGORIES as readonly string[]} />
-          <FilterRow
-            label="Halal"
-            value={halal}
-            onChange={setHalal}
-            options={HALAL_STATUSES.map((h) => h.value)}
-            labelFor={(v) => HALAL_STATUSES.find((h) => h.value === v)?.label ?? v}
-          />
         </div>
 
         <div className="mt-6">
@@ -130,7 +119,7 @@ function Browse() {
           <div className="mx-auto mt-16 max-w-md rounded-3xl border bg-card p-10 text-center">
             <div className="text-lg font-semibold">No food matches your filters</div>
             <p className="mt-2 text-sm text-muted-foreground">Try clearing a filter or check back later — new bags drop throughout the day.</p>
-            <Button className="mt-4 rounded-full" onClick={() => { setQ(""); setDistrict(""); setCategory(""); setHalal(""); }}>Clear filters</Button>
+            <Button className="mt-4 rounded-full" onClick={() => { setQ(""); setDistrict(""); setCategory(""); }}>Clear filters</Button>
           </div>
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

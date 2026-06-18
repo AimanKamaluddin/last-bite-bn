@@ -10,7 +10,7 @@ export const Route = createFileRoute("/legal/merchant-agreement")({
         <p className="mt-4 text-muted-foreground">By joining Last Bite as a merchant, you agree to:</p>
         <ul className="mt-3 list-disc space-y-2 pl-6 text-muted-foreground">
           <li>List only food that is safe and within consumption windows.</li>
-          <li>Provide accurate allergen and halal information for each listing.</li>
+          <li>Provide accurate allergen information for each listing.</li>
           <li>Honour reservations within your stated pickup window.</li>
           <li>Pay Last Bite a 15% commission on successful orders.</li>
           <li>Maintain a respectful, professional relationship with customers.</li>

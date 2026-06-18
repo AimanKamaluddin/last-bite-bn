@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { DISTRICTS, CATEGORIES, HALAL_STATUSES } from "@/lib/sample-data";
+import { DISTRICTS, CATEGORIES } from "@/lib/sample-data";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/merchant/onboarding")({
@@ -30,7 +30,7 @@ function Onboarding() {
     email: "",
     address: "",
     district: DISTRICTS[0] as string,
-    halal_status: "halal_certified",
+    
     business_reg_no: "",
     opening_hours: "",
     description: "",
@@ -102,12 +102,6 @@ function Onboarding() {
             <Field label="Contact person"><Input value={form.contact_person} onChange={(e) => setForm({ ...form, contact_person: e.target.value })} /></Field>
             <Field label="Phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+673" /></Field>
             <Field label="Email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder={user?.email ?? ""} /></Field>
-            <Field label="Halal status">
-              <Select value={form.halal_status} onValueChange={(v) => setForm({ ...form, halal_status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{HALAL_STATUSES.map((h) => <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>)}</SelectContent>
-              </Select>
-            </Field>
             <Field label="Business registration #"><Input value={form.business_reg_no} onChange={(e) => setForm({ ...form, business_reg_no: e.target.value })} /></Field>
             <Field label="Address" full><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></Field>
             <Field label="Opening hours" full><Input value={form.opening_hours} onChange={(e) => setForm({ ...form, opening_hours: e.target.value })} placeholder="Mon–Sat 8am–9pm" /></Field>
