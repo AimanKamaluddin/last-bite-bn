@@ -35,7 +35,7 @@ function NewListing() {
     pickup_end: "",
     allergen_info: "",
     
-    image_url: "",
+    images: [] as string[],
     visible: true,
   });
 
