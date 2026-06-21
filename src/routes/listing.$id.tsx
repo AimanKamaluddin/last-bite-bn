@@ -83,6 +83,13 @@ function ListingDetail() {
       <section className="container mx-auto grid gap-10 px-4 py-10 md:grid-cols-[1.2fr_1fr]">
         <div>
           <img src={data.image_url} alt={data.title} className="aspect-[4/3] w-full rounded-3xl object-cover" />
+          {Array.isArray((data as any).images) && (data as any).images.length > 1 && (
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {((data as any).images as string[]).slice(0, 8).map((u, i) => (
+                <img key={i} src={u} alt="" className="aspect-square w-full rounded-xl object-cover" />
+              ))}
+            </div>
+          )}
           <h1 className="mt-6 text-3xl font-bold md:text-4xl">{data.title}</h1>
           <p className="mt-1 text-muted-foreground">
             {data.merchant.business_name} · {data.merchant.district}
