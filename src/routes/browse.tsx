@@ -76,7 +76,7 @@ function Browse() {
     })();
   }, []);
 
-  const all: Row[] = live.length ? live : sampleListings.map((l) => ({ ...l }));
+  const all: Row[] = live;
 
   const filtered = useMemo(() => {
     return all.filter((l) => {
