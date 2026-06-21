@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { ImageUpload } from "@/components/upload/ImageUpload";
 import { useAuth } from "@/hooks/use-auth";
 import { DISTRICTS, CATEGORIES } from "@/lib/sample-data";
 import { toast } from "sonner";
