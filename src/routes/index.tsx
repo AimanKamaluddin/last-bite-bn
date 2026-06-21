@@ -174,21 +174,27 @@ function Landing() {
       </Section>
 
       {/* FEATURED MERCHANTS */}
-      <Section title="Featured merchants" subtitle="Loved by Bruneians.">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sampleMerchants.slice(0, 6).map((m) => (
-            <Card key={m.id} className="overflow-hidden rounded-3xl p-0">
-              <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-36 w-full object-cover" />
-              <div className="p-4">
-                <div className="font-semibold">{m.business_name}</div>
-                <div className="text-sm text-muted-foreground">
-                  {m.business_type} · {m.district}
+      {merchants.length > 0 && (
+        <Section title="Featured merchants" subtitle="Loved by Bruneians.">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {merchants.map((m) => (
+              <Card key={m.id} className="overflow-hidden rounded-3xl p-0">
+                {m.image_url ? (
+                  <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-36 w-full object-cover" />
+                ) : (
+                  <div className="h-36 w-full bg-muted" />
+                )}
+                <div className="p-4">
+                  <div className="font-semibold">{m.business_name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {m.business_type} · {m.district}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </Section>
+              </Card>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* AD — mid page */}
       <div className="container mx-auto px-4">
@@ -196,18 +202,20 @@ function Landing() {
       </div>
 
       {/* FEATURED LISTINGS */}
-      <Section title="Available today" subtitle="Reserve a meal before it's gone.">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {sampleListings.slice(0, 6).map((l) => (
-            <ListingCard key={l.id} listing={l} />
-          ))}
-        </div>
-        <div className="mt-8 text-center">
-          <Button asChild size="lg" variant="outline" className="rounded-full">
-            <Link to="/browse">See all food</Link>
-          </Button>
-        </div>
-      </Section>
+      {listings.length > 0 && (
+        <Section title="Available today" subtitle="Reserve a meal before it's gone.">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {listings.map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Button asChild size="lg" variant="outline" className="rounded-full">
+              <Link to="/browse">See all food</Link>
+            </Button>
+          </div>
+        </Section>
+      )}
 
       {/* BENEFITS */}
       <Section title="Why people love Last Bite">
