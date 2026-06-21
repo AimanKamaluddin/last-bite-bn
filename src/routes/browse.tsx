@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   CATEGORIES,
   DISTRICTS,
-  sampleListings,
   type SampleListing,
 } from "@/lib/sample-data";
 import { ListingCard } from "@/components/listings/ListingCard";
