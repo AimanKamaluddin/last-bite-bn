@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { ImageUpload } from "@/components/upload/ImageUpload";
 import { useAuth } from "@/hooks/use-auth";
 import { CATEGORIES } from "@/lib/sample-data";
 import { toast } from "sonner";
