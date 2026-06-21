@@ -54,6 +54,7 @@ export type Database = {
           halal_info: string | null
           id: string
           image_url: string | null
+          images: string[]
           merchant_id: string
           original_price: number
           pickup_end: string
@@ -73,6 +74,7 @@ export type Database = {
           halal_info?: string | null
           id?: string
           image_url?: string | null
+          images?: string[]
           merchant_id: string
           original_price: number
           pickup_end: string
@@ -92,6 +94,7 @@ export type Database = {
           halal_info?: string | null
           id?: string
           image_url?: string | null
+          images?: string[]
           merchant_id?: string
           original_price?: number
           pickup_end?: string

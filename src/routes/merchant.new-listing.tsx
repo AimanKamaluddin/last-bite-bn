@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { ImageUpload } from "@/components/upload/ImageUpload";
 import { useAuth } from "@/hooks/use-auth";
 import { CATEGORIES } from "@/lib/sample-data";
 import { toast } from "sonner";
@@ -34,7 +35,7 @@ function NewListing() {
     pickup_end: "",
     allergen_info: "",
     
-    image_url: "",
+    images: [] as string[],
     visible: true,
   });
 
@@ -53,9 +54,12 @@ function NewListing() {
   const save = async (status: "active" | "draft") => {
     setSaving(true);
     const today = new Date().toISOString().slice(0, 10);
+    const { images, ...rest } = form;
     const { error } = await supabase.from("listings").insert({
       merchant_id: merchant.id,
-      ...form,
+      ...rest,
+      image_url: images[0] ?? null,
+      images,
       pickup_start: new Date(`${today}T${form.pickup_start}:00`).toISOString(),
       pickup_end: new Date(`${today}T${form.pickup_end}:00`).toISOString(),
       status,
@@ -87,7 +91,9 @@ function NewListing() {
             <F label="Description" full><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></F>
             <F label="Allergen info" full><Input value={form.allergen_info} onChange={(e) => setForm({ ...form, allergen_info: e.target.value })} placeholder="Contains: gluten, dairy…" /></F>
             
-            <F label="Image URL" full><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://…" /></F>
+            <F label="Photos" full>
+              <ImageUpload multiple value={form.images} onChange={(v) => setForm({ ...form, images: v })} />
+            </F>
             <div className="sm:col-span-2 flex items-center justify-between rounded-2xl bg-cream/60 p-3">
               <div>
                 <div className="font-medium">Visible to customers</div>
