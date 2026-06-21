@@ -43,6 +43,49 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const [merchants, setMerchants] = useState<any[]>([]);
+  const [listings, setListings] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const [{ data: m }, { data: l }] = await Promise.all([
+        supabase
+          .from("merchants")
+          .select("id, business_name, business_type, district, image_url")
+          .eq("approval_status", "approved")
+          .order("created_at", { ascending: false })
+          .limit(6),
+        supabase
+          .from("listings")
+          .select("*, merchants!inner(business_name, district, rating, approval_status)")
+          .eq("visible", true)
+          .eq("status", "active")
+          .eq("merchants.approval_status", "approved")
+          .order("created_at", { ascending: false })
+          .limit(6),
+      ]);
+      setMerchants(m ?? []);
+      setListings(
+        (l ?? []).map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          category: d.category,
+          original_price: Number(d.original_price),
+          discounted_price: Number(d.discounted_price),
+          quantity_available: d.quantity_available,
+          pickup_start: d.pickup_start,
+          pickup_end: d.pickup_end,
+          image_url: d.image_url || "",
+          merchant: {
+            business_name: d.merchants.business_name,
+            district: d.merchants.district,
+            rating: Number(d.merchants.rating ?? 0),
+          },
+        })),
+      );
+    })();
+  }, []);
+
   return (
     <SiteLayout>
       {/* HERO */}
