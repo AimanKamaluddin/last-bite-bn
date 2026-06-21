@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { AdSlot } from "@/components/ads/AdSlot";
-import { sampleListings, sampleMerchants } from "@/lib/sample-data";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Accordion,
   AccordionContent,
