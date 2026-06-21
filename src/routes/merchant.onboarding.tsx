@@ -106,7 +106,9 @@ function Onboarding() {
             <Field label="Business registration #"><Input value={form.business_reg_no} onChange={(e) => setForm({ ...form, business_reg_no: e.target.value })} /></Field>
             <Field label="Address" full><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></Field>
             <Field label="Opening hours" full><Input value={form.opening_hours} onChange={(e) => setForm({ ...form, opening_hours: e.target.value })} placeholder="Mon–Sat 8am–9pm" /></Field>
-            <Field label="Logo / photo URL" full><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://…" /></Field>
+            <Field label="Logo / photo" full>
+              <ImageUpload value={form.image_url} onChange={(v) => setForm({ ...form, image_url: v })} />
+            </Field>
             <Field label="Short description" full><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
 
             <div className="sm:col-span-2">
