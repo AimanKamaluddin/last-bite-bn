@@ -54,9 +54,12 @@ function NewListing() {
   const save = async (status: "active" | "draft") => {
     setSaving(true);
     const today = new Date().toISOString().slice(0, 10);
+    const { images, ...rest } = form;
     const { error } = await supabase.from("listings").insert({
       merchant_id: merchant.id,
-      ...form,
+      ...rest,
+      image_url: images[0] ?? null,
+      images,
       pickup_start: new Date(`${today}T${form.pickup_start}:00`).toISOString(),
       pickup_end: new Date(`${today}T${form.pickup_end}:00`).toISOString(),
       status,
