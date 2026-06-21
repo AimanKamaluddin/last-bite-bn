@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { AdSlot } from "@/components/ads/AdSlot";
-import { sampleListings, sampleMerchants } from "@/lib/sample-data";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Accordion,
   AccordionContent,
@@ -42,6 +43,49 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const [merchants, setMerchants] = useState<any[]>([]);
+  const [listings, setListings] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const [{ data: m }, { data: l }] = await Promise.all([
+        supabase
+          .from("merchants")
+          .select("id, business_name, business_type, district, image_url")
+          .eq("approval_status", "approved")
+          .order("created_at", { ascending: false })
+          .limit(6),
+        supabase
+          .from("listings")
+          .select("*, merchants!inner(business_name, district, rating, approval_status)")
+          .eq("visible", true)
+          .eq("status", "active")
+          .eq("merchants.approval_status", "approved")
+          .order("created_at", { ascending: false })
+          .limit(6),
+      ]);
+      setMerchants(m ?? []);
+      setListings(
+        (l ?? []).map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          category: d.category,
+          original_price: Number(d.original_price),
+          discounted_price: Number(d.discounted_price),
+          quantity_available: d.quantity_available,
+          pickup_start: d.pickup_start,
+          pickup_end: d.pickup_end,
+          image_url: d.image_url || "",
+          merchant: {
+            business_name: d.merchants.business_name,
+            district: d.merchants.district,
+            rating: Number(d.merchants.rating ?? 0),
+          },
+        })),
+      );
+    })();
+  }, []);
+
   return (
     <SiteLayout>
       {/* HERO */}
@@ -130,21 +174,27 @@ function Landing() {
       </Section>
 
       {/* FEATURED MERCHANTS */}
-      <Section title="Featured merchants" subtitle="Loved by Bruneians.">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sampleMerchants.slice(0, 6).map((m) => (
-            <Card key={m.id} className="overflow-hidden rounded-3xl p-0">
-              <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-36 w-full object-cover" />
-              <div className="p-4">
-                <div className="font-semibold">{m.business_name}</div>
-                <div className="text-sm text-muted-foreground">
-                  {m.business_type} · {m.district}
+      {merchants.length > 0 && (
+        <Section title="Featured merchants" subtitle="Loved by Bruneians.">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {merchants.map((m) => (
+              <Card key={m.id} className="overflow-hidden rounded-3xl p-0">
+                {m.image_url ? (
+                  <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-36 w-full object-cover" />
+                ) : (
+                  <div className="h-36 w-full bg-muted" />
+                )}
+                <div className="p-4">
+                  <div className="font-semibold">{m.business_name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {m.business_type} · {m.district}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </Section>
+              </Card>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* AD — mid page */}
       <div className="container mx-auto px-4">
@@ -152,18 +202,20 @@ function Landing() {
       </div>
 
       {/* FEATURED LISTINGS */}
-      <Section title="Available today" subtitle="Reserve a meal before it's gone.">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {sampleListings.slice(0, 6).map((l) => (
-            <ListingCard key={l.id} listing={l} />
-          ))}
-        </div>
-        <div className="mt-8 text-center">
-          <Button asChild size="lg" variant="outline" className="rounded-full">
-            <Link to="/browse">See all food</Link>
-          </Button>
-        </div>
-      </Section>
+      {listings.length > 0 && (
+        <Section title="Available today" subtitle="Reserve a meal before it's gone.">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {listings.map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Button asChild size="lg" variant="outline" className="rounded-full">
+              <Link to="/browse">See all food</Link>
+            </Button>
+          </div>
+        </Section>
+      )}
 
       {/* BENEFITS */}
       <Section title="Why people love Last Bite">

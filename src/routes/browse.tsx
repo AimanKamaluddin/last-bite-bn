@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   CATEGORIES,
   DISTRICTS,
-  sampleListings,
   type SampleListing,
 } from "@/lib/sample-data";
 import { ListingCard } from "@/components/listings/ListingCard";
@@ -77,7 +76,7 @@ function Browse() {
     })();
   }, []);
 
-  const all: Row[] = live.length ? live : sampleListings.map((l) => ({ ...l }));
+  const all: Row[] = live;
 
   const filtered = useMemo(() => {
     return all.filter((l) => {
