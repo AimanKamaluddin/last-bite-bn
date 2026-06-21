@@ -91,7 +91,9 @@ function NewListing() {
             <F label="Description" full><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></F>
             <F label="Allergen info" full><Input value={form.allergen_info} onChange={(e) => setForm({ ...form, allergen_info: e.target.value })} placeholder="Contains: gluten, dairy…" /></F>
             
-            <F label="Image URL" full><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://…" /></F>
+            <F label="Photos" full>
+              <ImageUpload multiple value={form.images} onChange={(v) => setForm({ ...form, images: v })} />
+            </F>
             <div className="sm:col-span-2 flex items-center justify-between rounded-2xl bg-cream/60 p-3">
               <div>
                 <div className="font-medium">Visible to customers</div>
