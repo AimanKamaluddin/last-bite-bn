@@ -21,6 +21,9 @@ export function Header() {
       <Link to="/browse" className="text-sm font-medium hover:text-primary">
         Browse Food
       </Link>
+      <Link to="/about" className="text-sm font-medium hover:text-primary">
+        About
+      </Link>
       <Link to="/merchant/onboarding" className="text-sm font-medium hover:text-primary">
         For Businesses
       </Link>
