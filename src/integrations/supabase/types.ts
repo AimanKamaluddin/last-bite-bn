@@ -476,6 +476,64 @@ export type Database = {
       }
     }
     Functions: {
+      admin_list_merchants: {
+        Args: never
+        Returns: {
+          address: string | null
+          approval_status: string
+          business_name: string
+          business_reg_no: string | null
+          business_type: string
+          contact_person: string | null
+          created_at: string
+          description: string | null
+          district: string
+          email: string | null
+          halal_status: string
+          id: string
+          image_url: string | null
+          opening_hours: string | null
+          phone: string | null
+          rating: number | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "merchants"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_my_merchant: {
+        Args: never
+        Returns: {
+          address: string | null
+          approval_status: string
+          business_name: string
+          business_reg_no: string | null
+          business_type: string
+          contact_person: string | null
+          created_at: string
+          description: string | null
+          district: string
+          email: string | null
+          halal_status: string
+          id: string
+          image_url: string | null
+          opening_hours: string | null
+          phone: string | null
+          rating: number | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "merchants"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
