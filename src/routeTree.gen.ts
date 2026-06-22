@@ -25,6 +25,7 @@ import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalMerchantAgreementRouteImport } from './routes/legal.merchant-agreement'
 import { Route as LegalFoodSafetyRouteImport } from './routes/legal.food-safety'
 import { Route as CheckoutIdRouteImport } from './routes/checkout.$id'
+import { Route as MerchantEditListingIdRouteImport } from './routes/merchant.edit-listing.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -106,6 +107,11 @@ const CheckoutIdRoute = CheckoutIdRouteImport.update({
   path: '/checkout/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MerchantEditListingIdRoute = MerchantEditListingIdRouteImport.update({
+  id: '/merchant/edit-listing/$id',
+  path: '/merchant/edit-listing/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/merchant/onboarding': typeof MerchantOnboardingRoute
   '/order/$id': typeof OrderIdRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/merchant/edit-listing/$id': typeof MerchantEditListingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/merchant/onboarding': typeof MerchantOnboardingRoute
   '/order/$id': typeof OrderIdRoute
   '/merchant': typeof MerchantIndexRoute
+  '/merchant/edit-listing/$id': typeof MerchantEditListingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/merchant/onboarding': typeof MerchantOnboardingRoute
   '/order/$id': typeof OrderIdRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/merchant/edit-listing/$id': typeof MerchantEditListingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/merchant/onboarding'
     | '/order/$id'
     | '/merchant/'
+    | '/merchant/edit-listing/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/merchant/onboarding'
     | '/order/$id'
     | '/merchant'
+    | '/merchant/edit-listing/$id'
   id:
     | '__root__'
     | '/'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/merchant/onboarding'
     | '/order/$id'
     | '/merchant/'
+    | '/merchant/edit-listing/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,6 +248,7 @@ export interface RootRouteChildren {
   MerchantOnboardingRoute: typeof MerchantOnboardingRoute
   OrderIdRoute: typeof OrderIdRoute
   MerchantIndexRoute: typeof MerchantIndexRoute
+  MerchantEditListingIdRoute: typeof MerchantEditListingIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -352,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/merchant/edit-listing/$id': {
+      id: '/merchant/edit-listing/$id'
+      path: '/merchant/edit-listing/$id'
+      fullPath: '/merchant/edit-listing/$id'
+      preLoaderRoute: typeof MerchantEditListingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -372,6 +392,7 @@ const rootRouteChildren: RootRouteChildren = {
   MerchantOnboardingRoute: MerchantOnboardingRoute,
   OrderIdRoute: OrderIdRoute,
   MerchantIndexRoute: MerchantIndexRoute,
+  MerchantEditListingIdRoute: MerchantEditListingIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
