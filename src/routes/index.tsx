@@ -49,18 +49,16 @@ function Landing() {
   useEffect(() => {
     (async () => {
       const [{ data: m }, { data: l }] = await Promise.all([
-        supabase
-          .from("merchants")
+        (supabase as any)
+          .from("merchants_public")
           .select("id, business_name, business_type, district, image_url")
-          .eq("approval_status", "approved")
           .order("created_at", { ascending: false })
           .limit(6),
-        supabase
+        (supabase as any)
           .from("listings")
-          .select("*, merchants!inner(business_name, district, rating, approval_status)")
+          .select("*, merchants_public!inner(business_name, district, rating)")
           .eq("visible", true)
           .eq("status", "active")
-          .eq("merchants.approval_status", "approved")
           .order("created_at", { ascending: false })
           .limit(6),
       ]);
@@ -77,9 +75,9 @@ function Landing() {
           pickup_end: d.pickup_end,
           image_url: d.image_url || "",
           merchant: {
-            business_name: d.merchants.business_name,
-            district: d.merchants.district,
-            rating: Number(d.merchants.rating ?? 0),
+            business_name: d.merchants_public?.business_name ?? "",
+            district: d.merchants_public?.district ?? "",
+            rating: Number(d.merchants_public?.rating ?? 0),
           },
         })),
       );

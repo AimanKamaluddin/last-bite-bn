@@ -41,7 +41,7 @@ function NewListing() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("merchants").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => setMerchant(data));
+    (supabase as any).rpc("get_my_merchant").then(({ data }: any) => setMerchant(Array.isArray(data) && data.length ? data[0] : null));
   }, [user]);
 
   if (loading) return <SiteLayout><div className="p-10">Loading…</div></SiteLayout>;
