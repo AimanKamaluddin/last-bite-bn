@@ -21,6 +21,7 @@ export function Footer() {
           <h4 className="mb-3 text-sm font-semibold">Explore</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/browse" className="hover:text-foreground">Browse food</Link></li>
+            <li><Link to="/about" className="hover:text-foreground">About us</Link></li>
             <li><Link to="/merchant/onboarding" className="hover:text-foreground">Join as merchant</Link></li>
           </ul>
         </div>
