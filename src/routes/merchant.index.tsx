@@ -135,6 +135,27 @@ function MerchantDashboard() {
                     <span className="font-semibold text-primary">{formatBND(Number(l.discounted_price))}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">{l.quantity_available} left</div>
+                  <div className="mt-3 flex gap-2">
+                    <Button asChild size="sm" variant="outline" className="flex-1 rounded-full">
+                      <Link to="/merchant/edit-listing/$id" params={{ id: l.id }}>
+                        <Pencil className="mr-1.5 h-3.5 w-3.5" />Edit
+                      </Link>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full text-destructive hover:text-destructive"
+                      onClick={async () => {
+                        if (!confirm(`Delete "${l.title}"?`)) return;
+                        const { error } = await supabase.from("listings").delete().eq("id", l.id);
+                        if (error) return toast.error(error.message);
+                        setListings((arr) => arr.filter((x) => x.id !== l.id));
+                        toast.success("Listing deleted.");
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
