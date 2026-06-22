@@ -36,12 +36,11 @@ function Browse() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("listings")
-        .select("*, merchants!inner(business_name, district, rating, approval_status)")
+        .select("*, merchants_public!inner(business_name, district, rating)")
         .eq("visible", true)
         .eq("status", "active")
-        .eq("merchants.approval_status", "approved")
         .order("created_at", { ascending: false });
 
       if (data && data.length) {
@@ -62,10 +61,10 @@ function Browse() {
             allergen_info: d.allergen_info ?? "",
             merchant: {
               id: d.merchant_id,
-              business_name: d.merchants.business_name,
+              business_name: d.merchants_public?.business_name ?? "",
               business_type: "",
-              district: d.merchants.district,
-              rating: Number(d.merchants.rating ?? 0),
+              district: d.merchants_public?.district ?? "",
+              rating: Number(d.merchants_public?.rating ?? 0),
               image_url: "",
             },
             _isLive: true,

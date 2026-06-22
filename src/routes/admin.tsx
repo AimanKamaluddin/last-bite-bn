@@ -25,9 +25,9 @@ function AdminPanel() {
     if (!isAdmin) return;
     (async () => {
       const [{ data: m }, { data: l }, { data: o }] = await Promise.all([
-        supabase.from("merchants").select("*").order("created_at", { ascending: false }),
-        supabase.from("listings").select("*, merchants(business_name)").order("created_at", { ascending: false }),
-        supabase.from("orders").select("*, merchants(business_name), listings(title)").order("created_at", { ascending: false }),
+        (supabase as any).rpc("admin_list_merchants"),
+        (supabase as any).from("listings").select("*, merchants(business_name)").order("created_at", { ascending: false }),
+        (supabase as any).from("orders").select("*, merchants(business_name), listings(title)").order("created_at", { ascending: false }),
       ]);
       setMerchants(m ?? []); setListings(l ?? []); setOrders(o ?? []);
       setBusy(false);

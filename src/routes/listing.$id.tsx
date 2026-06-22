@@ -32,20 +32,23 @@ function ListingDetail() {
       }
       const { data } = await supabase
         .from("listings")
-        .select("*, merchants(*)")
+        .select("*")
         .eq("id", id)
         .maybeSingle();
       if (data) {
+        const { data: m } = await (supabase as any)
+          .from("merchants_public")
+          .select("business_name, district, rating, business_type")
+          .eq("id", data.merchant_id)
+          .maybeSingle();
         setData({
           ...data,
           merchant: {
-            business_name: data.merchants.business_name,
-            district: data.merchants.district,
-            address: data.merchants.address,
-            rating: Number(data.merchants.rating ?? 0),
-            business_type: data.merchants.business_type,
-            phone: data.merchants.phone,
-            email: data.merchants.email,
+            business_name: m?.business_name ?? "",
+            district: m?.district ?? "",
+            address: "",
+            rating: Number(m?.rating ?? 0),
+            business_type: m?.business_type ?? "",
           },
         });
       }

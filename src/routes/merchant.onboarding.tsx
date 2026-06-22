@@ -41,7 +41,8 @@ function Onboarding() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("merchants").select("*").eq("user_id", user.id).maybeSingle();
+      const { data: rows } = await (supabase as any).rpc("get_my_merchant");
+      const data = Array.isArray(rows) && rows.length ? rows[0] : null;
       if (data) setExisting(data);
     })();
   }, [user]);
