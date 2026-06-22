@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { formatBND } from "@/lib/sample-data";
-import { Plus, Store, ShoppingBag, TrendingUp, Sprout } from "lucide-react";
+import { Plus, Store, ShoppingBag, TrendingUp, Sprout, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/merchant/")({
