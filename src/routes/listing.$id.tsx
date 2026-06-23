@@ -186,9 +186,24 @@ function ListingDetail() {
           </aside>
         </section>
 
+        {related.length > 0 && (
+          <section className="container mx-auto px-4 pb-10">
+            <div className="mb-4 flex items-end justify-between">
+              <h2 className="text-2xl font-bold">More from {data.merchant.business_name}</h2>
+              <Link to="/browse" className="text-sm text-primary hover:underline">Browse all →</Link>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((l) => (
+                <ListingCard key={l.id} listing={l} />
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="container mx-auto px-4 pb-10">
           <AdSlot size="leaderboard" id="listing-bottom" label="Sponsored" />
         </section>
+
     </SiteLayout>
   );
 }
