@@ -213,3 +213,23 @@ function formatTime(t: string) {
   if (t.length <= 5) return t;
   try { return new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); } catch { return t; }
 }
+
+function toCardData(l: SampleListing): ListingCardData {
+  return {
+    id: l.id,
+    title: l.title,
+    image_url: l.image_url,
+    category: l.category,
+    original_price: l.original_price,
+    discounted_price: l.discounted_price,
+    quantity_available: l.quantity_available,
+    pickup_start: l.pickup_start,
+    pickup_end: l.pickup_end,
+    merchant: {
+      business_name: l.merchant.business_name,
+      district: l.merchant.district,
+      rating: l.merchant.rating,
+    },
+  };
+}
+
