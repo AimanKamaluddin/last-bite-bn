@@ -39,7 +39,12 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
   );
   return (
     <Card className="group overflow-hidden rounded-3xl border-border/60 p-0 transition hover:shadow-lg">
-      <div className="relative h-44 overflow-hidden">
+      <Link
+        to="/listing/$id"
+        params={{ id: listing.id }}
+        className="block relative h-44 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        aria-label={`View details for ${listing.title}`}
+      >
         <img
           src={listing.image_url}
           alt={listing.title}
@@ -49,16 +54,25 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
         <Badge className="absolute left-3 top-3 rounded-full bg-accent text-accent-foreground">
           -{discountPct}%
         </Badge>
+        <span className="absolute right-3 bottom-3 rounded-full bg-background/90 px-3 py-1 text-xs font-medium opacity-0 shadow transition group-hover:opacity-100">
+          View details →
+        </span>
         {soldOut && (
           <div className="absolute inset-0 grid place-items-center bg-background/70 text-sm font-semibold">
             Sold out
           </div>
         )}
-      </div>
+      </Link>
       <div className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-semibold leading-tight">{listing.title}</h3>
+            <Link
+              to="/listing/$id"
+              params={{ id: listing.id }}
+              className="font-semibold leading-tight hover:text-primary hover:underline"
+            >
+              <h3>{listing.title}</h3>
+            </Link>
             <p className="text-sm text-muted-foreground">{listing.merchant.business_name}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1 text-sm">
@@ -90,13 +104,19 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
               {listing.quantity_available} left
             </div>
           </div>
-          <Button asChild size="sm" className="rounded-full" disabled={soldOut}>
-            <Link to="/listing/$id" params={{ id: listing.id }}>
-              {soldOut ? "Sold out" : "Reserve"}
-            </Link>
-          </Button>
+          <div className="flex flex-col gap-1.5">
+            <Button asChild size="sm" variant="outline" className="rounded-full">
+              <Link to="/listing/$id" params={{ id: listing.id }}>View</Link>
+            </Button>
+            <Button asChild size="sm" className="rounded-full" disabled={soldOut}>
+              <Link to="/listing/$id" params={{ id: listing.id }}>
+                {soldOut ? "Sold out" : "Reserve"}
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </Card>
   );
 }
+

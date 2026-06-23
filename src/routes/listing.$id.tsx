@@ -4,7 +4,9 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { sampleListings, formatBND } from "@/lib/sample-data";
+import { sampleListings, formatBND, type SampleListing } from "@/lib/sample-data";
+import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Clock, MapPin, Star, AlertTriangle } from "lucide-react";
@@ -21,12 +23,18 @@ function ListingDetail() {
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [related, setRelated] = useState<ListingCardData[]>([]);
+
 
   useEffect(() => {
     (async () => {
       const local = sampleListings.find((l) => l.id === id);
       if (local) {
         setData(local);
+        const others = sampleListings
+          .filter((l) => l.merchant.id === local.merchant.id && l.id !== local.id)
+          .map((l) => toCardData(l));
+        setRelated(others);
         setLoading(false);
         return;
       }
@@ -51,10 +59,40 @@ function ListingDetail() {
             business_type: m?.business_type ?? "",
           },
         });
+        const { data: others } = await supabase
+          .from("listings")
+          .select("*")
+          .eq("merchant_id", data.merchant_id)
+          .eq("status", "active")
+          .neq("id", id)
+          .gt("quantity_available", 0)
+          .limit(6);
+        if (others && m) {
+          setRelated(
+            others.map((o: any) => ({
+              id: o.id,
+              title: o.title,
+              image_url: o.image_url,
+              category: o.category,
+              original_price: Number(o.original_price),
+              discounted_price: Number(o.discounted_price),
+              quantity_available: o.quantity_available,
+              pickup_start: o.pickup_start,
+              pickup_end: o.pickup_end,
+              merchant: {
+                business_name: m.business_name ?? "",
+                district: m.district ?? "",
+                rating: Number(m.rating ?? 0),
+              },
+            })),
+          );
+        }
       }
       setLoading(false);
     })();
   }, [id]);
+
+
 
   if (loading) {
     return <SiteLayout><div className="container mx-auto p-10">Loading…</div></SiteLayout>;
@@ -148,9 +186,24 @@ function ListingDetail() {
           </aside>
         </section>
 
+        {related.length > 0 && (
+          <section className="container mx-auto px-4 pb-10">
+            <div className="mb-4 flex items-end justify-between">
+              <h2 className="text-2xl font-bold">More from {data.merchant.business_name}</h2>
+              <Link to="/browse" className="text-sm text-primary hover:underline">Browse all →</Link>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((l) => (
+                <ListingCard key={l.id} listing={l} />
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="container mx-auto px-4 pb-10">
           <AdSlot size="leaderboard" id="listing-bottom" label="Sponsored" />
         </section>
+
     </SiteLayout>
   );
 }
@@ -160,3 +213,23 @@ function formatTime(t: string) {
   if (t.length <= 5) return t;
   try { return new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); } catch { return t; }
 }
+
+function toCardData(l: SampleListing): ListingCardData {
+  return {
+    id: l.id,
+    title: l.title,
+    image_url: l.image_url,
+    category: l.category,
+    original_price: l.original_price,
+    discounted_price: l.discounted_price,
+    quantity_available: l.quantity_available,
+    pickup_start: l.pickup_start,
+    pickup_end: l.pickup_end,
+    merchant: {
+      business_name: l.merchant.business_name,
+      district: l.merchant.district,
+      rating: l.merchant.rating,
+    },
+  };
+}
+
