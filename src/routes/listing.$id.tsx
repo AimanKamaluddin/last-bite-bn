@@ -23,6 +23,8 @@ function ListingDetail() {
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [related, setRelated] = useState<ListingCardData[]>([]);
+
 
   useEffect(() => {
     (async () => {
