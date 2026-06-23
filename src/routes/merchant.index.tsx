@@ -66,6 +66,9 @@ function MerchantDashboard() {
   const revenue = orders.filter((o) => o.status === "collected").reduce((s, o) => s + Number(o.total_price), 0);
   const portions = orders.reduce((s, o) => s + o.quantity, 0);
 
+  const pending = orders.filter((o) => ["reserved", "ready"].includes(o.status));
+  const completed = orders.filter((o) => ["collected", "cancelled"].includes(o.status));
+
   const setStatus = async (id: string, status: string) => {
     const update: any = { status };
     if (status === "collected") update.payment_status = "paid";
