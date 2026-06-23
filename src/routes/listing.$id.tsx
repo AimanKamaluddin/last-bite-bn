@@ -4,7 +4,9 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { sampleListings, formatBND } from "@/lib/sample-data";
+import { sampleListings, formatBND, type SampleListing } from "@/lib/sample-data";
+import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Clock, MapPin, Star, AlertTriangle } from "lucide-react";
