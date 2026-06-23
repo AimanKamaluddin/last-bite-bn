@@ -92,26 +92,55 @@ function MerchantDashboard() {
           <StatCard icon={Sprout} label="Portions saved" value={portions} />
         </div>
 
-        <h2 className="mt-10 text-xl font-semibold">Recent orders</h2>
-        {orders.length === 0 ? (
-          <Card className="mt-3 rounded-3xl p-8 text-center text-muted-foreground">No orders yet.</Card>
-        ) : (
-          <div className="mt-3 grid gap-3">
-            {orders.slice(0, 10).map((o) => (
-              <Card key={o.id} className="flex flex-wrap items-center gap-4 rounded-3xl p-4">
-                <div className="flex-1">
-                  <div className="font-semibold">{o.listings?.title}</div>
-                  <div className="text-sm text-muted-foreground">
-                    Qty {o.quantity} · {formatBND(Number(o.total_price))} · Code <strong>{o.pickup_code}</strong>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge>
-                {o.status === "reserved" && <Button size="sm" variant="outline" className="rounded-full" onClick={() => setStatus(o.id, "ready")}>Mark ready</Button>}
-                {o.status === "ready" && <Button size="sm" className="rounded-full" onClick={() => setStatus(o.id, "collected")}>Mark collected</Button>}
-              </Card>
-            ))}
-          </div>
-        )}
+        <h2 className="mt-10 text-xl font-semibold">Orders</h2>
+        <Tabs defaultValue="pending" className="mt-4">
+          <TabsList>
+            <TabsTrigger value="pending">Pending</TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="pending" className="mt-4">
+            {pending.length === 0 ? (
+              <Card className="rounded-3xl p-8 text-center text-muted-foreground">No pending orders.</Card>
+            ) : (
+              <div className="grid gap-3">
+                {pending.map((o) => (
+                  <Card key={o.id} className="flex flex-wrap items-center gap-4 rounded-3xl p-4">
+                    <div className="flex-1">
+                      <div className="font-semibold">{o.listings?.title}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Qty {o.quantity} · {formatBND(Number(o.total_price))} · Code <strong>{o.pickup_code}</strong>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge>
+                    {o.status === "reserved" && <Button size="sm" variant="outline" className="rounded-full" onClick={() => setStatus(o.id, "ready")}>Mark ready</Button>}
+                    {o.status === "ready" && <Button size="sm" className="rounded-full" onClick={() => setStatus(o.id, "collected")}>Mark collected</Button>}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="completed" className="mt-4">
+            {completed.length === 0 ? (
+              <Card className="rounded-3xl p-8 text-center text-muted-foreground">No completed orders yet.</Card>
+            ) : (
+              <div className="grid gap-3">
+                {completed.map((o) => (
+                  <Card key={o.id} className="flex flex-wrap items-center gap-4 rounded-3xl p-4">
+                    <div className="flex-1">
+                      <div className="font-semibold">{o.listings?.title}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Qty {o.quantity} · {formatBND(Number(o.total_price))} · Code <strong>{o.pickup_code}</strong>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="rounded-full capitalize">{o.status}</Badge>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
 
         <h2 className="mt-10 text-xl font-semibold">Your listings</h2>
         {listings.length === 0 ? (
