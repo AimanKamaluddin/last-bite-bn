@@ -31,6 +31,10 @@ function ListingDetail() {
       const local = sampleListings.find((l) => l.id === id);
       if (local) {
         setData(local);
+        const others = sampleListings
+          .filter((l) => l.merchant.id === local.merchant.id && l.id !== local.id)
+          .map((l) => toCardData(l));
+        setRelated(others);
         setLoading(false);
         return;
       }
@@ -55,10 +59,40 @@ function ListingDetail() {
             business_type: m?.business_type ?? "",
           },
         });
+        const { data: others } = await supabase
+          .from("listings")
+          .select("*")
+          .eq("merchant_id", data.merchant_id)
+          .eq("status", "active")
+          .neq("id", id)
+          .gt("quantity_available", 0)
+          .limit(6);
+        if (others && m) {
+          setRelated(
+            others.map((o: any) => ({
+              id: o.id,
+              title: o.title,
+              image_url: o.image_url,
+              category: o.category,
+              original_price: Number(o.original_price),
+              discounted_price: Number(o.discounted_price),
+              quantity_available: o.quantity_available,
+              pickup_start: o.pickup_start,
+              pickup_end: o.pickup_end,
+              merchant: {
+                business_name: m.business_name ?? "",
+                district: m.district ?? "",
+                rating: Number(m.rating ?? 0),
+              },
+            })),
+          );
+        }
       }
       setLoading(false);
     })();
   }, [id]);
+
+
 
   if (loading) {
     return <SiteLayout><div className="container mx-auto p-10">Loading…</div></SiteLayout>;
