@@ -109,6 +109,12 @@ function Browse() {
           <FilterRow label="Category" value={category} onChange={setCategory} options={CATEGORIES as readonly string[]} />
         </div>
 
+        {filtered.length > 0 && (
+          <div className="mt-8">
+            <AdSlot size="leaderboard" id="browse-premium-top" label="Premium sponsored placement" />
+          </div>
+        )}
+
         {filtered.length === 0 ? (
           <div className="mx-auto mt-16 max-w-md rounded-3xl border bg-card p-10 text-center">
             <div className="text-lg font-semibold">No food matches your filters</div>
@@ -120,14 +126,14 @@ function Browse() {
             {filtered.map((l, i) => (
               <Fragment key={l.id}>
                 <ListingCard listing={l} />
-                {(i + 1) === 9 && i !== filtered.length - 1 && (
+                {(i + 1) === 6 && i !== filtered.length - 1 && (
                   <div className="sm:col-span-2 lg:col-span-3">
-                    <AdSlot size="inline" id="browse-inline-primary" label="Sponsored" />
+                    <AdSlot size="billboard" id="browse-premium-billboard" label="Premium sponsored placement" />
                   </div>
                 )}
-                {(i + 1) === 18 && i !== filtered.length - 1 && (
+                {(i + 1) === 15 && i !== filtered.length - 1 && (
                   <div className="sm:col-span-2 lg:col-span-3">
-                    <AdSlot size="leaderboard" id="browse-inline-secondary" label="Sponsored" />
+                    <AdSlot size="leaderboard" id="browse-secondary-leaderboard" label="Sponsored" />
                   </div>
                 )}
               </Fragment>
