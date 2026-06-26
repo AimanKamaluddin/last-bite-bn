@@ -24,22 +24,83 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
+
+    let cancelled = false;
+
     (async () => {
-      const [{ data: o }, { data: s }] = await Promise.all([
+      setBusy(true);
+
+      const [{ data: orderRows, error: ordersError }, { data: savedRows }] = await Promise.all([
         supabase
           .from("orders")
-          .select("*, listings(title, image_url), merchants(business_name, address)")
+          .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
         supabase
           .from("saved_merchants")
-          .select("merchant_id, merchants(business_name, district, image_url)")
+          .select("merchant_id")
           .eq("user_id", user.id),
       ]);
-      setOrders(o ?? []);
-      setSaved(s ?? []);
-      setBusy(false);
+
+      if (cancelled) return;
+
+      if (ordersError) {
+        toast.error(ordersError.message);
+        setOrders([]);
+      } else {
+        const rows = orderRows ?? [];
+        const listingIds = [...new Set(rows.map((o: any) => o.listing_id).filter(Boolean))];
+        const merchantIds = [...new Set(rows.map((o: any) => o.merchant_id).filter(Boolean))];
+
+        const [{ data: listings }, { data: merchants }] = await Promise.all([
+          listingIds.length
+            ? supabase.from("listings").select("id, title, image_url").in("id", listingIds)
+            : Promise.resolve({ data: [] as any[] }),
+          merchantIds.length
+            ? (supabase as any).from("merchants_public").select("id, business_name, district").in("id", merchantIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
+
+        if (cancelled) return;
+
+        const listingById = new Map((listings ?? []).map((l: any) => [l.id, l]));
+        const merchantById = new Map((merchants ?? []).map((m: any) => [m.id, m]));
+
+        setOrders(
+          rows.map((o: any) => ({
+            ...o,
+            listings: listingById.get(o.listing_id) ?? null,
+            merchants: merchantById.get(o.merchant_id) ?? null,
+          })),
+        );
+      }
+
+      const savedMerchantIds = [...new Set((savedRows ?? []).map((s: any) => s.merchant_id).filter(Boolean))];
+      if (savedMerchantIds.length) {
+        const { data: savedMerchants } = await (supabase as any)
+          .from("merchants_public")
+          .select("id, business_name, district, image_url")
+          .in("id", savedMerchantIds);
+
+        if (!cancelled) {
+          const merchantById = new Map((savedMerchants ?? []).map((m: any) => [m.id, m]));
+          setSaved(
+            (savedRows ?? []).map((s: any) => ({
+              merchant_id: s.merchant_id,
+              merchants: merchantById.get(s.merchant_id) ?? null,
+            })),
+          );
+        }
+      } else if (!cancelled) {
+        setSaved([]);
+      }
+
+      if (!cancelled) setBusy(false);
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   if (loading) return <SiteLayout><div className="p-10">Loading…</div></SiteLayout>;
@@ -89,13 +150,13 @@ function Dashboard() {
           </TabsContent>
 
           <TabsContent value="saved" className="mt-6">
-            {saved.length === 0 ? <Empty msg="You haven't saved any merchants yet." /> : (
+            {busy ? <Skel /> : saved.length === 0 ? <Empty msg="You haven't saved any merchants yet." /> : (
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                 {saved.map((s) => (
                   <Card key={s.merchant_id} className="overflow-hidden rounded-3xl p-0">
                     {s.merchants?.image_url && <img src={s.merchants.image_url} alt="" className="h-32 w-full object-cover" />}
                     <div className="p-4">
-                      <div className="font-semibold">{s.merchants?.business_name}</div>
+                      <div className="font-semibold">{s.merchants?.business_name ?? "Merchant"}</div>
                       <div className="text-sm text-muted-foreground">{s.merchants?.district}</div>
                     </div>
                   </Card>
@@ -115,8 +176,8 @@ function OrderRow({ o, onCancel }: { o: any; onCancel?: () => void }) {
     <Card className="flex items-center gap-4 rounded-3xl p-4">
       {o.listings?.image_url && <img src={o.listings.image_url} alt="" className="h-16 w-16 rounded-xl object-cover" />}
       <div className="flex-1">
-        <div className="font-semibold">{o.listings?.title}</div>
-        <div className="text-sm text-muted-foreground">{o.merchants?.business_name}</div>
+        <div className="font-semibold">{o.listings?.title ?? "Reserved surprise bag"}</div>
+        <div className="text-sm text-muted-foreground">{o.merchants?.business_name ?? "Merchant"}</div>
         <div className="mt-1 flex items-center gap-2">
           <Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge>
           <span className="text-xs text-muted-foreground">Code: <strong>{o.pickup_code}</strong></span>
