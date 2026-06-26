@@ -88,20 +88,20 @@ function Browse() {
 
   return (
     <SiteLayout>
-      <section className="container mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold md:text-4xl">Browse surplus food</h1>
-        <p className="mt-2 text-muted-foreground">
+      <section className="container mx-auto px-3 py-6 sm:px-4 sm:py-10">
+        <h1 className="text-3xl font-bold leading-tight md:text-4xl">Browse surplus food</h1>
+        <p className="mt-2 text-sm text-muted-foreground sm:text-base">
           {loading ? "Loading available food…" : `${filtered.length} offers available.`}
         </p>
 
-        <div className="mt-6 rounded-3xl border bg-card p-4 shadow-sm">
-          <div className="relative mb-4">
+        <div className="sticky top-14 z-30 -mx-3 mt-5 border-y bg-background/95 px-3 py-3 shadow-sm backdrop-blur sm:static sm:mx-0 sm:mt-6 sm:rounded-3xl sm:border sm:bg-card sm:p-4 sm:shadow-sm">
+          <div className="relative mb-3 sm:mb-4">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search meals or merchants…"
-              className="pl-9 rounded-full"
+              className="h-11 rounded-full pl-9 text-base"
             />
           </div>
 
@@ -110,19 +110,19 @@ function Browse() {
         </div>
 
         {filtered.length > 0 && (
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8">
             <AdSlot size="leaderboard" id="ad-space-04-browse-top" slotCode="AD SPACE 04" label="AD SPACE 04 browse top" />
           </div>
         )}
 
         {filtered.length === 0 ? (
-          <div className="mx-auto mt-16 max-w-md rounded-3xl border bg-card p-10 text-center">
+          <div className="mx-auto mt-10 max-w-md rounded-3xl border bg-card p-6 text-center sm:mt-16 sm:p-10">
             <div className="text-lg font-semibold">No food matches your filters</div>
             <p className="mt-2 text-sm text-muted-foreground">Try clearing a filter or check back later — new offers can appear throughout the day.</p>
             <Button className="mt-4 rounded-full" onClick={() => { setQ(""); setDistrict(""); setCategory(""); }}>Clear filters</Button>
           </div>
         ) : (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {filtered.map((l, i) => (
               <Fragment key={l.id}>
                 <ListingCard listing={l} />
@@ -159,24 +159,26 @@ function FilterRow({
   labelFor?: (v: string) => string;
 }) {
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-2">
-      <span className="mr-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-      <Chip active={value === ""} onClick={() => onChange("")}>All</Chip>
-      {options.map((o) => (
-        <Chip key={o} active={value === o} onClick={() => onChange(o)}>
-          {labelFor ? labelFor(o) : o}
-        </Chip>
-      ))}
+    <div className="mb-2 sm:mb-3">
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
+      <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible">
+        <Chip active={value === ""} onClick={() => onChange("")}>All</Chip>
+        {options.map((o) => (
+          <Chip key={o} active={value === o} onClick={() => onChange(o)}>
+            {labelFor ? labelFor(o) : o}
+          </Chip>
+        ))}
+      </div>
     </div>
   );
 }
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} type="button">
+    <button onClick={onClick} type="button" className="shrink-0">
       <Badge
         variant={active ? "default" : "secondary"}
-        className="cursor-pointer rounded-full px-3 py-1 text-xs"
+        className="cursor-pointer rounded-full px-3 py-1.5 text-xs"
       >
         {children}
       </Badge>
