@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Navigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Navigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Card } from "@/components/ui/card";
@@ -21,21 +21,89 @@ function Checkout() {
   const { user, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
   const [listing, setListing] = useState<any>(null);
+  const [listingLoading, setListingLoading] = useState(true);
+  const [listingError, setListingError] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
   const [placing, setPlacing] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
+      setListingLoading(true);
+      setListingError(null);
+
       const local = sampleListings.find((l) => l.id === id);
-      if (local) { setListing(local); return; }
-      const { data } = await supabase.from("listings").select("*, merchants(*)").eq("id", id).maybeSingle();
-      if (data) setListing(data);
+      if (local) {
+        if (!cancelled) {
+          setListing(local);
+          setListingLoading(false);
+        }
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (error) {
+        setListing(null);
+        setListingError(error.message);
+        setListingLoading(false);
+        return;
+      }
+
+      if (!data) {
+        setListing(null);
+        setListingLoading(false);
+        return;
+      }
+
+      const { data: merchant } = await (supabase as any)
+        .from("merchants_public")
+        .select("business_name, district, rating, business_type")
+        .eq("id", data.merchant_id)
+        .maybeSingle();
+
+      setListing({
+        ...data,
+        merchant: {
+          business_name: merchant?.business_name ?? "",
+          district: merchant?.district ?? "",
+          rating: Number(merchant?.rating ?? 0),
+          business_type: merchant?.business_type ?? "",
+        },
+      });
+      setListingLoading(false);
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (loading) return <SiteLayout><div className="p-10">Loading…</div></SiteLayout>;
   if (!isAuthenticated) return <Navigate to="/auth" search={{ redirect: `/checkout/${id}` }} />;
-  if (!listing) return <SiteLayout><div className="p-10">Loading listing…</div></SiteLayout>;
+  if (listingLoading) return <SiteLayout><div className="p-10">Loading listing…</div></SiteLayout>;
+  if (!listing) {
+    return (
+      <SiteLayout>
+        <div className="container mx-auto p-10 text-center">
+          <h1 className="text-2xl font-bold">Listing not found</h1>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            {listingError ? `We couldn't load this listing: ${listingError}` : "This listing may have been removed or is no longer available."}
+          </p>
+          <Button asChild className="mt-4 rounded-full">
+            <Link to="/browse">Back to browse</Link>
+          </Button>
+        </div>
+      </SiteLayout>
+    );
+  }
 
   const max = Math.max(1, Math.min(listing.quantity_available ?? 1, 5));
   const total = Number(listing.discounted_price) * qty;
