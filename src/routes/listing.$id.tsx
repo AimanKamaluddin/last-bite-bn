@@ -8,7 +8,7 @@ import { sampleListings, formatBND, type SampleListing } from "@/lib/sample-data
 import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { Clock, MapPin, Star, AlertTriangle, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, MapPin, Star, AlertTriangle, CalendarDays } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { toast } from "sonner";
@@ -28,6 +28,17 @@ const formatDateTime = (iso?: string | null) => {
   try { return new Date(iso).toLocaleString([], { weekday: "short", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); } catch { return ""; }
 };
 
+const getListingImages = (listing: any) => {
+  const images = [
+    listing?.image_url,
+    ...(Array.isArray(listing?.images) ? listing.images : []),
+    ...(Array.isArray(listing?.image_urls) ? listing.image_urls : []),
+    ...(Array.isArray(listing?.gallery_images) ? listing.gallery_images : []),
+  ].filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+
+  return Array.from(new Set(images));
+};
+
 function ListingDetail() {
   const { id } = Route.useParams();
   const { isAuthenticated } = useAuth();
@@ -35,6 +46,7 @@ function ListingDetail() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [related, setRelated] = useState<ListingCardData[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -56,12 +68,21 @@ function ListingDetail() {
     })();
   }, [id]);
 
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [id]);
+
   if (loading) return <SiteLayout><div className="container mx-auto p-6 sm:p-10">Loading…</div></SiteLayout>;
   if (!data) return <SiteLayout><div className="container mx-auto p-6 text-center sm:p-10"><h1 className="text-2xl font-bold">Listing not found</h1><Button asChild className="mt-4 rounded-full"><Link to="/browse">Back to browse</Link></Button></div></SiteLayout>;
 
   const soldOut = data.quantity_available <= 0;
   const expired = isPastPickup(data.pickup_end);
   const unavailable = soldOut || expired;
+  const listingImages = getListingImages(data);
+  const selectedImage = listingImages[selectedImageIndex] ?? data.image_url;
+  const hasMultipleImages = listingImages.length > 1;
+  const showPreviousImage = () => setSelectedImageIndex((index) => (index - 1 + listingImages.length) % listingImages.length);
+  const showNextImage = () => setSelectedImageIndex((index) => (index + 1) % listingImages.length);
 
   const reserve = () => {
     if (expired) { toast.error("This offer has expired."); return; }
@@ -73,8 +94,23 @@ function ListingDetail() {
     <SiteLayout>
       <section className="container mx-auto grid gap-6 px-3 py-6 pb-24 sm:px-4 sm:py-10 md:grid-cols-[1.2fr_1fr] md:gap-10 md:pb-10">
         <div>
-          <img src={data.image_url} alt={data.title} className="aspect-[4/3] w-full rounded-3xl object-cover" />
-          {Array.isArray((data as any).images) && (data as any).images.length > 1 && <div className="mt-3 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible">{((data as any).images as string[]).slice(0, 8).map((u, i) => <img key={i} src={u} alt="" className="h-20 w-20 shrink-0 rounded-xl object-cover sm:aspect-square sm:h-auto sm:w-full" />)}</div>}
+          <div className="relative overflow-hidden rounded-3xl bg-muted">
+            <img src={selectedImage} alt={data.title} className="aspect-[4/3] w-full object-cover" />
+            {hasMultipleImages && (
+              <>
+                <Button type="button" variant="secondary" size="icon" className="absolute left-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-background/90 shadow-md hover:bg-background" onClick={showPreviousImage} aria-label="Previous photo">
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button type="button" variant="secondary" size="icon" className="absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-background/90 shadow-md hover:bg-background" onClick={showNextImage} aria-label="Next photo">
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+                <div className="absolute bottom-3 right-3 rounded-full bg-black/65 px-3 py-1 text-xs font-medium text-white">
+                  {selectedImageIndex + 1}/{listingImages.length}
+                </div>
+              </>
+            )}
+          </div>
+          {hasMultipleImages && <div className="mt-3 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible">{listingImages.slice(0, 8).map((u, i) => <button key={u} type="button" onClick={() => setSelectedImageIndex(i)} className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 bg-muted transition sm:aspect-square sm:h-auto sm:w-full ${selectedImageIndex === i ? "border-primary ring-2 ring-primary/20" : "border-transparent hover:border-primary/50"}`} aria-label={`View photo ${i + 1}`} aria-current={selectedImageIndex === i ? "true" : undefined}><img src={u} alt={`${data.title} photo ${i + 1}`} className="h-full w-full object-cover" /></button>)}</div>}
           <h1 className="mt-5 text-3xl font-bold leading-tight md:mt-6 md:text-4xl">{data.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground sm:text-base">{data.merchant.business_name} · {data.merchant.district}</p>
           <div className="mt-4 flex flex-wrap gap-2"><Badge variant="secondary" className="rounded-full">{data.category}</Badge><Badge variant="secondary" className="rounded-full"><Star className="mr-1 h-3 w-3 fill-sun text-sun" /> {data.merchant.rating?.toFixed(1) ?? "—"}</Badge>{expired && <Badge variant="outline" className="rounded-full">Offer expired</Badge>}</div>
