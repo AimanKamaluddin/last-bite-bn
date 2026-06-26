@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { TESTING_AD_IMAGE } from "@/assets/testing-ad-image";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -39,13 +40,16 @@ const urgencyLabel = (listing: ListingCardData) => {
 function Landing() {
   const [merchants, setMerchants] = useState<any[]>([]);
   const [listings, setListings] = useState<ListingCardData[]>([]);
+  const [testingMerchantId, setTestingMerchantId] = useState<string | null>(null);
 
   useEffect(() => { (async () => {
-    const [{ data: m }, { data: l }] = await Promise.all([
+    const [{ data: m }, { data: l }, { data: testing }] = await Promise.all([
       (supabase as any).from("merchants_public").select("id, business_name, business_type, district, image_url, rating").order("created_at", { ascending: false }).limit(6),
       (supabase as any).from("listings").select("*, merchants_public!inner(business_name, district, rating)").eq("visible", true).eq("status", "active").order("created_at", { ascending: false }).limit(24),
+      (supabase as any).from("merchants_public").select("id").ilike("business_name", "testing").maybeSingle(),
     ]);
     setMerchants(m ?? []);
+    setTestingMerchantId(testing?.id ?? null);
     setListings((l ?? []).map((d: any) => ({ id: d.id, title: d.title, category: d.category, original_price: Number(d.original_price), discounted_price: Number(d.discounted_price), quantity_available: d.quantity_available, pickup_start: d.pickup_start, pickup_end: d.pickup_end, created_at: d.created_at, produced_at: d.produced_at, image_url: d.image_url || "", merchant: { business_name: d.merchants_public?.business_name ?? "", district: d.merchants_public?.district ?? "", rating: Number(d.merchants_public?.rating ?? 0) } })));
   })(); }, []);
 
@@ -76,9 +80,17 @@ function Landing() {
           </div>
         </div>
 
-        <div className="relative">
-          <AdSlot size="billboard" id="ad-space-01-home-hero" slotCode="AD SPACE 01" label="AD SPACE 01 homepage hero" className="h-full min-h-[360px] md:min-h-[460px]" />
-        </div>
+        <a href={testingMerchantId ? `/merchant-profile/${testingMerchantId}` : "/browse"} className="group relative block min-h-[360px] overflow-hidden rounded-[2rem] shadow-[0_28px_90px_-35px_hsl(var(--primary)/0.85)] ring-1 ring-border/70 md:min-h-[460px]">
+          <img src={TESTING_AD_IMAGE} alt="Testing sponsored offer" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
+          <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-[11px] font-black uppercase tracking-wider text-primary shadow-md">AD SPACE 01</span>
+          <span className="absolute right-4 top-4 rounded-full bg-white/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm ring-1 ring-white/25">Sponsored</span>
+          <div className="absolute inset-x-0 bottom-0 p-5 md:p-7">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm"><Sparkles className="h-3 w-3" /> Featured sponsor</div>
+            <h2 className="mt-3 text-3xl font-bold leading-tight text-white md:text-5xl">Testing</h2>
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition group-hover:bg-white/90">View profile <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" /></div>
+          </div>
+        </a>
       </div>
     </section>
 
