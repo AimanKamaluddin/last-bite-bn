@@ -6,10 +6,10 @@ import { AdSlot } from "@/components/ads/AdSlot";
 
 export function SiteLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col overflow-x-hidden">
       <Header />
       <main className="flex-1">{children}</main>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 py-6 sm:px-4 sm:py-8">
         <AdSlot size="leaderboard" id="footer-leaderboard" label="Footer ad" />
       </div>
       <Footer />
