@@ -62,7 +62,7 @@ function NewListing() {
 
     setSaving(true);
     const { images, listing_date, produced_date, produced_time, ...rest } = form;
-    const { error } = await (supabase as any).from("listings").insert({
+    const payload: any = {
       merchant_id: merchant.id,
       ...rest,
       image_url: images[0] ?? null,
@@ -72,7 +72,19 @@ function NewListing() {
       pickup_start: new Date(`${listing_date}T${form.pickup_start}:00`).toISOString(),
       pickup_end: new Date(`${listing_date}T${form.pickup_end}:00`).toISOString(),
       status,
-    });
+    };
+
+    let { error } = await (supabase as any).from("listings").insert(payload);
+
+    if (error && error.message?.includes("produced_at")) {
+      const { produced_at, ...fallbackPayload } = payload;
+      const retry = await (supabase as any).from("listings").insert(fallbackPayload);
+      error = retry.error;
+      if (!error) {
+        toast.warning("Listing published, but production time will save after the database migration is applied.");
+      }
+    }
+
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success(status === "active" ? "Listing published!" : "Draft saved.");
