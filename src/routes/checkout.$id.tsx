@@ -48,13 +48,13 @@ function Checkout() {
     return () => { cancelled = true; };
   }, [id]);
 
-  if (loading) return <SiteLayout><div className="p-10">Loading…</div></SiteLayout>;
+  if (loading) return <SiteLayout><div className="p-6 sm:p-10">Loading…</div></SiteLayout>;
   if (!isAuthenticated) return <Navigate to="/auth" search={{ redirect: `/checkout/${id}` }} />;
-  if (listingLoading) return <SiteLayout><div className="p-10">Loading listing…</div></SiteLayout>;
-  if (!listing) return <SiteLayout><div className="container mx-auto p-10 text-center"><h1 className="text-2xl font-bold">Listing not found</h1><p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">{listingError ? `We couldn't load this listing: ${listingError}` : "This listing may have been removed or is no longer available."}</p><Button asChild className="mt-4 rounded-full"><Link to="/browse">Back to browse</Link></Button></div></SiteLayout>;
+  if (listingLoading) return <SiteLayout><div className="p-6 sm:p-10">Loading listing…</div></SiteLayout>;
+  if (!listing) return <SiteLayout><div className="container mx-auto p-6 text-center sm:p-10"><h1 className="text-2xl font-bold">Listing not found</h1><p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">{listingError ? `We couldn't load this listing: ${listingError}` : "This listing may have been removed or is no longer available."}</p><Button asChild className="mt-4 rounded-full"><Link to="/browse">Back to browse</Link></Button></div></SiteLayout>;
 
   const expired = isPastPickup(listing.pickup_end);
-  if (expired) return <SiteLayout><div className="container mx-auto p-10 text-center"><h1 className="text-2xl font-bold">Offer expired</h1><p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">The pickup window for this offer has ended, so it can no longer be reserved.</p><Button asChild className="mt-4 rounded-full"><Link to="/browse">Browse other food</Link></Button></div></SiteLayout>;
+  if (expired) return <SiteLayout><div className="container mx-auto p-6 text-center sm:p-10"><h1 className="text-2xl font-bold">Offer expired</h1><p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">The pickup window for this offer has ended, so it can no longer be reserved.</p><Button asChild className="mt-4 rounded-full"><Link to="/browse">Browse other food</Link></Button></div></SiteLayout>;
 
   const max = Math.max(1, Math.min(listing.quantity_available ?? 1, 5));
   const total = Number(listing.discounted_price) * qty;
@@ -81,13 +81,46 @@ function Checkout() {
 
   return (
     <SiteLayout>
-      <section className="container mx-auto grid max-w-4xl gap-8 px-4 py-10 md:grid-cols-[1.2fr_1fr]">
-        <div className="space-y-6"><h1 className="text-3xl font-bold">Checkout</h1><Card className="rounded-3xl p-5"><div className="flex items-center gap-4"><img src={listing.image_url} className="h-20 w-20 rounded-xl object-cover" alt="" /><div><div className="font-semibold">{listing.title}</div><div className="text-sm text-muted-foreground">{listing.merchant?.business_name ?? listing.merchants?.business_name}</div></div></div><div className="mt-5 flex items-center justify-between"><span className="text-sm font-medium">Quantity</span><div className="flex items-center gap-2"><Button size="icon" variant="outline" className="rounded-full" onClick={() => setQty(Math.max(1, qty - 1))}><Minus className="h-4 w-4" /></Button><span className="w-8 text-center font-semibold">{qty}</span><Button size="icon" variant="outline" className="rounded-full" onClick={() => setQty(Math.min(max, qty + 1))}><Plus className="h-4 w-4" /></Button></div></div><div className="mt-4 rounded-2xl bg-cream/60 p-4 text-sm">Pickup window: <strong>{formatTime(listing.pickup_start)} – {formatTime(listing.pickup_end)}</strong></div></Card><Card className="rounded-3xl p-5"><h2 className="font-semibold">Payment</h2><p className="mt-2 text-sm text-muted-foreground">You'll pay the merchant when you collect your order.</p></Card></div>
-        <aside><Card className="sticky top-24 rounded-3xl p-6"><h2 className="font-semibold">Order summary</h2><Row label={`Subtotal × ${qty}`} value={formatBND(total)} /><Row label="Service fee" value="B$0.00" /><div className="my-3 h-px bg-border" /><Row label={<span className="font-semibold">Total to pay at pickup</span>} value={<span className="text-lg font-bold">{formatBND(total)}</span>} /><Button onClick={place} disabled={placing} className="mt-5 w-full rounded-full" size="lg">{placing ? "Confirming…" : `Confirm reservation`}</Button><p className="mt-3 text-xs text-muted-foreground">No payment is taken online.</p></Card></aside>
+      <section className="container mx-auto grid max-w-4xl gap-6 px-3 py-6 pb-24 sm:px-4 sm:py-10 md:grid-cols-[1.2fr_1fr] md:gap-8 md:pb-10">
+        <div className="space-y-5 sm:space-y-6">
+          <h1 className="text-3xl font-bold leading-tight">Checkout</h1>
+          <Card className="rounded-3xl p-4 sm:p-5">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <img src={listing.image_url} className="h-20 w-20 shrink-0 rounded-xl object-cover" alt="" />
+              <div className="min-w-0">
+                <div className="line-clamp-2 font-semibold leading-tight">{listing.title}</div>
+                <div className="truncate text-sm text-muted-foreground">{listing.merchant?.business_name ?? listing.merchants?.business_name}</div>
+              </div>
+            </div>
+            <div className="mt-5 flex items-center justify-between gap-3">
+              <span className="text-sm font-medium">Quantity</span>
+              <div className="flex items-center gap-2">
+                <Button size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setQty(Math.max(1, qty - 1))}><Minus className="h-4 w-4" /></Button>
+                <span className="w-8 text-center font-semibold">{qty}</span>
+                <Button size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setQty(Math.min(max, qty + 1))}><Plus className="h-4 w-4" /></Button>
+              </div>
+            </div>
+            <div className="mt-4 rounded-2xl bg-cream/60 p-4 text-sm">Pickup window: <strong>{formatTime(listing.pickup_start)} – {formatTime(listing.pickup_end)}</strong></div>
+          </Card>
+          <Card className="rounded-3xl p-4 sm:p-5"><h2 className="font-semibold">Payment</h2><p className="mt-2 text-sm text-muted-foreground">You'll pay the merchant when you collect your order.</p></Card>
+        </div>
+        <aside className="hidden md:block"><Card className="sticky top-24 rounded-3xl p-6"><OrderSummary qty={qty} total={total} placing={placing} place={place} /></Card></aside>
       </section>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 shadow-2xl backdrop-blur md:hidden">
+        <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
+          <div>
+            <div className="text-xs text-muted-foreground">Total at pickup</div>
+            <div className="text-2xl font-bold leading-none text-primary">{formatBND(total)}</div>
+          </div>
+          <Button onClick={place} disabled={placing} className="h-12 rounded-full px-6">{placing ? "Confirming…" : "Confirm"}</Button>
+        </div>
+      </div>
     </SiteLayout>
   );
 }
 
-function Row({ label, value }: { label: React.ReactNode; value: React.ReactNode }) { return <div className="mt-2 flex items-center justify-between text-sm">{label}<span>{value}</span></div>; }
+function OrderSummary({ qty, total, placing, place }: { qty: number; total: number; placing: boolean; place: () => void }) {
+  return <><h2 className="font-semibold">Order summary</h2><Row label={`Subtotal × ${qty}`} value={formatBND(total)} /><Row label="Service fee" value="B$0.00" /><div className="my-3 h-px bg-border" /><Row label={<span className="font-semibold">Total to pay at pickup</span>} value={<span className="text-lg font-bold">{formatBND(total)}</span>} /><Button onClick={place} disabled={placing} className="mt-5 w-full rounded-full" size="lg">{placing ? "Confirming…" : `Confirm reservation`}</Button><p className="mt-3 text-xs text-muted-foreground">No payment is taken online.</p></>;
+}
+function Row({ label, value }: { label: React.ReactNode; value: React.ReactNode }) { return <div className="mt-2 flex items-center justify-between gap-3 text-sm">{label}<span className="text-right">{value}</span></div>; }
 function formatTime(t: string) { if (!t) return ""; if (t.length <= 5) return t; try { return new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); } catch { return t; } }
