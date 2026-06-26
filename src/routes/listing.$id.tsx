@@ -56,8 +56,8 @@ function ListingDetail() {
     })();
   }, [id]);
 
-  if (loading) return <SiteLayout><div className="container mx-auto p-10">Loading…</div></SiteLayout>;
-  if (!data) return <SiteLayout><div className="container mx-auto p-10 text-center"><h1 className="text-2xl font-bold">Listing not found</h1><Button asChild className="mt-4 rounded-full"><Link to="/browse">Back to browse</Link></Button></div></SiteLayout>;
+  if (loading) return <SiteLayout><div className="container mx-auto p-6 sm:p-10">Loading…</div></SiteLayout>;
+  if (!data) return <SiteLayout><div className="container mx-auto p-6 text-center sm:p-10"><h1 className="text-2xl font-bold">Listing not found</h1><Button asChild className="mt-4 rounded-full"><Link to="/browse">Back to browse</Link></Button></div></SiteLayout>;
 
   const soldOut = data.quantity_available <= 0;
   const expired = isPastPickup(data.pickup_end);
@@ -71,26 +71,39 @@ function ListingDetail() {
 
   return (
     <SiteLayout>
-      <section className="container mx-auto grid gap-10 px-4 py-10 md:grid-cols-[1.2fr_1fr]">
+      <section className="container mx-auto grid gap-6 px-3 py-6 pb-24 sm:px-4 sm:py-10 md:grid-cols-[1.2fr_1fr] md:gap-10 md:pb-10">
         <div>
           <img src={data.image_url} alt={data.title} className="aspect-[4/3] w-full rounded-3xl object-cover" />
-          {Array.isArray((data as any).images) && (data as any).images.length > 1 && <div className="mt-3 grid grid-cols-4 gap-2">{((data as any).images as string[]).slice(0, 8).map((u, i) => <img key={i} src={u} alt="" className="aspect-square w-full rounded-xl object-cover" />)}</div>}
-          <h1 className="mt-6 text-3xl font-bold md:text-4xl">{data.title}</h1>
-          <p className="mt-1 text-muted-foreground">{data.merchant.business_name} · {data.merchant.district}</p>
+          {Array.isArray((data as any).images) && (data as any).images.length > 1 && <div className="mt-3 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible">{((data as any).images as string[]).slice(0, 8).map((u, i) => <img key={i} src={u} alt="" className="h-20 w-20 shrink-0 rounded-xl object-cover sm:aspect-square sm:h-auto sm:w-full" />)}</div>}
+          <h1 className="mt-5 text-3xl font-bold leading-tight md:mt-6 md:text-4xl">{data.title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">{data.merchant.business_name} · {data.merchant.district}</p>
           <div className="mt-4 flex flex-wrap gap-2"><Badge variant="secondary" className="rounded-full">{data.category}</Badge><Badge variant="secondary" className="rounded-full"><Star className="mr-1 h-3 w-3 fill-sun text-sun" /> {data.merchant.rating?.toFixed(1) ?? "—"}</Badge>{expired && <Badge variant="outline" className="rounded-full">Offer expired</Badge>}</div>
-          <h2 className="mt-8 text-lg font-semibold">About this offer</h2><p className="mt-2 text-sm text-muted-foreground">{data.description}</p>
-          <Card className="mt-8 rounded-2xl p-4"><h2 className="text-lg font-semibold">Listing details</h2><div className="mt-3 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2"><div className="flex items-start gap-2"><CalendarDays className="mt-0.5 h-4 w-4 text-primary" /><span><strong className="text-foreground">Listed:</strong><br />{formatDateWithDay(data.created_at)}</span></div><div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 text-primary" /><span><strong className="text-foreground">Produced:</strong><br />{formatDateTime(data.produced_at) || "Not provided"}</span></div></div></Card>
-          <h2 className="mt-8 text-lg font-semibold">Customer reviews</h2><ReviewList listingId={data.id} />
-          <h2 className="mt-8 text-lg font-semibold">Allergen info</h2><ul className="mt-2 space-y-2 text-sm text-muted-foreground"><li className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 text-accent" />{data.allergen_info || "Ask the merchant for allergen details."}</li></ul>
-          <h2 className="mt-8 text-lg font-semibold">Pickup location</h2><Card className="mt-2 rounded-2xl p-4"><div className="flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 text-primary" />{data.merchant.address || `${data.merchant.business_name}, ${data.merchant.district}`}</div><div className="mt-3 grid h-40 place-items-center rounded-xl bg-muted text-xs text-muted-foreground">Map preview (coming soon)</div></Card>
+          <h2 className="mt-7 text-lg font-semibold md:mt-8">About this offer</h2><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{data.description}</p>
+          <Card className="mt-7 rounded-2xl p-4 md:mt-8"><h2 className="text-lg font-semibold">Listing details</h2><div className="mt-3 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2"><div className="flex items-start gap-2"><CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Listed:</strong><br />{formatDateWithDay(data.created_at)}</span></div><div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Produced:</strong><br />{formatDateTime(data.produced_at) || "Not provided"}</span></div></div></Card>
+          <h2 className="mt-7 text-lg font-semibold md:mt-8">Customer reviews</h2><ReviewList listingId={data.id} />
+          <h2 className="mt-7 text-lg font-semibold md:mt-8">Allergen info</h2><ul className="mt-2 space-y-2 text-sm text-muted-foreground"><li className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-accent" />{data.allergen_info || "Ask the merchant for allergen details."}</li></ul>
+          <h2 className="mt-7 text-lg font-semibold md:mt-8">Pickup location</h2><Card className="mt-2 rounded-2xl p-4"><div className="flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 shrink-0 text-primary" />{data.merchant.address || `${data.merchant.business_name}, ${data.merchant.district}`}</div><div className="mt-3 grid h-36 place-items-center rounded-xl bg-muted text-xs text-muted-foreground sm:h-40">Map preview (coming soon)</div></Card>
         </div>
-        <aside><Card className="sticky top-24 rounded-3xl p-6"><div className="text-sm text-muted-foreground line-through">{formatBND(Number(data.original_price))}</div><div className="text-4xl font-bold text-primary">{formatBND(Number(data.discounted_price))}</div><div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground"><Clock className="h-4 w-4" /> {formatTime(data.pickup_start)} – {formatTime(data.pickup_end)}</div><div className="mt-1 text-sm text-muted-foreground">{expired ? "Pickup window has ended" : `${data.quantity_available} left`}</div><Button className="mt-5 w-full rounded-full" size="lg" onClick={reserve} disabled={unavailable}>{expired ? "Offer expired" : soldOut ? "Sold out" : "Reserve now"}</Button><p className="mt-3 text-xs text-muted-foreground">Merchant contact details are shared after your reservation is confirmed.</p></Card></aside>
+        <aside className="hidden md:block"><Card className="sticky top-24 rounded-3xl p-6"><PriceBox data={data} expired={expired} soldOut={soldOut} unavailable={unavailable} reserve={reserve} /></Card></aside>
       </section>
-      {related.length > 0 && <section className="container mx-auto px-4 pb-10"><div className="mb-4 flex items-end justify-between"><h2 className="text-2xl font-bold">More from {data.merchant.business_name}</h2><Link to="/browse" className="text-sm text-primary hover:underline">Browse all →</Link></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{related.map((l) => <ListingCard key={l.id} listing={l} />)}</div></section>}
-      <section className="container mx-auto px-4 pb-10"><AdSlot size="leaderboard" id="listing-bottom" label="Sponsored" /></section>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 shadow-2xl backdrop-blur md:hidden">
+        <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
+          <div>
+            <div className="text-xs text-muted-foreground line-through">{formatBND(Number(data.original_price))}</div>
+            <div className="text-2xl font-bold leading-none text-primary">{formatBND(Number(data.discounted_price))}</div>
+            <div className="mt-1 text-xs text-muted-foreground">{expired ? "Pickup ended" : `${data.quantity_available} left`}</div>
+          </div>
+          <Button className="h-12 rounded-full px-6" onClick={reserve} disabled={unavailable}>{expired ? "Expired" : soldOut ? "Sold out" : "Reserve"}</Button>
+        </div>
+      </div>
+      {related.length > 0 && <section className="container mx-auto px-3 pb-10 sm:px-4"><div className="mb-4 flex items-end justify-between gap-3"><h2 className="text-xl font-bold sm:text-2xl">More from {data.merchant.business_name}</h2><Link to="/browse" className="shrink-0 text-sm text-primary hover:underline">Browse all →</Link></div><div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{related.map((l) => <ListingCard key={l.id} listing={l} />)}</div></section>}
+      <section className="container mx-auto px-3 pb-10 sm:px-4"><AdSlot size="leaderboard" id="listing-bottom" label="Sponsored" /></section>
     </SiteLayout>
   );
 }
 
+function PriceBox({ data, expired, soldOut, unavailable, reserve }: { data: any; expired: boolean; soldOut: boolean; unavailable: boolean; reserve: () => void }) {
+  return <><div className="text-sm text-muted-foreground line-through">{formatBND(Number(data.original_price))}</div><div className="text-4xl font-bold text-primary">{formatBND(Number(data.discounted_price))}</div><div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground"><Clock className="h-4 w-4" /> {formatTime(data.pickup_start)} – {formatTime(data.pickup_end)}</div><div className="mt-1 text-sm text-muted-foreground">{expired ? "Pickup window has ended" : `${data.quantity_available} left`}</div><Button className="mt-5 w-full rounded-full" size="lg" onClick={reserve} disabled={unavailable}>{expired ? "Offer expired" : soldOut ? "Sold out" : "Reserve now"}</Button><p className="mt-3 text-xs text-muted-foreground">Merchant contact details are shared after your reservation is confirmed.</p></>;
+}
 function formatTime(t: string) { if (!t) return ""; if (t.length <= 5) return t; try { return new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); } catch { return t; } }
 function toCardData(l: SampleListing): ListingCardData { return { id: l.id, title: l.title, image_url: l.image_url, category: l.category, original_price: l.original_price, discounted_price: l.discounted_price, quantity_available: l.quantity_available, pickup_start: l.pickup_start, pickup_end: l.pickup_end, merchant: { business_name: l.merchant.business_name, district: l.merchant.district, rating: l.merchant.rating } }; }
