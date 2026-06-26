@@ -145,11 +145,6 @@ function ListingDetail() {
           <h2 className="mt-8 text-lg font-semibold">About this bag</h2>
           <p className="mt-2 text-sm text-muted-foreground">{data.description}</p>
 
-          <h2 className="mt-8 text-lg font-semibold">What to expect</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            A surprise selection of unsold items, packed fresh by the merchant. Exact contents vary based on what's available.
-          </p>
-
           <h2 className="mt-8 text-lg font-semibold">Allergen info</h2>
           <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
             <li className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 text-accent" />{data.allergen_info || "Ask the merchant for allergen details."}</li>
@@ -232,4 +227,3 @@ function toCardData(l: SampleListing): ListingCardData {
     },
   };
 }
-
