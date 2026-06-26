@@ -1,43 +1,150 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import heroImg from "@/assets/hero.jpg";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { SiteLayout } from "@/components/site/SiteLayout";
-import { HomeOfferSections } from "@/components/home/HomeOfferSections";
 import { AdSlot } from "@/components/ads/AdSlot";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Search, ShoppingBag, HandCoins, Leaf, Sparkles, Store, TrendingUp } from "lucide-react";
+import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
+import { formatBND } from "@/lib/sample-data";
+import { ArrowRight, Clock, Coffee, CupSoda, Flame, HandCoins, Leaf, MapPin, PackageSearch, Search, ShoppingBag, Sparkles, Store, Timer, TrendingUp, Utensils } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [ { title: "Last Bite — Save good food. Pay less. Reduce waste." }, { name: "description", content: "Brunei's surplus food marketplace. Reserve discounted meals from local bakeries, cafes, restaurants and supermarkets before closing." }, { property: "og:title", content: "Last Bite — Surplus food, fair price" }, { property: "og:description", content: "Save good food from local Brunei businesses at fair prices." } ] }),
+  head: () => ({ meta: [ { title: "Last Bite — Rescue food before it's gone" }, { name: "description", content: "Brunei's surplus food marketplace. Reserve discounted meals, drinks, bakery bags and desserts before pickup windows end." }, { property: "og:title", content: "Last Bite — Rescue food before it's gone" }, { property: "og:description", content: "Find food available today from local Brunei businesses." } ] }),
   component: Landing
 });
 
+const isExpired = (pickupEnd: string) => {
+  const end = new Date(pickupEnd);
+  return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
+};
+
+const minutesUntil = (dateValue: string) => {
+  const end = new Date(dateValue);
+  if (Number.isNaN(end.getTime())) return Number.POSITIVE_INFINITY;
+  return Math.max(0, Math.round((end.getTime() - Date.now()) / 60000));
+};
+
+const discountPct = (listing: ListingCardData) => Math.round((1 - listing.discounted_price / Math.max(listing.original_price, 0.01)) * 100);
+
+const urgencyLabel = (listing: ListingCardData) => {
+  const mins = minutesUntil(listing.pickup_end);
+  if (mins === Number.POSITIVE_INFINITY) return "Pickup today";
+  if (mins < 60) return `Ends in ${mins} min`;
+  const hours = Math.floor(mins / 60);
+  return `Ends in ${hours}h ${mins % 60}m`;
+};
+
 function Landing() {
   const [merchants, setMerchants] = useState<any[]>([]);
-  const [listings, setListings] = useState<any[]>([]);
+  const [listings, setListings] = useState<ListingCardData[]>([]);
+
   useEffect(() => { (async () => {
     const [{ data: m }, { data: l }] = await Promise.all([
-      (supabase as any).from("merchants_public").select("id, business_name, business_type, district, image_url").order("created_at", { ascending: false }).limit(6),
-      (supabase as any).from("listings").select("*, merchants_public!inner(business_name, district, rating)").eq("visible", true).eq("status", "active").order("created_at", { ascending: false }).limit(12),
+      (supabase as any).from("merchants_public").select("id, business_name, business_type, district, image_url, rating").order("created_at", { ascending: false }).limit(6),
+      (supabase as any).from("listings").select("*, merchants_public!inner(business_name, district, rating)").eq("visible", true).eq("status", "active").order("created_at", { ascending: false }).limit(24),
     ]);
     setMerchants(m ?? []);
     setListings((l ?? []).map((d: any) => ({ id: d.id, title: d.title, category: d.category, original_price: Number(d.original_price), discounted_price: Number(d.discounted_price), quantity_available: d.quantity_available, pickup_start: d.pickup_start, pickup_end: d.pickup_end, created_at: d.created_at, produced_at: d.produced_at, image_url: d.image_url || "", merchant: { business_name: d.merchants_public?.business_name ?? "", district: d.merchants_public?.district ?? "", rating: Number(d.merchants_public?.rating ?? 0) } })));
   })(); }, []);
 
+  const liveListings = useMemo(() => listings.filter((l) => !isExpired(l.pickup_end) && l.quantity_available > 0), [listings]);
+  const availableNow = useMemo(() => [...liveListings].sort((a, b) => minutesUntil(a.pickup_end) - minutesUntil(b.pickup_end) || a.quantity_available - b.quantity_available).slice(0, 6), [liveListings]);
+  const sellingFast = useMemo(() => [...liveListings].sort((a, b) => a.quantity_available - b.quantity_available || minutesUntil(a.pickup_end) - minutesUntil(b.pickup_end)).slice(0, 3), [liveListings]);
+  const bestDeal = useMemo(() => [...liveListings].sort((a, b) => discountPct(b) - discountPct(a))[0], [liveListings]);
+  const underFive = liveListings.filter((l) => l.discounted_price <= 5).length;
+  const mealsAvailable = liveListings.reduce((sum, l) => sum + Number(l.quantity_available || 0), 0);
+  const customerSavings = liveListings.reduce((sum, l) => sum + Math.max(0, l.original_price - l.discounted_price) * Number(l.quantity_available || 0), 0);
+
   return <SiteLayout>
-    <section className="relative overflow-hidden"><div className="container mx-auto grid items-center gap-10 px-4 pb-12 pt-10 md:grid-cols-2 md:pb-20 md:pt-16"><div className="space-y-6"><span className="inline-flex items-center gap-2 rounded-full border bg-cream px-3 py-1 text-xs font-medium"><Sparkles className="h-3.5 w-3.5 text-accent" /> Now serving Brunei Darussalam</span><h1 className="text-4xl font-bold leading-[1.05] md:text-6xl">Save good food. <span className="text-primary">Pay less.</span><br /> Reduce waste.</h1><p className="max-w-lg text-lg text-muted-foreground">Discover surprise bags and surplus meals from local bakeries, cafes, restaurants, hotels and supermarkets before they close.</p><div className="flex flex-wrap gap-3"><Button asChild size="lg" className="rounded-full"><Link to="/browse"><Search className="mr-2 h-4 w-4" /> Browse Food</Link></Button><Button asChild size="lg" variant="outline" className="rounded-full"><Link to="/merchant/onboarding"><Store className="mr-2 h-4 w-4" /> Join as Merchant</Link></Button></div><div className="grid gap-3 pt-2 text-sm text-muted-foreground sm:grid-cols-3"><TrustPoint title="Support local" body="Buy from Brunei food businesses." /><TrustPoint title="Reduce waste" body="Help rescue good food." /><TrustPoint title="Simple pickup" body="Reserve and collect in-store." /></div></div><div className="relative"><img src={heroImg} alt="Fresh pastries from a local bakery" width={1536} height={1024} className="aspect-[4/3] w-full rounded-3xl object-cover shadow-xl" /><Card className="absolute -bottom-4 -left-4 hidden w-64 rounded-2xl p-4 shadow-lg sm:block"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary"><Leaf className="h-5 w-5" /></div><div><div className="text-sm font-semibold">Every rescued meal helps</div><div className="text-xs text-muted-foreground">Support local businesses and reduce waste.</div></div></div></Card></div></div></section>
+    <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background">
+      <div className="container mx-auto grid items-center gap-10 px-4 pb-10 pt-8 md:grid-cols-[1.05fr_0.95fr] md:pb-14 md:pt-12">
+        <div className="space-y-6">
+          <span className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium shadow-sm"><Sparkles className="h-3.5 w-3.5 text-accent" /> Food available today in Brunei</span>
+          <div className="space-y-4">
+            <h1 className="max-w-3xl text-4xl font-bold leading-[1.02] md:text-6xl">Rescue delicious food <span className="text-primary">before it&apos;s gone.</span></h1>
+            <p className="max-w-xl text-lg text-muted-foreground">Find surplus meals, bakery bags, desserts, coffee and drinks from local businesses. Reserve in seconds, collect during the pickup window.</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild size="lg" className="rounded-full"><Link to="/browse"><ShoppingBag className="mr-2 h-4 w-4" /> Reserve a Bag</Link></Button>
+            <Button asChild size="lg" variant="outline" className="rounded-full"><Link to="/merchant/onboarding"><Store className="mr-2 h-4 w-4" /> Join as Merchant</Link></Button>
+          </div>
+          <div className="grid gap-3 pt-1 text-sm sm:grid-cols-3">
+            <HeroProof icon={Timer} title="Pickup today" body="Short windows, fresh offers." />
+            <HeroProof icon={HandCoins} title="Pay less" body="Discounted local food." />
+            <HeroProof icon={Leaf} title="Waste less" body="Give good food another chance." />
+          </div>
+        </div>
+
+        <div className="relative">
+          <img src={heroImg} alt="Fresh pastries from a local bakery" width={1536} height={1024} className="aspect-[4/3] w-full rounded-3xl object-cover shadow-xl" />
+          <Card className="absolute -bottom-4 left-4 right-4 rounded-3xl border-border/60 p-4 shadow-xl md:left-auto md:w-80">
+            {bestDeal ? <div>
+              <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground"><Flame className="h-3.5 w-3.5" /> Best deal right now</div>
+              <div className="font-semibold">{bestDeal.title}</div>
+              <div className="text-sm text-muted-foreground">{bestDeal.merchant.business_name} · {bestDeal.quantity_available} left</div>
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <div><div className="text-xs text-muted-foreground line-through">{formatBND(bestDeal.original_price)}</div><div className="text-2xl font-bold text-primary">{formatBND(bestDeal.discounted_price)}</div></div>
+                <Button asChild size="sm" className="rounded-full"><Link to="/listing/$id" params={{ id: bestDeal.id }}>Reserve</Link></Button>
+              </div>
+            </div> : <div><div className="font-semibold">Every rescued meal helps</div><div className="text-sm text-muted-foreground">Support local businesses and reduce waste.</div></div>}
+          </Card>
+        </div>
+      </div>
+    </section>
+
+    <section className="container mx-auto px-4 py-6">
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        <QuickChip icon={Flame} label="Available Now" />
+        <QuickChip icon={Coffee} label="Coffee" />
+        <QuickChip icon={PackageSearch} label="Bakery" />
+        <QuickChip icon={Utensils} label="Meals" />
+        <QuickChip icon={Sparkles} label="Desserts" />
+        <QuickChip icon={CupSoda} label="Drinks" />
+        <QuickChip icon={HandCoins} label="Under BND 5" count={underFive} />
+        <QuickChip icon={TrendingUp} label="Highest Discount" />
+        <QuickChip icon={MapPin} label="Near Me" />
+      </div>
+    </section>
+
+    <section className="container mx-auto px-4 pb-8">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <MarketStat label="Bags available now" value={mealsAvailable} />
+        <MarketStat label="Live offers today" value={liveListings.length} />
+        <MarketStat label="Possible customer savings" value={formatBND(customerSavings)} />
+      </div>
+    </section>
+
     <div className="container mx-auto px-4"><AdSlot size="billboard" id="home-hero-billboard" label="Hero billboard" /></div>
-    <Section title="How it works" subtitle="Three simple steps from craving to collection."><div className="grid gap-6 md:grid-cols-3">{[{ icon: Search, title: "Discover", body: "Find surprise bags and surplus food near you, filtered by district and category." }, { icon: ShoppingBag, title: "Reserve", body: "Reserve your food and get a pickup code to show the merchant." }, { icon: HandCoins, title: "Collect & enjoy", body: "Drop by during the pickup window. Show your code and take the food home." }].map((s) => <Card key={s.title} className="rounded-3xl border-border/60 p-6"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground"><s.icon className="h-6 w-6" /></div><h3 className="mt-4 text-lg font-semibold">{s.title}</h3><p className="mt-1 text-sm text-muted-foreground">{s.body}</p></Card>)}</div></Section>
-    {merchants.length > 0 && <Section title="Featured merchants" subtitle="Click a merchant to view their profile, today's offers, and past offers."><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{merchants.map((m) => <Link key={m.id} to="/merchant-profile/$id" params={{ id: m.id }} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-3xl"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg">{m.image_url ? <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-36 w-full object-cover transition group-hover:scale-105" /> : <div className="h-36 w-full bg-muted" />}<div className="p-4"><div className="font-semibold group-hover:text-primary">{m.business_name}</div><div className="text-sm text-muted-foreground">{m.business_type} · {m.district}</div><div className="mt-3 text-xs font-medium text-primary">View vendor profile →</div></div></Card></Link>)}</div></Section>}
-    <div className="container mx-auto px-4"><AdSlot size="leaderboard" id="home-mid-leaderboard" label="Sponsored" /></div><HomeOfferSections listings={listings} />
-    <Section title="Why people love Last Bite"><div className="grid gap-6 md:grid-cols-2"><BenefitCard title="For customers" items={["Find surplus food from local businesses", "Discover new local favourites", "Simple pickup with QR code"]} /><BenefitCard title="For businesses" items={["List unsold inventory", "Reach nearby customers", "Reduce food waste", "Simple dashboard, no extra hardware"]} /></div></Section>
-    <Section title="Food waste impact"><Card className="overflow-hidden rounded-3xl border-border/60 bg-primary text-primary-foreground p-8 md:p-12"><div className="max-w-3xl"><h3 className="text-2xl font-bold md:text-3xl">Small choices can reduce food waste.</h3><p className="mt-3 text-primary-foreground/85">Last Bite helps connect customers with surplus food from local businesses, making it easier to support merchants while giving good food another chance.</p></div></Card></Section>
+
+    {availableNow.length > 0 && <Section title="Available right now" subtitle="The fastest route from homepage to reservation. These offers are sorted by pickup urgency and low remaining quantity." action={<Button asChild variant="outline" className="rounded-full"><Link to="/browse">Browse all <ArrowRight className="h-4 w-4" /></Link></Button>}>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{availableNow.map((l) => <div key={l.id} className="relative"><div className="absolute left-3 top-3 z-10 rounded-full bg-background/95 px-3 py-1 text-xs font-semibold shadow"><Clock className="mr-1 inline h-3.5 w-3.5 text-primary" />{urgencyLabel(l)}</div><ListingCard listing={l} /></div>)}</div>
+    </Section>}
+
+    {sellingFast.length > 0 && <Section title="Selling fast" subtitle="Low quantity offers that should feel urgent to customers.">
+      <div className="grid gap-4 md:grid-cols-3">{sellingFast.map((l) => <Link key={l.id} to="/listing/$id" params={{ id: l.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg"><div className="relative h-44 overflow-hidden">{l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" /> : <div className="h-full w-full bg-muted" />}<Badge className="absolute left-3 top-3 rounded-full bg-accent text-accent-foreground"><Flame className="mr-1 h-3.5 w-3.5" /> Only {l.quantity_available} left</Badge></div><div className="p-4"><div className="font-semibold group-hover:text-primary">{l.title}</div><div className="text-sm text-muted-foreground">{l.merchant.business_name} · {urgencyLabel(l)}</div><div className="mt-4 flex items-end justify-between"><div><div className="text-xs text-muted-foreground line-through">{formatBND(l.original_price)}</div><div className="text-2xl font-bold text-primary">{formatBND(l.discounted_price)}</div></div><span className="text-sm font-semibold text-primary">Reserve →</span></div></div></Card></Link>)}</div>
+    </Section>}
+
+    <Section title="How it works" subtitle="Simple enough for first-time customers to understand immediately."><div className="grid gap-6 md:grid-cols-3">{[{ icon: Search, title: "Discover", body: "Open Last Bite and see food available today." }, { icon: ShoppingBag, title: "Reserve", body: "Choose a bag and get your pickup code." }, { icon: HandCoins, title: "Collect & enjoy", body: "Drop by during the pickup window and show your code." }].map((s) => <Card key={s.title} className="rounded-3xl border-border/60 p-6"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground"><s.icon className="h-6 w-6" /></div><h3 className="mt-4 text-lg font-semibold">{s.title}</h3><p className="mt-1 text-sm text-muted-foreground">{s.body}</p></Card>)}</div></Section>
+
+    {merchants.length > 0 && <Section title="Featured merchants" subtitle="Local businesses offering rescue bags and surplus food today."><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{merchants.map((m) => <Link key={m.id} to="/merchant-profile/$id" params={{ id: m.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg">{m.image_url ? <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-36 w-full object-cover transition group-hover:scale-105" /> : <div className="h-36 w-full bg-muted" />}<div className="p-4"><div className="flex items-center justify-between gap-3"><div className="font-semibold group-hover:text-primary">{m.business_name}</div>{m.rating != null && <Badge variant="secondary" className="rounded-full">★ {Number(m.rating).toFixed(1)}</Badge>}</div><div className="mt-1 text-sm text-muted-foreground">{m.business_type} · {m.district}</div><div className="mt-3 text-xs font-medium text-primary">View today&apos;s offers →</div></div></Card></Link>)}</div></Section>}
+
+    <div className="container mx-auto px-4"><AdSlot size="leaderboard" id="home-mid-leaderboard" label="Sponsored" /></div>
+
+    <Section title="Why people love Last Bite"><div className="grid gap-6 md:grid-cols-2"><BenefitCard title="For customers" items={["See available food immediately", "Reserve before pickup windows close", "Discover new local favourites", "Save money on meals, drinks and desserts"]} /><BenefitCard title="For businesses" items={["List unsold inventory quickly", "Reach nearby customers", "Reduce food waste", "Simple dashboard, no extra hardware"]} /></div></Section>
+
+    <Section title="Food waste impact"><Card className="overflow-hidden rounded-3xl border-border/60 bg-primary p-8 text-primary-foreground md:p-12"><div className="max-w-3xl"><h3 className="text-2xl font-bold md:text-3xl">Small choices can reduce food waste.</h3><p className="mt-3 text-primary-foreground/85">Last Bite connects customers with surplus food from local businesses, making it easier to support merchants while giving good food another chance.</p></div></Card></Section>
+
     <Section title="Frequently asked questions"><div className="mx-auto max-w-3xl"><Accordion type="single" collapsible className="w-full">{[{ q: "Is the food safe to eat?", a: "Merchants are responsible for listing food that is fresh and within safe consumption windows, including any allergen information customers need." }, { q: "What is a surprise bag?", a: "A bag of unsold items chosen by the merchant. The exact contents may vary depending on what is available." }, { q: "How do I pay?", a: "For now, payment is made directly to the merchant during pickup." }, { q: "Can I cancel a reservation?", a: "You can cancel before collection, but please only reserve food you intend to pick up." }].map((f, i) => <AccordionItem key={i} value={`q-${i}`}><AccordionTrigger>{f.q}</AccordionTrigger><AccordionContent>{f.a}</AccordionContent></AccordionItem>)}</Accordion></div></Section>
   </SiteLayout>;
 }
-function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) { return <section className="container mx-auto px-4 py-14 md:py-20"><div className="mb-8 max-w-2xl"><h2 className="text-3xl font-bold md:text-4xl">{title}</h2>{subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}</div>{children}</section>; }
-function TrustPoint({ title, body }: { title: string; body: string }) { return <div><div className="font-semibold text-foreground">{title}</div><div>{body}</div></div>; }
+
+function HeroProof({ icon: Icon, title, body }: { icon: any; title: string; body: string }) { return <div className="rounded-2xl border bg-background/70 p-3 shadow-sm"><div className="flex items-center gap-2 font-semibold text-foreground"><Icon className="h-4 w-4 text-primary" />{title}</div><div className="mt-1 text-xs text-muted-foreground">{body}</div></div>; }
+function QuickChip({ icon: Icon, label, count }: { icon: any; label: string; count?: number }) { return <Button asChild variant="outline" className="shrink-0 rounded-full"><Link to="/browse"><Icon className="h-4 w-4" />{label}{typeof count === "number" && count > 0 ? <span className="ml-1 rounded-full bg-primary/10 px-1.5 text-xs text-primary">{count}</span> : null}</Link></Button>; }
+function MarketStat({ label, value }: { label: string; value: ReactNode }) { return <Card className="rounded-3xl p-5"><div className="text-2xl font-bold text-primary">{value}</div><div className="text-sm text-muted-foreground">{label}</div></Card>; }
+function Section({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode }) { return <section className="container mx-auto px-4 py-12 md:py-16"><div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div className="max-w-2xl"><h2 className="text-3xl font-bold md:text-4xl">{title}</h2>{subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}</div>{action}</div>{children}</section>; }
 function BenefitCard({ title, items }: { title: string; items: string[] }) { return <Card className="rounded-3xl p-6"><h3 className="text-xl font-semibold">{title}</h3><ul className="mt-4 space-y-3 text-sm">{items.map((it) => <li key={it} className="flex items-start gap-2"><TrendingUp className="mt-0.5 h-4 w-4 text-primary" /><span>{it}</span></li>)}</ul></Card>; }
