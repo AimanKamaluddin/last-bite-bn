@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
 import { formatBND } from "@/lib/sample-data";
+import { useLanguage } from "@/lib/i18n";
 import { ArrowRight, Clock, Coffee, CupSoda, Flame, HandCoins, Leaf, MapPin, PackageSearch, Search, ShoppingBag, Sparkles, Store, Timer, TrendingUp, Utensils } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -38,6 +39,7 @@ const urgencyLabel = (listing: ListingCardData) => {
 };
 
 function Landing() {
+  const { t } = useLanguage();
   const [merchants, setMerchants] = useState<any[]>([]);
   const [listings, setListings] = useState<ListingCardData[]>([]);
   const [testingMerchantId, setTestingMerchantId] = useState<string | null>(null);
@@ -62,19 +64,19 @@ function Landing() {
     <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background">
       <div className="container mx-auto grid items-center gap-7 px-3 pb-8 pt-6 sm:px-4 md:grid-cols-[1.05fr_0.95fr] md:gap-10 md:pb-14 md:pt-12">
         <div className="space-y-5 sm:space-y-6">
-          <span className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium shadow-sm"><Sparkles className="h-3.5 w-3.5 text-accent" /> Food available today in Brunei</span>
+          <span className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium shadow-sm"><Sparkles className="h-3.5 w-3.5 text-accent" /> {t("foodAvailableToday")}</span>
           <div className="space-y-3 sm:space-y-4">
-            <h1 className="max-w-3xl text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl md:text-6xl">Rescue delicious food <span className="text-primary">before it&apos;s gone.</span></h1>
-            <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">Find surplus meals, bakery items, desserts, coffee and drinks from local businesses. Reserve in seconds, collect during the pickup window.</p>
+            <h1 className="max-w-3xl text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl md:text-6xl">{t("heroTitleStart")} <span className="text-primary">{t("heroTitleHighlight")}</span></h1>
+            <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">{t("heroBody")}</p>
           </div>
           <div className="grid gap-2 sm:flex sm:flex-wrap sm:gap-3">
-            <Button asChild size="lg" className="h-12 rounded-full text-base"><Link to="/browse"><ShoppingBag className="mr-2 h-4 w-4" /> Reserve Now</Link></Button>
-            <Button asChild size="lg" variant="outline" className="h-12 rounded-full text-base"><Link to="/merchant/onboarding"><Store className="mr-2 h-4 w-4" /> Join as Merchant</Link></Button>
+            <Button asChild size="lg" className="h-12 rounded-full text-base"><Link to="/browse"><ShoppingBag className="mr-2 h-4 w-4" /> {t("reserveNow")}</Link></Button>
+            <Button asChild size="lg" variant="outline" className="h-12 rounded-full text-base"><Link to="/merchant/onboarding"><Store className="mr-2 h-4 w-4" /> {t("joinAsMerchant")}</Link></Button>
           </div>
           <div className="grid gap-2 pt-1 text-sm sm:grid-cols-3 sm:gap-3">
-            <HeroProof icon={Timer} title="Pickup today" body="Short pickup windows." />
-            <HeroProof icon={HandCoins} title="Pay less" body="Discounted local food." />
-            <HeroProof icon={Leaf} title="Waste less" body="Give good food another chance." />
+            <HeroProof icon={Timer} title={t("pickupToday")} body={t("shortPickupWindows")} />
+            <HeroProof icon={HandCoins} title={t("payLess")} body={t("discountedLocalFood")} />
+            <HeroProof icon={Leaf} title={t("wasteLess")} body={t("giveGoodFoodChance")} />
           </div>
         </div>
 
@@ -82,11 +84,11 @@ function Landing() {
           <img src={TESTING_AD_IMAGE} alt="Testing sponsored offer" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
           <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-wider text-primary shadow-md sm:left-4 sm:top-4 sm:text-[11px]">AD SPACE 01</span>
-          <span className="absolute right-3 top-3 rounded-full bg-white/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm ring-1 ring-white/25 sm:right-4 sm:top-4">Sponsored</span>
+          <span className="absolute right-3 top-3 rounded-full bg-white/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm ring-1 ring-white/25 sm:right-4 sm:top-4">{t("sponsored")}</span>
           <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 md:p-7">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm"><Sparkles className="h-3 w-3" /> Featured sponsor</div>
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm"><Sparkles className="h-3 w-3" /> {t("featuredSponsor")}</div>
             <h2 className="mt-2 text-3xl font-bold leading-tight text-white sm:mt-3 md:text-5xl">Testing</h2>
-            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition group-hover:bg-white/90">View profile <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" /></div>
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition group-hover:bg-white/90">{t("viewProfile")} <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" /></div>
           </div>
         </a>
       </div>
@@ -94,39 +96,39 @@ function Landing() {
 
     <section className="container mx-auto px-3 py-5 sm:px-4 sm:py-6">
       <div className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <QuickChip icon={Flame} label="Available Now" />
-        <QuickChip icon={Coffee} label="Coffee" />
-        <QuickChip icon={PackageSearch} label="Bakery" />
-        <QuickChip icon={Utensils} label="Meals" />
-        <QuickChip icon={Sparkles} label="Desserts" />
-        <QuickChip icon={CupSoda} label="Drinks" />
-        <QuickChip icon={HandCoins} label="Under BND 5" count={underFive} />
-        <QuickChip icon={TrendingUp} label="Highest Discount" />
-        <QuickChip icon={MapPin} label="Near Me" />
+        <QuickChip icon={Flame} label={t("availableNow")} />
+        <QuickChip icon={Coffee} label={t("coffee")} />
+        <QuickChip icon={PackageSearch} label={t("bakery")} />
+        <QuickChip icon={Utensils} label={t("meals")} />
+        <QuickChip icon={Sparkles} label={t("desserts")} />
+        <QuickChip icon={CupSoda} label={t("drinks")} />
+        <QuickChip icon={HandCoins} label={t("underBndFive")} count={underFive} />
+        <QuickChip icon={TrendingUp} label={t("highestDiscount")} />
+        <QuickChip icon={MapPin} label={t("nearMe")} />
       </div>
     </section>
 
-    {availableNow.length > 0 && <Section title="Available right now" subtitle="Reserve before the pickup window closes." action={<Button asChild variant="outline" className="rounded-full"><Link to="/browse">Browse all <ArrowRight className="h-4 w-4" /></Link></Button>}>
+    {availableNow.length > 0 && <Section title={t("availableRightNow")} subtitle={t("reserveBeforePickup")} action={<Button asChild variant="outline" className="rounded-full"><Link to="/browse">{t("browseAll")} <ArrowRight className="h-4 w-4" /></Link></Button>}>
       <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{availableNow.map((l) => <div key={l.id} className="relative"><div className="absolute left-3 top-3 z-10 rounded-full bg-background/95 px-3 py-1 text-xs font-semibold shadow"><Clock className="mr-1 inline h-3.5 w-3.5 text-primary" />{urgencyLabel(l)}</div><ListingCard listing={l} /></div>)}</div>
     </Section>}
 
     <div className="container mx-auto px-3 py-2 sm:px-4"><AdSlot size="inline" id="ad-space-02-home-after-offers" slotCode="AD SPACE 02" label="AD SPACE 02 homepage after offers" /></div>
 
-    {sellingFast.length > 0 && <Section title="Selling fast" subtitle="Limited quantities available.">
-      <div className="grid gap-4 md:grid-cols-3">{sellingFast.map((l) => <Link key={l.id} to="/listing/$id" params={{ id: l.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg"><div className="relative h-48 overflow-hidden md:h-44">{l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" /> : <div className="h-full w-full bg-muted" />}<Badge className="absolute left-3 top-3 rounded-full bg-accent text-accent-foreground"><Flame className="mr-1 h-3.5 w-3.5" /> Only {l.quantity_available} left</Badge></div><div className="p-4"><div className="font-semibold group-hover:text-primary">{l.title}</div><div className="text-sm text-muted-foreground">{l.merchant.business_name} · {urgencyLabel(l)}</div><div className="mt-4 flex items-end justify-between"><div><div className="text-xs text-muted-foreground line-through">{formatBND(l.original_price)}</div><div className="text-2xl font-bold text-primary">{formatBND(l.discounted_price)}</div></div><span className="text-sm font-semibold text-primary">Reserve →</span></div></div></Card></Link>)}</div>
+    {sellingFast.length > 0 && <Section title={t("sellingFast")} subtitle={t("limitedQuantities")}>
+      <div className="grid gap-4 md:grid-cols-3">{sellingFast.map((l) => <Link key={l.id} to="/listing/$id" params={{ id: l.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg"><div className="relative h-48 overflow-hidden md:h-44">{l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" /> : <div className="h-full w-full bg-muted" />}<Badge className="absolute left-3 top-3 rounded-full bg-accent text-accent-foreground"><Flame className="mr-1 h-3.5 w-3.5" /> {t("onlyLeft").replace("{count}", String(l.quantity_available))}</Badge></div><div className="p-4"><div className="font-semibold group-hover:text-primary">{l.title}</div><div className="text-sm text-muted-foreground">{l.merchant.business_name} · {urgencyLabel(l)}</div><div className="mt-4 flex items-end justify-between"><div><div className="text-xs text-muted-foreground line-through">{formatBND(l.original_price)}</div><div className="text-2xl font-bold text-primary">{formatBND(l.discounted_price)}</div></div><span className="text-sm font-semibold text-primary">{t("reserve")} →</span></div></div></Card></Link>)}</div>
     </Section>}
 
-    <Section title="How it works" subtitle="Choose an offer, reserve it, and collect during the pickup window."><div className="grid gap-4 md:grid-cols-3 md:gap-6">{[{ icon: Search, title: "Discover", body: "See food available today." }, { icon: ShoppingBag, title: "Reserve", body: "Choose an offer and get your pickup code." }, { icon: HandCoins, title: "Collect & enjoy", body: "Drop by during the pickup window and show your code." }].map((s) => <Card key={s.title} className="rounded-3xl border-border/60 p-5 sm:p-6"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground"><s.icon className="h-6 w-6" /></div><h3 className="mt-4 text-lg font-semibold">{s.title}</h3><p className="mt-1 text-sm text-muted-foreground">{s.body}</p></Card>)}</div></Section>
+    <Section title={t("howItWorks")} subtitle={t("howItWorksSubtitle")}><div className="grid gap-4 md:grid-cols-3 md:gap-6">{[{ icon: Search, title: t("discover"), body: t("discoverBody") }, { icon: ShoppingBag, title: t("reserveStep"), body: t("reserveStepBody") }, { icon: HandCoins, title: t("collectEnjoy"), body: t("collectEnjoyBody") }].map((s) => <Card key={s.title} className="rounded-3xl border-border/60 p-5 sm:p-6"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground"><s.icon className="h-6 w-6" /></div><h3 className="mt-4 text-lg font-semibold">{s.title}</h3><p className="mt-1 text-sm text-muted-foreground">{s.body}</p></Card>)}</div></Section>
 
-    {merchants.length > 0 && <Section title="Featured merchants" subtitle="Local businesses offering surplus food today."><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{merchants.map((m) => <Link key={m.id} to="/merchant-profile/$id" params={{ id: m.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg">{m.image_url ? <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-40 w-full object-cover transition group-hover:scale-105 sm:h-36" /> : <div className="h-40 w-full bg-muted sm:h-36" />}<div className="p-4"><div className="flex items-center justify-between gap-3"><div className="min-w-0 truncate font-semibold group-hover:text-primary">{m.business_name}</div>{m.rating != null && <Badge variant="secondary" className="shrink-0 rounded-full">★ {Number(m.rating).toFixed(1)}</Badge>}</div><div className="mt-1 text-sm text-muted-foreground">{m.business_type} · {m.district}</div><div className="mt-3 text-xs font-medium text-primary">View today&apos;s offers →</div></div></Card></Link>)}</div></Section>}
+    {merchants.length > 0 && <Section title={t("featuredMerchants")} subtitle={t("featuredMerchantsSubtitle")}><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{merchants.map((m) => <Link key={m.id} to="/merchant-profile/$id" params={{ id: m.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg">{m.image_url ? <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-40 w-full object-cover transition group-hover:scale-105 sm:h-36" /> : <div className="h-40 w-full bg-muted sm:h-36" />}<div className="p-4"><div className="flex items-center justify-between gap-3"><div className="min-w-0 truncate font-semibold group-hover:text-primary">{m.business_name}</div>{m.rating != null && <Badge variant="secondary" className="shrink-0 rounded-full">★ {Number(m.rating).toFixed(1)}</Badge>}</div><div className="mt-1 text-sm text-muted-foreground">{m.business_type} · {m.district}</div><div className="mt-3 text-xs font-medium text-primary">{t("viewTodaysOffers")} →</div></div></Card></Link>)}</div></Section>}
 
-    <Section title="Why people love Last Bite"><div className="grid gap-4 md:grid-cols-2 md:gap-6"><BenefitCard title="For customers" items={["See available food immediately", "Reserve before pickup windows close", "Discover new local favourites", "Save money on meals, drinks and desserts"]} /><BenefitCard title="For businesses" items={["List unsold inventory quickly", "Reach nearby customers", "Reduce food waste", "Simple dashboard, no extra hardware"]} /></div></Section>
+    <Section title={t("whyPeopleLove")}><div className="grid gap-4 md:grid-cols-2 md:gap-6"><BenefitCard title={t("forCustomers")} items={[t("customerBenefit1"), t("customerBenefit2"), t("customerBenefit3"), t("customerBenefit4")]} /><BenefitCard title={t("forBusinessesCard")} items={[t("businessBenefit1"), t("businessBenefit2"), t("businessBenefit3"), t("businessBenefit4")]} /></div></Section>
 
     <div className="container mx-auto px-3 py-2 sm:px-4"><AdSlot size="leaderboard" id="ad-space-03-home-lower" slotCode="AD SPACE 03" label="AD SPACE 03 homepage lower" /></div>
 
-    <Section title="Food waste impact"><Card className="overflow-hidden rounded-3xl border-border/60 bg-primary p-6 text-primary-foreground sm:p-8 md:p-12"><div className="max-w-3xl"><h3 className="text-2xl font-bold md:text-3xl">Small choices can reduce food waste.</h3><p className="mt-3 text-sm leading-relaxed text-primary-foreground/85 sm:text-base">Last Bite connects customers with surplus food from local businesses, making it easier to support merchants while giving good food another chance.</p></div></Card></Section>
+    <Section title={t("foodWasteImpact")}><Card className="overflow-hidden rounded-3xl border-border/60 bg-primary p-6 text-primary-foreground sm:p-8 md:p-12"><div className="max-w-3xl"><h3 className="text-2xl font-bold md:text-3xl">{t("foodWasteTitle")}</h3><p className="mt-3 text-sm leading-relaxed text-primary-foreground/85 sm:text-base">{t("foodWasteBody")}</p></div></Card></Section>
 
-    <Section title="Frequently asked questions"><div className="mx-auto max-w-3xl"><Accordion type="single" collapsible className="w-full">{[{ q: "Is the food safe to eat?", a: "Merchants are responsible for listing food that is safe to eat and within collection windows, including any allergen information customers need." }, { q: "What kind of food can I reserve?", a: "It depends on what each merchant has available. It could be a single item, a meal, a drink, a dessert, or a bundle." }, { q: "How do I pay?", a: "For now, payment is made directly to the merchant during pickup." }, { q: "Can I cancel a reservation?", a: "You can cancel before collection, but please only reserve food you intend to pick up." }].map((f, i) => <AccordionItem key={i} value={`q-${i}`}><AccordionTrigger className="text-left">{f.q}</AccordionTrigger><AccordionContent>{f.a}</AccordionContent></AccordionItem>)}</Accordion></div></Section>
+    <Section title={t("faq")}><div className="mx-auto max-w-3xl"><Accordion type="single" collapsible className="w-full">{[{ q: t("faqSafeQ"), a: t("faqSafeA") }, { q: t("faqKindQ"), a: t("faqKindA") }, { q: t("faqPayQ"), a: t("faqPayA") }, { q: t("faqCancelQ"), a: t("faqCancelA") }].map((f, i) => <AccordionItem key={i} value={`q-${i}`}><AccordionTrigger className="text-left">{f.q}</AccordionTrigger><AccordionContent>{f.a}</AccordionContent></AccordionItem>)}</Accordion></div></Section>
   </SiteLayout>;
 }
 
