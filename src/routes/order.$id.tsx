@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatBND } from "@/lib/sample-data";
 import { CheckCircle2 } from "lucide-react";
 
-const searchSchema = z.object({ code: z.string().optional(), demo: z.coerce.number().optional() });
+const searchSchema = z.object({ code: z.string().optional(), demo: z.coerce.number().optional(), pickupTime: z.string().optional() });
 
 export const Route = createFileRoute("/order/$id")({
   validateSearch: (s) => searchSchema.parse(s),
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/order/$id")({
 
 function OrderConfirmation() {
   const { id } = Route.useParams();
-  const { code: demoCode, demo } = useSearch({ from: "/order/$id" });
+  const { code: demoCode, demo, pickupTime } = useSearch({ from: "/order/$id" });
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,6 +28,7 @@ function OrderConfirmation() {
       setOrder({
         id,
         pickup_code: demoCode,
+        pickup_time: pickupTime,
         status: "reserved",
         payment_status: "demo",
         total_price: 0,
@@ -86,7 +87,7 @@ function OrderConfirmation() {
     return () => {
       cancelled = true;
     };
-  }, [id, demo, demoCode]);
+  }, [id, demo, demoCode, pickupTime]);
 
   if (loading) return <SiteLayout><div className="p-10">Loading…</div></SiteLayout>;
   if (!order) return <SiteLayout><div className="p-10">Order not found.</div></SiteLayout>;
@@ -105,6 +106,7 @@ function OrderConfirmation() {
           <img src={qr} alt="Pickup QR code" className="mx-auto" width={200} height={200} />
           <div className="mt-4 text-3xl font-bold tracking-[0.4em] text-primary">{order.pickup_code}</div>
           <div className="mt-1 text-sm text-muted-foreground">Pickup code</div>
+          {order.pickup_time && <div className="mt-4 rounded-2xl bg-cream/60 p-3 text-sm"><span className="text-muted-foreground">Pickup time:</span> <strong>{order.pickup_time}</strong></div>}
 
           <div className="my-6 h-px bg-border" />
           <div className="text-left text-sm">
