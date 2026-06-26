@@ -14,7 +14,7 @@ import { formatBND } from "@/lib/sample-data";
 import { ArrowRight, Clock, Coffee, CupSoda, Flame, HandCoins, Leaf, MapPin, PackageSearch, Search, ShoppingBag, Sparkles, Store, Timer, TrendingUp, Utensils } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [ { title: "Last Bite — Rescue food before it's gone" }, { name: "description", content: "Brunei's surplus food marketplace. Reserve discounted meals, drinks, bakery bags and desserts before pickup windows end." }, { property: "og:title", content: "Last Bite — Rescue food before it's gone" }, { property: "og:description", content: "Find food available today from local Brunei businesses." } ] }),
+  head: () => ({ meta: [ { title: "Last Bite — Rescue food before it's gone" }, { name: "description", content: "Brunei's surplus food marketplace. Reserve discounted meals, drinks, bakery items and desserts before pickup windows end." }, { property: "og:title", content: "Last Bite — Rescue food before it's gone" }, { property: "og:description", content: "Find food available today from local Brunei businesses." } ] }),
   component: Landing
 });
 
@@ -57,7 +57,7 @@ function Landing() {
   const sellingFast = useMemo(() => [...liveListings].sort((a, b) => a.quantity_available - b.quantity_available || minutesUntil(a.pickup_end) - minutesUntil(b.pickup_end)).slice(0, 3), [liveListings]);
   const bestDeal = useMemo(() => [...liveListings].sort((a, b) => discountPct(b) - discountPct(a))[0], [liveListings]);
   const underFive = liveListings.filter((l) => l.discounted_price <= 5).length;
-  const mealsAvailable = liveListings.reduce((sum, l) => sum + Number(l.quantity_available || 0), 0);
+  const offersAvailable = liveListings.reduce((sum, l) => sum + Number(l.quantity_available || 0), 0);
   const customerSavings = liveListings.reduce((sum, l) => sum + Math.max(0, l.original_price - l.discounted_price) * Number(l.quantity_available || 0), 0);
 
   return <SiteLayout>
@@ -67,10 +67,10 @@ function Landing() {
           <span className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium shadow-sm"><Sparkles className="h-3.5 w-3.5 text-accent" /> Food available today in Brunei</span>
           <div className="space-y-4">
             <h1 className="max-w-3xl text-4xl font-bold leading-[1.02] md:text-6xl">Rescue delicious food <span className="text-primary">before it&apos;s gone.</span></h1>
-            <p className="max-w-xl text-lg text-muted-foreground">Find surplus meals, bakery bags, desserts, coffee and drinks from local businesses. Reserve in seconds, collect during the pickup window.</p>
+            <p className="max-w-xl text-lg text-muted-foreground">Find surplus meals, bakery items, desserts, coffee and drinks from local businesses. Reserve in seconds, collect during the pickup window.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg" className="rounded-full"><Link to="/browse"><ShoppingBag className="mr-2 h-4 w-4" /> Reserve a Bag</Link></Button>
+            <Button asChild size="lg" className="rounded-full"><Link to="/browse"><ShoppingBag className="mr-2 h-4 w-4" /> Reserve Now</Link></Button>
             <Button asChild size="lg" variant="outline" className="rounded-full"><Link to="/merchant/onboarding"><Store className="mr-2 h-4 w-4" /> Join as Merchant</Link></Button>
           </div>
           <div className="grid gap-3 pt-1 text-sm sm:grid-cols-3">
@@ -113,7 +113,7 @@ function Landing() {
 
     <section className="container mx-auto px-4 pb-8">
       <div className="grid gap-3 sm:grid-cols-3">
-        <MarketStat label="Bags available now" value={mealsAvailable} />
+        <MarketStat label="Offers available now" value={offersAvailable} />
         <MarketStat label="Live offers today" value={liveListings.length} />
         <MarketStat label="Possible customer savings" value={formatBND(customerSavings)} />
       </div>
@@ -129,9 +129,9 @@ function Landing() {
       <div className="grid gap-4 md:grid-cols-3">{sellingFast.map((l) => <Link key={l.id} to="/listing/$id" params={{ id: l.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg"><div className="relative h-44 overflow-hidden">{l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" /> : <div className="h-full w-full bg-muted" />}<Badge className="absolute left-3 top-3 rounded-full bg-accent text-accent-foreground"><Flame className="mr-1 h-3.5 w-3.5" /> Only {l.quantity_available} left</Badge></div><div className="p-4"><div className="font-semibold group-hover:text-primary">{l.title}</div><div className="text-sm text-muted-foreground">{l.merchant.business_name} · {urgencyLabel(l)}</div><div className="mt-4 flex items-end justify-between"><div><div className="text-xs text-muted-foreground line-through">{formatBND(l.original_price)}</div><div className="text-2xl font-bold text-primary">{formatBND(l.discounted_price)}</div></div><span className="text-sm font-semibold text-primary">Reserve →</span></div></div></Card></Link>)}</div>
     </Section>}
 
-    <Section title="How it works" subtitle="Find a bag, reserve it, and collect during the pickup window."><div className="grid gap-6 md:grid-cols-3">{[{ icon: Search, title: "Discover", body: "See food available today." }, { icon: ShoppingBag, title: "Reserve", body: "Choose a bag and get your pickup code." }, { icon: HandCoins, title: "Collect & enjoy", body: "Drop by during the pickup window and show your code." }].map((s) => <Card key={s.title} className="rounded-3xl border-border/60 p-6"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground"><s.icon className="h-6 w-6" /></div><h3 className="mt-4 text-lg font-semibold">{s.title}</h3><p className="mt-1 text-sm text-muted-foreground">{s.body}</p></Card>)}</div></Section>
+    <Section title="How it works" subtitle="Choose an offer, reserve it, and collect during the pickup window."><div className="grid gap-6 md:grid-cols-3">{[{ icon: Search, title: "Discover", body: "See food available today." }, { icon: ShoppingBag, title: "Reserve", body: "Choose an offer and get your pickup code." }, { icon: HandCoins, title: "Collect & enjoy", body: "Drop by during the pickup window and show your code." }].map((s) => <Card key={s.title} className="rounded-3xl border-border/60 p-6"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground"><s.icon className="h-6 w-6" /></div><h3 className="mt-4 text-lg font-semibold">{s.title}</h3><p className="mt-1 text-sm text-muted-foreground">{s.body}</p></Card>)}</div></Section>
 
-    {merchants.length > 0 && <Section title="Featured merchants" subtitle="Local businesses offering rescue bags and surplus food today."><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{merchants.map((m) => <Link key={m.id} to="/merchant-profile/$id" params={{ id: m.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg">{m.image_url ? <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-36 w-full object-cover transition group-hover:scale-105" /> : <div className="h-36 w-full bg-muted" />}<div className="p-4"><div className="flex items-center justify-between gap-3"><div className="font-semibold group-hover:text-primary">{m.business_name}</div>{m.rating != null && <Badge variant="secondary" className="rounded-full">★ {Number(m.rating).toFixed(1)}</Badge>}</div><div className="mt-1 text-sm text-muted-foreground">{m.business_type} · {m.district}</div><div className="mt-3 text-xs font-medium text-primary">View today&apos;s offers →</div></div></Card></Link>)}</div></Section>}
+    {merchants.length > 0 && <Section title="Featured merchants" subtitle="Local businesses offering surplus food today."><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{merchants.map((m) => <Link key={m.id} to="/merchant-profile/$id" params={{ id: m.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg">{m.image_url ? <img src={m.image_url} alt={m.business_name} loading="lazy" className="h-36 w-full object-cover transition group-hover:scale-105" /> : <div className="h-36 w-full bg-muted" />}<div className="p-4"><div className="flex items-center justify-between gap-3"><div className="font-semibold group-hover:text-primary">{m.business_name}</div>{m.rating != null && <Badge variant="secondary" className="rounded-full">★ {Number(m.rating).toFixed(1)}</Badge>}</div><div className="mt-1 text-sm text-muted-foreground">{m.business_type} · {m.district}</div><div className="mt-3 text-xs font-medium text-primary">View today&apos;s offers →</div></div></Card></Link>)}</div></Section>}
 
     <div className="container mx-auto px-4"><AdSlot size="leaderboard" id="home-mid-leaderboard" label="Sponsored" /></div>
 
@@ -139,7 +139,7 @@ function Landing() {
 
     <Section title="Food waste impact"><Card className="overflow-hidden rounded-3xl border-border/60 bg-primary p-8 text-primary-foreground md:p-12"><div className="max-w-3xl"><h3 className="text-2xl font-bold md:text-3xl">Small choices can reduce food waste.</h3><p className="mt-3 text-primary-foreground/85">Last Bite connects customers with surplus food from local businesses, making it easier to support merchants while giving good food another chance.</p></div></Card></Section>
 
-    <Section title="Frequently asked questions"><div className="mx-auto max-w-3xl"><Accordion type="single" collapsible className="w-full">{[{ q: "Is the food safe to eat?", a: "Merchants are responsible for listing food that is safe to eat and within collection windows, including any allergen information customers need." }, { q: "What is a surprise bag?", a: "A bag of unsold items chosen by the merchant. The exact contents may vary depending on what is available." }, { q: "How do I pay?", a: "For now, payment is made directly to the merchant during pickup." }, { q: "Can I cancel a reservation?", a: "You can cancel before collection, but please only reserve food you intend to pick up." }].map((f, i) => <AccordionItem key={i} value={`q-${i}`}><AccordionTrigger>{f.q}</AccordionTrigger><AccordionContent>{f.a}</AccordionContent></AccordionItem>)}</Accordion></div></Section>
+    <Section title="Frequently asked questions"><div className="mx-auto max-w-3xl"><Accordion type="single" collapsible className="w-full">{[{ q: "Is the food safe to eat?", a: "Merchants are responsible for listing food that is safe to eat and within collection windows, including any allergen information customers need." }, { q: "What kind of food can I reserve?", a: "It depends on what each merchant has available. It could be a single item, a meal, a drink, a dessert, or a bundle." }, { q: "How do I pay?", a: "For now, payment is made directly to the merchant during pickup." }, { q: "Can I cancel a reservation?", a: "You can cancel before collection, but please only reserve food you intend to pick up." }].map((f, i) => <AccordionItem key={i} value={`q-${i}`}><AccordionTrigger>{f.q}</AccordionTrigger><AccordionContent>{f.a}</AccordionContent></AccordionItem>)}</Accordion></div></Section>
   </SiteLayout>;
 }
 
