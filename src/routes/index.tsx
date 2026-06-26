@@ -57,8 +57,6 @@ function Landing() {
   const availableNow = useMemo(() => [...liveListings].sort((a, b) => minutesUntil(a.pickup_end) - minutesUntil(b.pickup_end) || a.quantity_available - b.quantity_available).slice(0, 6), [liveListings]);
   const sellingFast = useMemo(() => [...liveListings].sort((a, b) => a.quantity_available - b.quantity_available || minutesUntil(a.pickup_end) - minutesUntil(b.pickup_end)).slice(0, 3), [liveListings]);
   const underFive = liveListings.filter((l) => l.discounted_price <= 5).length;
-  const offersAvailable = liveListings.reduce((sum, l) => sum + Number(l.quantity_available || 0), 0);
-  const customerSavings = liveListings.reduce((sum, l) => sum + Math.max(0, l.original_price - l.discounted_price) * Number(l.quantity_available || 0), 0);
 
   return <SiteLayout>
     <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background">
@@ -108,14 +106,6 @@ function Landing() {
       </div>
     </section>
 
-    <section className="container mx-auto px-3 pb-6 sm:px-4 sm:pb-8">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <MarketStat label="Offers available now" value={offersAvailable} />
-        <MarketStat label="Live offers today" value={liveListings.length} />
-        <MarketStat label="Possible customer savings" value={formatBND(customerSavings)} />
-      </div>
-    </section>
-
     {availableNow.length > 0 && <Section title="Available right now" subtitle="Reserve before the pickup window closes." action={<Button asChild variant="outline" className="rounded-full"><Link to="/browse">Browse all <ArrowRight className="h-4 w-4" /></Link></Button>}>
       <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{availableNow.map((l) => <div key={l.id} className="relative"><div className="absolute left-3 top-3 z-10 rounded-full bg-background/95 px-3 py-1 text-xs font-semibold shadow"><Clock className="mr-1 inline h-3.5 w-3.5 text-primary" />{urgencyLabel(l)}</div><ListingCard listing={l} /></div>)}</div>
     </Section>}
@@ -142,6 +132,5 @@ function Landing() {
 
 function HeroProof({ icon: Icon, title, body }: { icon: any; title: string; body: string }) { return <div className="rounded-2xl border bg-background/70 p-3 shadow-sm"><div className="flex items-center gap-2 font-semibold text-foreground"><Icon className="h-4 w-4 text-primary" />{title}</div><div className="mt-1 text-xs text-muted-foreground">{body}</div></div>; }
 function QuickChip({ icon: Icon, label, count }: { icon: any; label: string; count?: number }) { return <Button asChild variant="outline" className="h-10 shrink-0 rounded-full px-4"><Link to="/browse"><Icon className="h-4 w-4" />{label}{typeof count === "number" && count > 0 ? <span className="ml-1 rounded-full bg-primary/10 px-1.5 text-xs text-primary">{count}</span> : null}</Link></Button>; }
-function MarketStat({ label, value }: { label: string; value: ReactNode }) { return <Card className="rounded-3xl p-4 sm:p-5"><div className="text-2xl font-bold text-primary">{value}</div><div className="text-sm text-muted-foreground">{label}</div></Card>; }
 function Section({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode }) { return <section className="container mx-auto px-3 py-10 sm:px-4 md:py-16"><div className="mb-6 flex flex-col gap-4 sm:mb-8 md:flex-row md:items-end md:justify-between"><div className="max-w-2xl"><h2 className="text-2xl font-bold leading-tight sm:text-3xl md:text-4xl">{title}</h2>{subtitle && <p className="mt-2 text-sm text-muted-foreground sm:text-base">{subtitle}</p>}</div>{action}</div>{children}</section>; }
 function BenefitCard({ title, items }: { title: string; items: string[] }) { return <Card className="rounded-3xl p-5 sm:p-6"><h3 className="text-xl font-semibold">{title}</h3><ul className="mt-4 space-y-3 text-sm">{items.map((it) => <li key={it} className="flex items-start gap-2"><TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span>{it}</span></li>)}</ul></Card>; }
