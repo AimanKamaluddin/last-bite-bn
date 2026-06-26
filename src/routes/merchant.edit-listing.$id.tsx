@@ -14,19 +14,18 @@ import { useAuth } from "@/hooks/use-auth";
 import { CATEGORIES } from "@/lib/sample-data";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/merchant/edit-listing/$id")({
-  component: EditListing,
-});
+export const Route = createFileRoute("/merchant/edit-listing/$id")({ component: EditListing });
 
 function toTimeInput(iso: string | null) {
   if (!iso) return "";
-  try {
-    const d = new Date(iso);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  } catch {
-    return "";
-  }
+  try { const d = new Date(iso); return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; } catch { return ""; }
 }
+function toDateInput(iso: string | null) {
+  if (!iso) return new Date().toISOString().slice(0, 10);
+  try { return new Date(iso).toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }
+}
+const dayName = (date: string) => date ? new Date(`${date}T00:00:00`).toLocaleDateString([], { weekday: "long" }) : "";
+const toIso = (date: string, time: string) => date && time ? new Date(`${date}T${time}:00`).toISOString() : null;
 
 function EditListing() {
   const { id } = Route.useParams();
@@ -45,7 +44,7 @@ function EditListing() {
       const m = Array.isArray(rows) && rows.length ? rows[0] : null;
       setMerchant(m);
       if (m) {
-        const { data: l } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
+        const { data: l } = await (supabase as any).from("listings").select("*").eq("id", id).maybeSingle();
         setListing(l);
         if (l) {
           setForm({
@@ -55,6 +54,9 @@ function EditListing() {
             original_price: Number(l.original_price ?? 0),
             discounted_price: Number(l.discounted_price ?? 0),
             quantity_available: Number(l.quantity_available ?? 0),
+            listing_date: toDateInput(l.created_at),
+            produced_date: toDateInput(l.produced_at),
+            produced_time: toTimeInput(l.produced_at),
             pickup_start: toTimeInput(l.pickup_start),
             pickup_end: toTimeInput(l.pickup_end),
             allergen_info: l.allergen_info ?? "",
@@ -74,18 +76,23 @@ function EditListing() {
   if (!listing) return <SiteLayout><div className="p-10 text-center">Listing not found.</div></SiteLayout>;
 
   const save = async (status?: "active" | "draft") => {
+    if (!form.listing_date || !form.produced_date || !form.produced_time || !form.pickup_start || !form.pickup_end) {
+      toast.error("Please fill in listing date, production date/time, and pickup window.");
+      return;
+    }
     setSaving(true);
-    const today = new Date().toISOString().slice(0, 10);
-    const { images, ...rest } = form;
+    const { images, listing_date, produced_date, produced_time, ...rest } = form;
     const payload: any = {
       ...rest,
       image_url: images[0] ?? null,
       images,
-      pickup_start: form.pickup_start ? new Date(`${today}T${form.pickup_start}:00`).toISOString() : null,
-      pickup_end: form.pickup_end ? new Date(`${today}T${form.pickup_end}:00`).toISOString() : null,
+      created_at: new Date(`${listing_date}T00:00:00`).toISOString(),
+      produced_at: toIso(produced_date, produced_time),
+      pickup_start: new Date(`${listing_date}T${form.pickup_start}:00`).toISOString(),
+      pickup_end: new Date(`${listing_date}T${form.pickup_end}:00`).toISOString(),
     };
     if (status) payload.status = status;
-    const { error } = await supabase.from("listings").update(payload).eq("id", id);
+    const { error } = await (supabase as any).from("listings").update(payload).eq("id", id);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Listing updated.");
@@ -109,44 +116,28 @@ function EditListing() {
         <Card className="mt-6 rounded-3xl p-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <F label="Title" full><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></F>
-            <F label="Category">
-              <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
-            </F>
+            <F label="Category"><Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></F>
             <F label="Quantity available"><Input type="number" min={0} value={form.quantity_available} onChange={(e) => setForm({ ...form, quantity_available: +e.target.value })} /></F>
             <F label="Original price (B$)"><Input type="number" step="0.5" value={form.original_price} onChange={(e) => setForm({ ...form, original_price: +e.target.value })} /></F>
             <F label="Discounted price (B$)"><Input type="number" step="0.5" value={form.discounted_price} onChange={(e) => setForm({ ...form, discounted_price: +e.target.value })} /></F>
-            <F label="Pickup start (today)"><Input type="time" value={form.pickup_start} onChange={(e) => setForm({ ...form, pickup_start: e.target.value })} /></F>
-            <F label="Pickup end (today)"><Input type="time" value={form.pickup_end} onChange={(e) => setForm({ ...form, pickup_end: e.target.value })} /></F>
+            <F label="Date listed"><Input type="date" value={form.listing_date} onChange={(e) => setForm({ ...form, listing_date: e.target.value })} /><div className="mt-1 text-xs text-muted-foreground">{dayName(form.listing_date)}</div></F>
+            <F label="Produced date"><Input type="date" value={form.produced_date} onChange={(e) => setForm({ ...form, produced_date: e.target.value })} /></F>
+            <F label="Produced time"><Input type="time" value={form.produced_time} onChange={(e) => setForm({ ...form, produced_time: e.target.value })} /></F>
+            <F label="Pickup start"><Input type="time" value={form.pickup_start} onChange={(e) => setForm({ ...form, pickup_start: e.target.value })} /></F>
+            <F label="Pickup end"><Input type="time" value={form.pickup_end} onChange={(e) => setForm({ ...form, pickup_end: e.target.value })} /></F>
             <F label="Description" full><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></F>
             <F label="Allergen info" full><Input value={form.allergen_info} onChange={(e) => setForm({ ...form, allergen_info: e.target.value })} /></F>
-            <F label="Photos" full>
-              <ImageUpload multiple value={form.images} onChange={(v) => setForm({ ...form, images: v })} />
-            </F>
+            <F label="Photos" full><ImageUpload multiple value={form.images} onChange={(v) => setForm({ ...form, images: v })} /></F>
             <div className="sm:col-span-2 flex items-center justify-between rounded-2xl bg-cream/60 p-3">
-              <div>
-                <div className="font-medium">Visible to customers</div>
-                <div className="text-sm text-muted-foreground">Turn off to hide while editing.</div>
-              </div>
+              <div><div className="font-medium">Visible to customers</div><div className="text-sm text-muted-foreground">Turn off to hide while editing.</div></div>
               <Switch checked={form.visible} onCheckedChange={(v) => setForm({ ...form, visible: v })} />
             </div>
           </div>
-
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button variant="destructive" className="rounded-full" disabled={deleting} onClick={remove}>
-              {deleting ? "Deleting…" : "Delete"}
-            </Button>
+            <Button variant="destructive" className="rounded-full" disabled={deleting} onClick={remove}>{deleting ? "Deleting…" : "Delete"}</Button>
             <div className="flex-1" />
-            {form.status === "active" ? (
-              <Button variant="outline" className="rounded-full" disabled={saving} onClick={() => save("draft")}>Unpublish</Button>
-            ) : (
-              <Button variant="outline" className="rounded-full" disabled={saving} onClick={() => save("active")}>Publish</Button>
-            )}
-            <Button className="rounded-full" disabled={saving} onClick={() => save()}>
-              {saving ? "Saving…" : "Save changes"}
-            </Button>
+            {form.status === "active" ? <Button variant="outline" className="rounded-full" disabled={saving} onClick={() => save("draft")}>Unpublish</Button> : <Button variant="outline" className="rounded-full" disabled={saving} onClick={() => save("active")}>Publish</Button>}
+            <Button className="rounded-full" disabled={saving} onClick={() => save()}>{saving ? "Saving…" : "Save changes"}</Button>
           </div>
         </Card>
       </section>
