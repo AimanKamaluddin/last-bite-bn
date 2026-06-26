@@ -29,7 +29,7 @@ function MerchantProfile() {
       const [{ data: m }, { data: l }] = await Promise.all([
         (supabase as any)
           .from("merchants_public")
-          .select("id, business_name, business_type, district, image_url, rating, tagline, cover_image_url, description, address, opening_hours, phone, email, instagram_url, website_url")
+          .select("id, business_name, business_type, district, image_url, rating, description, opening_hours")
           .eq("id", id)
           .maybeSingle(),
         (supabase as any)
@@ -76,7 +76,7 @@ function MerchantProfile() {
       <section className="container mx-auto max-w-6xl px-4 py-10">
         <Card className="overflow-hidden rounded-3xl p-0">
           <div className="h-52 bg-gradient-to-br from-primary via-emerald-600 to-accent md:h-64">
-            {(merchant.cover_image_url || merchant.image_url) && <img src={merchant.cover_image_url || merchant.image_url} alt={merchant.business_name} className="h-full w-full object-cover opacity-95" />}
+            {merchant.image_url && <img src={merchant.image_url} alt={merchant.business_name} className="h-full w-full object-cover opacity-95" />}
           </div>
           <div className="p-6 md:p-8">
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
