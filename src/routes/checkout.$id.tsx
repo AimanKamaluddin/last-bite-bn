@@ -90,12 +90,12 @@ function Checkout() {
       return;
     }
     const pickup_code = genCode();
-    const { data, error } = await (supabase as any).from("orders").insert({ user_id: user.id, listing_id: listing.id, merchant_id: listing.merchant_id, quantity: qty, total_price: total, commission_amount: 0, merchant_payout: total, pickup_code, pickup_time: pickupTime, status: "reserved", payment_status: "pending", payment_method: "pay_at_pickup" }).select("id").single();
+    const { data, error } = await (supabase as any).from("orders").insert({ user_id: user.id, listing_id: listing.id, merchant_id: listing.merchant_id, quantity: qty, total_price: total, commission_amount: 0, merchant_payout: total, pickup_code, status: "reserved", payment_status: "pending", payment_method: "pay_at_pickup" }).select("id").single();
     if (!error && data) await supabase.from("listings").update({ quantity_available: Math.max(0, listing.quantity_available - qty) }).eq("id", listing.id);
     setPlacing(false);
     if (error) return toast.error(error.message);
     toast.success("Reservation confirmed!");
-    navigate({ to: "/order/$id", params: { id: data!.id } });
+    navigate({ to: "/order/$id", params: { id: data!.id }, search: { pickupTime } as any });
   };
 
   return (
