@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { formatBND } from "@/lib/sample-data";
+import { MerchantProfileSettings } from "@/components/merchant/MerchantProfileSettings";
 import { Plus, Store, ShoppingBag, TrendingUp, Sprout, Pencil, Trash2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -137,8 +138,15 @@ function MerchantDashboard() {
     <SiteLayout>
       <section className="container mx-auto max-w-6xl px-4 py-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><h1 className="text-3xl font-bold">{merchant.business_name}</h1><p className="text-sm text-muted-foreground">Merchant dashboard</p></div>
+          <div>
+            <h1 className="text-3xl font-bold">{merchant.business_name}</h1>
+            <p className="text-sm text-muted-foreground">Merchant dashboard · customize your profile, manage orders, and publish offers</p>
+          </div>
           <Button asChild className="rounded-full"><Link to="/merchant/new-listing"><Plus className="mr-2 h-4 w-4" />New listing</Link></Button>
+        </div>
+
+        <div className="mt-6">
+          <MerchantProfileSettings merchant={merchant} onSaved={(m) => setMerchant(m)} />
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
