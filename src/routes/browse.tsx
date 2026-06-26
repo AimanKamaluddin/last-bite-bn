@@ -111,7 +111,7 @@ function Browse() {
 
         {filtered.length > 0 && (
           <div className="mt-8">
-            <AdSlot size="leaderboard" id="browse-premium-top" label="Premium sponsored placement" />
+            <AdSlot size="leaderboard" id="ad-space-04-browse-top" slotCode="AD SPACE 04" label="AD SPACE 04 browse top" />
           </div>
         )}
 
@@ -128,12 +128,12 @@ function Browse() {
                 <ListingCard listing={l} />
                 {(i + 1) === 6 && i !== filtered.length - 1 && (
                   <div className="sm:col-span-2 lg:col-span-3">
-                    <AdSlot size="billboard" id="browse-premium-billboard" label="Premium sponsored placement" />
+                    <AdSlot size="billboard" id="ad-space-05-browse-billboard" slotCode="AD SPACE 05" label="AD SPACE 05 browse billboard" />
                   </div>
                 )}
                 {(i + 1) === 15 && i !== filtered.length - 1 && (
                   <div className="sm:col-span-2 lg:col-span-3">
-                    <AdSlot size="leaderboard" id="browse-secondary-leaderboard" label="Sponsored" />
+                    <AdSlot size="leaderboard" id="ad-space-06-browse-lower" slotCode="AD SPACE 06" label="AD SPACE 06 browse lower" />
                   </div>
                 )}
               </Fragment>
