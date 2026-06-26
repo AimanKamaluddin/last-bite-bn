@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/upload/ImageUpload";
-import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, DISTRICTS } from "@/lib/sample-data";
 import { ExternalLink, Save, Store } from "lucide-react";
 import { toast } from "sonner";
@@ -35,20 +34,16 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
 
   const save = async () => {
     setSaving(true);
-    const { data, error } = await (supabase as any).rpc("save_vendor_profile", {
-      p_profile: form,
-    });
+    await new Promise((resolve) => setTimeout(resolve, 200));
     setSaving(false);
-    if (error) return toast.error(error.message);
-    const updated = Array.isArray(data) && data.length ? data[0] : { ...merchant, ...form };
-    toast.success("Merchant profile updated.");
-    onSaved?.({ ...merchant, ...updated, ...form });
+    toast.success("Profile preview updated.");
+    onSaved?.({ ...merchant, ...form });
   };
 
   return (
     <Card className="rounded-3xl p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h2 className="text-xl font-semibold">Public profile settings</h2><p className="text-sm text-muted-foreground">Customize how customers see your business.</p></div>
+        <div><h2 className="text-xl font-semibold">Public profile settings</h2><p className="text-sm text-muted-foreground">Customize your profile preview. Publishing these edits to the live database requires Supabase migrations to be applied.</p></div>
         <Button asChild variant="outline" className="rounded-full"><a href={`/merchant-profile/${merchant.id}`} target="_blank" rel="noreferrer"><ExternalLink className="mr-2 h-4 w-4" />View public profile</a></Button>
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
@@ -71,7 +66,7 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
           <Field label="Website / menu link"><Input value={form.website_url ?? ""} onChange={(e) => setForm({ ...form, website_url: e.target.value })} /></Field>
         </div>
       </div>
-      <div className="mt-6 flex justify-end"><Button onClick={save} disabled={saving} className="rounded-full"><Save className="mr-2 h-4 w-4" />{saving ? "Saving…" : "Save profile"}</Button></div>
+      <div className="mt-6 flex justify-end"><Button onClick={save} disabled={saving} className="rounded-full"><Save className="mr-2 h-4 w-4" />{saving ? "Saving…" : "Save profile preview"}</Button></div>
     </Card>
   );
 }
