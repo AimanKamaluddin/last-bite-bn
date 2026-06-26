@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import heroImg from "@/assets/hero.jpg";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -81,7 +80,7 @@ function Landing() {
         </div>
 
         <div className="relative">
-          <img src={heroImg} alt="Surplus food from a local business" width={1536} height={1024} className="aspect-[4/3] w-full rounded-3xl object-cover shadow-xl" />
+          <AdSlot size="billboard" id="ad-space-01-home-hero" slotCode="AD SPACE 01" label="AD SPACE 01 homepage hero" className="h-full min-h-[360px] md:min-h-[460px]" />
           <Card className="absolute -bottom-4 left-4 right-4 rounded-3xl border-border/60 p-4 shadow-xl md:left-auto md:w-80">
             {bestDeal ? <div>
               <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground"><Flame className="h-3.5 w-3.5" /> Best deal right now</div>
@@ -123,7 +122,7 @@ function Landing() {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{availableNow.map((l) => <div key={l.id} className="relative"><div className="absolute left-3 top-3 z-10 rounded-full bg-background/95 px-3 py-1 text-xs font-semibold shadow"><Clock className="mr-1 inline h-3.5 w-3.5 text-primary" />{urgencyLabel(l)}</div><ListingCard listing={l} /></div>)}</div>
     </Section>}
 
-    <div className="container mx-auto px-4 py-2"><AdSlot size="inline" id="home-after-available" label="Sponsored" /></div>
+    <div className="container mx-auto px-4 py-2"><AdSlot size="inline" id="ad-space-02-home-after-offers" slotCode="AD SPACE 02" label="AD SPACE 02 homepage after offers" /></div>
 
     {sellingFast.length > 0 && <Section title="Selling fast" subtitle="Limited quantities available.">
       <div className="grid gap-4 md:grid-cols-3">{sellingFast.map((l) => <Link key={l.id} to="/listing/$id" params={{ id: l.id }} className="group block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Card className="overflow-hidden rounded-3xl p-0 transition group-hover:-translate-y-1 group-hover:shadow-lg"><div className="relative h-44 overflow-hidden">{l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" /> : <div className="h-full w-full bg-muted" />}<Badge className="absolute left-3 top-3 rounded-full bg-accent text-accent-foreground"><Flame className="mr-1 h-3.5 w-3.5" /> Only {l.quantity_available} left</Badge></div><div className="p-4"><div className="font-semibold group-hover:text-primary">{l.title}</div><div className="text-sm text-muted-foreground">{l.merchant.business_name} · {urgencyLabel(l)}</div><div className="mt-4 flex items-end justify-between"><div><div className="text-xs text-muted-foreground line-through">{formatBND(l.original_price)}</div><div className="text-2xl font-bold text-primary">{formatBND(l.discounted_price)}</div></div><span className="text-sm font-semibold text-primary">Reserve →</span></div></div></Card></Link>)}</div>
@@ -135,7 +134,7 @@ function Landing() {
 
     <Section title="Why people love Last Bite"><div className="grid gap-6 md:grid-cols-2"><BenefitCard title="For customers" items={["See available food immediately", "Reserve before pickup windows close", "Discover new local favourites", "Save money on meals, drinks and desserts"]} /><BenefitCard title="For businesses" items={["List unsold inventory quickly", "Reach nearby customers", "Reduce food waste", "Simple dashboard, no extra hardware"]} /></div></Section>
 
-    <div className="container mx-auto px-4 py-2"><AdSlot size="leaderboard" id="home-lower-leaderboard" label="Sponsored" /></div>
+    <div className="container mx-auto px-4 py-2"><AdSlot size="leaderboard" id="ad-space-03-home-lower" slotCode="AD SPACE 03" label="AD SPACE 03 homepage lower" /></div>
 
     <Section title="Food waste impact"><Card className="overflow-hidden rounded-3xl border-border/60 bg-primary p-8 text-primary-foreground md:p-12"><div className="max-w-3xl"><h3 className="text-2xl font-bold md:text-3xl">Small choices can reduce food waste.</h3><p className="mt-3 text-primary-foreground/85">Last Bite connects customers with surplus food from local businesses, making it easier to support merchants while giving good food another chance.</p></div></Card></Section>
 
