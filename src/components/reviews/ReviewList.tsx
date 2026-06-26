@@ -11,10 +11,34 @@ export function ReviewList({ listingId, merchantId }: { listingId?: string; merc
     let cancelled = false;
     (async () => {
       setLoading(true);
-      let query = (supabase as any).from("reviews").select("id, rating, comment, created_at").order("created_at", { ascending: false }).limit(8);
-      if (listingId) query = query.eq("listing_id", listingId);
-      if (merchantId) query = query.eq("merchant_id", merchantId);
-      const { data } = await query;
+
+      let reviewQuery = (supabase as any)
+        .from("reviews")
+        .select("id, rating, comment, created_at")
+        .order("created_at", { ascending: false })
+        .limit(8);
+
+      if (listingId) {
+        const { data: orders } = await (supabase as any)
+          .from("orders")
+          .select("id")
+          .eq("listing_id", listingId);
+        const orderIds = (orders ?? []).map((order: any) => order.id);
+
+        if (orderIds.length === 0) {
+          if (!cancelled) {
+            setReviews([]);
+            setLoading(false);
+          }
+          return;
+        }
+
+        reviewQuery = reviewQuery.in("order_id", orderIds);
+      }
+
+      if (merchantId) reviewQuery = reviewQuery.eq("merchant_id", merchantId);
+
+      const { data } = await reviewQuery;
       if (!cancelled) {
         setReviews(data ?? []);
         setLoading(false);
