@@ -11,7 +11,6 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/checkout/$id")({ component: Checkout });
 
-const COMMISSION_RATE = 0.15;
 const genCode = () => Math.random().toString(36).slice(2, 8).toUpperCase();
 const isPastPickup = (pickupEnd: string) => {
   const end = new Date(pickupEnd);
@@ -59,8 +58,6 @@ function Checkout() {
 
   const max = Math.max(1, Math.min(listing.quantity_available ?? 1, 5));
   const total = Number(listing.discounted_price) * qty;
-  const commission = +(total * COMMISSION_RATE).toFixed(2);
-  const payout = +(total - commission).toFixed(2);
 
   const place = async () => {
     if (!user) return;
@@ -74,7 +71,7 @@ function Checkout() {
       return;
     }
     const pickup_code = genCode();
-    const { data, error } = await supabase.from("orders").insert({ user_id: user.id, listing_id: listing.id, merchant_id: listing.merchant_id, quantity: qty, total_price: total, commission_amount: commission, merchant_payout: payout, pickup_code, status: "reserved", payment_status: "pending", payment_method: "pay_at_pickup" }).select("id").single();
+    const { data, error } = await (supabase as any).from("orders").insert({ user_id: user.id, listing_id: listing.id, merchant_id: listing.merchant_id, quantity: qty, total_price: total, commission_amount: 0, merchant_payout: total, pickup_code, status: "reserved", payment_status: "pending", payment_method: "pay_at_pickup" }).select("id").single();
     if (!error && data) await supabase.from("listings").update({ quantity_available: Math.max(0, listing.quantity_available - qty) }).eq("id", listing.id);
     setPlacing(false);
     if (error) return toast.error(error.message);
@@ -85,16 +82,8 @@ function Checkout() {
   return (
     <SiteLayout>
       <section className="container mx-auto grid max-w-4xl gap-8 px-4 py-10 md:grid-cols-[1.2fr_1fr]">
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold">Checkout</h1>
-          <Card className="rounded-3xl p-5">
-            <div className="flex items-center gap-4"><img src={listing.image_url} className="h-20 w-20 rounded-xl object-cover" alt="" /><div><div className="font-semibold">{listing.title}</div><div className="text-sm text-muted-foreground">{listing.merchant?.business_name ?? listing.merchants?.business_name}</div></div></div>
-            <div className="mt-5 flex items-center justify-between"><span className="text-sm font-medium">Quantity</span><div className="flex items-center gap-2"><Button size="icon" variant="outline" className="rounded-full" onClick={() => setQty(Math.max(1, qty - 1))}><Minus className="h-4 w-4" /></Button><span className="w-8 text-center font-semibold">{qty}</span><Button size="icon" variant="outline" className="rounded-full" onClick={() => setQty(Math.min(max, qty + 1))}><Plus className="h-4 w-4" /></Button></div></div>
-            <div className="mt-4 rounded-2xl bg-cream/60 p-4 text-sm">Pickup window: <strong>{formatTime(listing.pickup_start)} – {formatTime(listing.pickup_end)}</strong></div>
-          </Card>
-          <Card className="rounded-3xl p-5"><h2 className="font-semibold">Payment</h2><p className="mt-2 text-sm text-muted-foreground">You'll pay the merchant in cash or by card when you collect your order.</p></Card>
-        </div>
-        <aside><Card className="sticky top-24 rounded-3xl p-6"><h2 className="font-semibold">Order summary</h2><Row label={`Subtotal × ${qty}`} value={formatBND(total)} /><Row label="Service fee" value="B$0.00" /><div className="my-3 h-px bg-border" /><Row label={<span className="font-semibold">Total to pay at pickup</span>} value={<span className="text-lg font-bold">{formatBND(total)}</span>} /><Button onClick={place} disabled={placing} className="mt-5 w-full rounded-full" size="lg">{placing ? "Confirming…" : `Confirm reservation`}</Button><p className="mt-3 text-xs text-muted-foreground">You can cancel before the merchant cut-off time. No payment is taken online.</p></Card></aside>
+        <div className="space-y-6"><h1 className="text-3xl font-bold">Checkout</h1><Card className="rounded-3xl p-5"><div className="flex items-center gap-4"><img src={listing.image_url} className="h-20 w-20 rounded-xl object-cover" alt="" /><div><div className="font-semibold">{listing.title}</div><div className="text-sm text-muted-foreground">{listing.merchant?.business_name ?? listing.merchants?.business_name}</div></div></div><div className="mt-5 flex items-center justify-between"><span className="text-sm font-medium">Quantity</span><div className="flex items-center gap-2"><Button size="icon" variant="outline" className="rounded-full" onClick={() => setQty(Math.max(1, qty - 1))}><Minus className="h-4 w-4" /></Button><span className="w-8 text-center font-semibold">{qty}</span><Button size="icon" variant="outline" className="rounded-full" onClick={() => setQty(Math.min(max, qty + 1))}><Plus className="h-4 w-4" /></Button></div></div><div className="mt-4 rounded-2xl bg-cream/60 p-4 text-sm">Pickup window: <strong>{formatTime(listing.pickup_start)} – {formatTime(listing.pickup_end)}</strong></div></Card><Card className="rounded-3xl p-5"><h2 className="font-semibold">Payment</h2><p className="mt-2 text-sm text-muted-foreground">You'll pay the merchant when you collect your order.</p></Card></div>
+        <aside><Card className="sticky top-24 rounded-3xl p-6"><h2 className="font-semibold">Order summary</h2><Row label={`Subtotal × ${qty}`} value={formatBND(total)} /><Row label="Service fee" value="B$0.00" /><div className="my-3 h-px bg-border" /><Row label={<span className="font-semibold">Total to pay at pickup</span>} value={<span className="text-lg font-bold">{formatBND(total)}</span>} /><Button onClick={place} disabled={placing} className="mt-5 w-full rounded-full" size="lg">{placing ? "Confirming…" : `Confirm reservation`}</Button><p className="mt-3 text-xs text-muted-foreground">No payment is taken online.</p></Card></aside>
       </section>
     </SiteLayout>
   );
