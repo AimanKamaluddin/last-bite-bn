@@ -22,6 +22,8 @@ function OrderConfirmation() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     if (demo) {
       setOrder({
         id,
@@ -35,15 +37,55 @@ function OrderConfirmation() {
       setLoading(false);
       return;
     }
+
     (async () => {
-      const { data } = await supabase
+      setLoading(true);
+
+      const { data: orderData, error } = await supabase
         .from("orders")
-        .select("*, listings(title, image_url), merchants(business_name, address, phone, email)")
+        .select("*")
         .eq("id", id)
         .maybeSingle();
-      setOrder(data);
+
+      if (cancelled) return;
+
+      if (error || !orderData) {
+        setOrder(null);
+        setLoading(false);
+        return;
+      }
+
+      const [{ data: listing }, { data: merchant }] = await Promise.all([
+        supabase
+          .from("listings")
+          .select("title, image_url")
+          .eq("id", orderData.listing_id)
+          .maybeSingle(),
+        (supabase as any)
+          .from("merchants_public")
+          .select("business_name, district, phone, email")
+          .eq("id", orderData.merchant_id)
+          .maybeSingle(),
+      ]);
+
+      if (cancelled) return;
+
+      setOrder({
+        ...orderData,
+        listings: listing ?? null,
+        merchants: {
+          business_name: merchant?.business_name ?? "Merchant",
+          address: merchant?.district ?? "",
+          phone: merchant?.phone ?? "",
+          email: merchant?.email ?? "",
+        },
+      });
       setLoading(false);
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id, demo, demoCode]);
 
   if (loading) return <SiteLayout><div className="p-10">Loading…</div></SiteLayout>;
