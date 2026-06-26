@@ -4,16 +4,26 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { formatBND } from "@/lib/sample-data";
-import { Plus, Store, ShoppingBag, TrendingUp, Sprout, Pencil, Trash2 } from "lucide-react";
+import { Plus, Store, ShoppingBag, TrendingUp, Sprout, Pencil, Trash2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/merchant/")({
-  component: MerchantDashboard,
-});
+export const Route = createFileRoute("/merchant/")({ component: MerchantDashboard });
+
+const todayInput = () => new Date().toISOString().slice(0, 10);
+const isExpired = (l: any) => {
+  const end = new Date(l.pickup_end);
+  return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
+};
+const toIso = (date: string, time: string) => date && time ? new Date(`${date}T${time}:00`).toISOString() : null;
+const timeInput = (iso: string) => {
+  try { const d = new Date(iso); return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; } catch { return ""; }
+};
 
 function MerchantDashboard() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -21,6 +31,8 @@ function MerchantDashboard() {
   const [listings, setListings] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [busy, setBusy] = useState(true);
+  const [relistForms, setRelistForms] = useState<Record<string, { produced_date: string; produced_time: string; quantity: number }>>({});
+  const [relistingId, setRelistingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -30,7 +42,7 @@ function MerchantDashboard() {
       setMerchant(m);
       if (m) {
         const [{ data: l }, { data: o }] = await Promise.all([
-          supabase.from("listings").select("*").eq("merchant_id", m.id).order("created_at", { ascending: false }),
+          (supabase as any).from("listings").select("*").eq("merchant_id", m.id).order("created_at", { ascending: false }),
           supabase.from("orders").select("*, listings(title)").eq("merchant_id", m.id).order("created_at", { ascending: false }),
         ]);
         setListings(l ?? []);
@@ -51,9 +63,7 @@ function MerchantDashboard() {
           <Card className="rounded-3xl p-8 text-center">
             <Store className="mx-auto h-10 w-10 text-primary" />
             <h1 className="mt-3 text-2xl font-bold">Application under review</h1>
-            <p className="mt-2 text-muted-foreground">
-              Our team is reviewing your merchant application. You'll be able to publish listings once approved.
-            </p>
+            <p className="mt-2 text-muted-foreground">Our team is reviewing your merchant application. You'll be able to publish listings once approved.</p>
             <Badge variant="secondary" className="mt-4 rounded-full capitalize">{merchant.approval_status}</Badge>
           </Card>
         </section>
@@ -65,9 +75,10 @@ function MerchantDashboard() {
   const ordersToday = orders.filter((o) => new Date(o.created_at) >= today);
   const revenue = orders.filter((o) => o.status === "collected").reduce((s, o) => s + Number(o.total_price), 0);
   const portions = orders.reduce((s, o) => s + o.quantity, 0);
-
   const pending = orders.filter((o) => ["reserved", "ready"].includes(o.status));
   const completed = orders.filter((o) => ["collected", "cancelled"].includes(o.status));
+  const currentOffers = listings.filter((l) => !isExpired(l));
+  const pastOffers = listings.filter((l) => isExpired(l));
 
   const setStatus = async (id: string, status: string) => {
     const update: any = { status };
@@ -77,19 +88,61 @@ function MerchantDashboard() {
     setOrders((arr) => arr.map((o) => (o.id === id ? { ...o, ...update } : o)));
   };
 
+  const relist = async (old: any) => {
+    const f = relistForms[old.id];
+    if (!f?.produced_date || !f?.produced_time || !f?.quantity || f.quantity <= 0) {
+      toast.error("Enter a new production date, production time, and quantity before relisting.");
+      return;
+    }
+    setRelistingId(old.id);
+    const now = new Date();
+    const start = now.toISOString();
+    const oldStart = new Date(old.pickup_start);
+    const oldEnd = new Date(old.pickup_end);
+    const durationMs = !Number.isNaN(oldStart.getTime()) && !Number.isNaN(oldEnd.getTime()) ? Math.max(30 * 60 * 1000, oldEnd.getTime() - oldStart.getTime()) : 2 * 60 * 60 * 1000;
+    const payload: any = {
+      merchant_id: merchant.id,
+      title: old.title,
+      description: old.description,
+      category: old.category,
+      original_price: old.original_price,
+      discounted_price: old.discounted_price,
+      quantity_available: f.quantity,
+      pickup_start: start,
+      pickup_end: new Date(now.getTime() + durationMs).toISOString(),
+      allergen_info: old.allergen_info,
+      halal_info: old.halal_info,
+      image_url: old.image_url,
+      images: old.images ?? [],
+      visible: true,
+      status: "active",
+      produced_at: toIso(f.produced_date, f.produced_time),
+    };
+    let { data, error } = await (supabase as any).from("listings").insert(payload).select("*").single();
+    if (error && error.message?.includes("produced_at")) {
+      const { produced_at, ...fallbackPayload } = payload;
+      const retry = await (supabase as any).from("listings").insert(fallbackPayload).select("*").single();
+      data = retry.data;
+      error = retry.error;
+      if (!error) toast.warning("Relisted, but production time will save after the database migration is applied.");
+    }
+    setRelistingId(null);
+    if (error) return toast.error(error.message);
+    setListings((arr) => [data, ...arr]);
+    setRelistForms((forms) => ({ ...forms, [old.id]: { produced_date: todayInput(), produced_time: "", quantity: 1 } }));
+    toast.success("Offer relisted.");
+  };
+
   return (
     <SiteLayout>
       <section className="container mx-auto max-w-6xl px-4 py-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-bold">{merchant.business_name}</h1>
-            <p className="text-sm text-muted-foreground">Merchant dashboard</p>
-          </div>
+          <div><h1 className="text-3xl font-bold">{merchant.business_name}</h1><p className="text-sm text-muted-foreground">Merchant dashboard</p></div>
           <Button asChild className="rounded-full"><Link to="/merchant/new-listing"><Plus className="mr-2 h-4 w-4" />New listing</Link></Button>
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={Store} label="Active listings" value={listings.filter(l => l.status === "active").length} />
+          <StatCard icon={Store} label="Current offers" value={currentOffers.filter(l => l.status === "active").length} />
           <StatCard icon={ShoppingBag} label="Orders today" value={ordersToday.length} />
           <StatCard icon={TrendingUp} label="Revenue" value={formatBND(revenue)} />
           <StatCard icon={Sprout} label="Portions saved" value={portions} />
@@ -97,101 +150,18 @@ function MerchantDashboard() {
 
         <h2 className="mt-10 text-xl font-semibold">Orders</h2>
         <Tabs defaultValue="pending" className="mt-4">
-          <TabsList>
-            <TabsTrigger value="pending">Pending</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="pending" className="mt-4">
-            {pending.length === 0 ? (
-              <Card className="rounded-3xl p-8 text-center text-muted-foreground">No pending orders.</Card>
-            ) : (
-              <div className="grid gap-3">
-                {pending.map((o) => (
-                  <Card key={o.id} className="flex flex-wrap items-center gap-4 rounded-3xl p-4">
-                    <div className="flex-1">
-                      <div className="font-semibold">{o.listings?.title}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Qty {o.quantity} · {formatBND(Number(o.total_price))} · Code <strong>{o.pickup_code}</strong>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge>
-                    {o.status === "reserved" && <Button size="sm" variant="outline" className="rounded-full" onClick={() => setStatus(o.id, "ready")}>Mark ready</Button>}
-                    {o.status === "ready" && <Button size="sm" className="rounded-full" onClick={() => setStatus(o.id, "collected")}>Mark collected</Button>}
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="completed" className="mt-4">
-            {completed.length === 0 ? (
-              <Card className="rounded-3xl p-8 text-center text-muted-foreground">No completed orders yet.</Card>
-            ) : (
-              <div className="grid gap-3">
-                {completed.map((o) => (
-                  <Card key={o.id} className="flex flex-wrap items-center gap-4 rounded-3xl p-4">
-                    <div className="flex-1">
-                      <div className="font-semibold">{o.listings?.title}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Qty {o.quantity} · {formatBND(Number(o.total_price))} · Code <strong>{o.pickup_code}</strong>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="rounded-full capitalize">{o.status}</Badge>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
+          <TabsList><TabsTrigger value="pending">Pending</TabsTrigger><TabsTrigger value="completed">Completed</TabsTrigger></TabsList>
+          <TabsContent value="pending" className="mt-4">{pending.length === 0 ? <Card className="rounded-3xl p-8 text-center text-muted-foreground">No pending orders.</Card> : <div className="grid gap-3">{pending.map((o) => <OrderRow key={o.id} o={o} setStatus={setStatus} />)}</div>}</TabsContent>
+          <TabsContent value="completed" className="mt-4">{completed.length === 0 ? <Card className="rounded-3xl p-8 text-center text-muted-foreground">No completed orders yet.</Card> : <div className="grid gap-3">{completed.map((o) => <OrderRow key={o.id} o={o} />)}</div>}</TabsContent>
         </Tabs>
 
-        <h2 className="mt-10 text-xl font-semibold">Your listings</h2>
-        {listings.length === 0 ? (
-          <Card className="mt-3 rounded-3xl p-8 text-center text-muted-foreground">
-            No listings yet. <Link to="/merchant/new-listing" className="text-primary underline">Create your first one</Link>.
-          </Card>
-        ) : (
+        <h2 className="mt-10 text-xl font-semibold">Current offers</h2>
+        {currentOffers.length === 0 ? <Card className="mt-3 rounded-3xl p-8 text-center text-muted-foreground">No current offers. <Link to="/merchant/new-listing" className="text-primary underline">Create one</Link>.</Card> : <ListingGrid listings={currentOffers} setListings={setListings} />}
+
+        <h2 className="mt-10 text-xl font-semibold">Past offers</h2>
+        {pastOffers.length === 0 ? <Card className="mt-3 rounded-3xl p-8 text-center text-muted-foreground">No past offers yet.</Card> : (
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {listings.map((l) => (
-              <Card key={l.id} className="overflow-hidden rounded-3xl p-0">
-                {l.image_url && <img src={l.image_url} alt="" className="h-32 w-full object-cover" />}
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-semibold">{l.title}</div>
-                      <div className="text-xs text-muted-foreground">{l.category}</div>
-                    </div>
-                    <Badge variant="secondary" className="rounded-full capitalize">{l.status}</Badge>
-                  </div>
-                  <div className="mt-2 text-sm">
-                    <span className="text-muted-foreground line-through">{formatBND(Number(l.original_price))}</span>{" "}
-                    <span className="font-semibold text-primary">{formatBND(Number(l.discounted_price))}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">{l.quantity_available} left</div>
-                  <div className="mt-3 flex gap-2">
-                    <Button asChild size="sm" variant="outline" className="flex-1 rounded-full">
-                      <Link to="/merchant/edit-listing/$id" params={{ id: l.id }}>
-                        <Pencil className="mr-1.5 h-3.5 w-3.5" />Edit
-                      </Link>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-full text-destructive hover:text-destructive"
-                      onClick={async () => {
-                        if (!confirm(`Delete "${l.title}"?`)) return;
-                        const { error } = await supabase.from("listings").delete().eq("id", l.id);
-                        if (error) return toast.error(error.message);
-                        setListings((arr) => arr.filter((x) => x.id !== l.id));
-                        toast.success("Listing deleted.");
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
+            {pastOffers.map((l) => <PastOfferCard key={l.id} l={l} form={relistForms[l.id] ?? { produced_date: todayInput(), produced_time: "", quantity: Math.max(1, Number(l.quantity_available || 1)) }} setForm={(f) => setRelistForms((all) => ({ ...all, [l.id]: f }))} onRelist={() => relist(l)} relisting={relistingId === l.id} />)}
           </div>
         )}
       </section>
@@ -199,14 +169,22 @@ function MerchantDashboard() {
   );
 }
 
+function OrderRow({ o, setStatus }: { o: any; setStatus?: (id: string, status: string) => void }) {
+  return <Card className="flex flex-wrap items-center gap-4 rounded-3xl p-4"><div className="flex-1"><div className="font-semibold">{o.listings?.title}</div><div className="text-sm text-muted-foreground">Qty {o.quantity} · {formatBND(Number(o.total_price))} · Code <strong>{o.pickup_code}</strong></div></div><Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge>{setStatus && o.status === "reserved" && <Button size="sm" variant="outline" className="rounded-full" onClick={() => setStatus(o.id, "ready")}>Mark ready</Button>}{setStatus && o.status === "ready" && <Button size="sm" className="rounded-full" onClick={() => setStatus(o.id, "collected")}>Mark collected</Button>}</Card>;
+}
+
+function ListingGrid({ listings, setListings }: { listings: any[]; setListings: React.Dispatch<React.SetStateAction<any[]>> }) {
+  return <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{listings.map((l) => <ListingCard key={l.id} l={l} setListings={setListings} />)}</div>;
+}
+
+function ListingCard({ l, setListings }: { l: any; setListings: React.Dispatch<React.SetStateAction<any[]>> }) {
+  return <Card className="overflow-hidden rounded-3xl p-0">{l.image_url && <img src={l.image_url} alt="" className="h-32 w-full object-cover" />}<div className="p-4"><div className="flex items-start justify-between gap-2"><div><div className="font-semibold">{l.title}</div><div className="text-xs text-muted-foreground">{l.category}</div></div><Badge variant="secondary" className="rounded-full capitalize">{l.status}</Badge></div><div className="mt-2 text-sm"><span className="text-muted-foreground line-through">{formatBND(Number(l.original_price))}</span> <span className="font-semibold text-primary">{formatBND(Number(l.discounted_price))}</span></div><div className="text-xs text-muted-foreground">{l.quantity_available} left</div><div className="mt-3 flex gap-2"><Button asChild size="sm" variant="outline" className="flex-1 rounded-full"><Link to="/merchant/edit-listing/$id" params={{ id: l.id }}><Pencil className="mr-1.5 h-3.5 w-3.5" />Edit</Link></Button><Button size="sm" variant="outline" className="rounded-full text-destructive hover:text-destructive" onClick={async () => { if (!confirm(`Delete "${l.title}"?`)) return; const { error } = await supabase.from("listings").delete().eq("id", l.id); if (error) return toast.error(error.message); setListings((arr) => arr.filter((x) => x.id !== l.id)); toast.success("Listing deleted."); }}><Trash2 className="h-3.5 w-3.5" /></Button></div></div></Card>;
+}
+
+function PastOfferCard({ l, form, setForm, onRelist, relisting }: { l: any; form: { produced_date: string; produced_time: string; quantity: number }; setForm: (f: { produced_date: string; produced_time: string; quantity: number }) => void; onRelist: () => void; relisting: boolean }) {
+  return <Card className="overflow-hidden rounded-3xl p-0">{l.image_url && <img src={l.image_url} alt="" className="h-32 w-full object-cover opacity-70" />}<div className="p-4"><div className="flex items-start justify-between gap-2"><div><div className="font-semibold">{l.title}</div><div className="text-xs text-muted-foreground">Expired at {timeInput(l.pickup_end)}</div></div><Badge variant="outline" className="rounded-full">Past offer</Badge></div><div className="mt-3 grid gap-3"><div><Label className="text-xs">New production date</Label><Input type="date" value={form.produced_date} onChange={(e) => setForm({ ...form, produced_date: e.target.value })} /></div><div><Label className="text-xs">New production time</Label><Input type="time" value={form.produced_time} onChange={(e) => setForm({ ...form, produced_time: e.target.value })} /></div><div><Label className="text-xs">New quantity</Label><Input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: +e.target.value })} /></div><Button className="rounded-full" disabled={relisting} onClick={onRelist}><RotateCcw className="mr-2 h-4 w-4" />{relisting ? "Relisting…" : "Relist offer"}</Button></div></div></Card>;
+}
+
 function StatCard({ icon: Icon, label, value }: any) {
-  return (
-    <Card className="rounded-3xl p-5">
-      <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="mt-3 text-2xl font-bold">{value}</div>
-      <div className="text-sm text-muted-foreground">{label}</div>
-    </Card>
-  );
+  return <Card className="rounded-3xl p-5"><div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="h-5 w-5" /></div><div className="mt-3 text-2xl font-bold">{value}</div><div className="text-sm text-muted-foreground">{label}</div></Card>;
 }
