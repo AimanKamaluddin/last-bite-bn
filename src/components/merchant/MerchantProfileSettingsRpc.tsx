@@ -35,20 +35,8 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
 
   const save = async () => {
     setSaving(true);
-    const { data, error } = await (supabase as any).rpc("update_my_merchant_profile", {
-      p_business_name: form.business_name,
-      p_tagline: form.tagline,
-      p_business_type: form.business_type,
-      p_district: form.district,
-      p_description: form.description,
-      p_image_url: form.image_url,
-      p_cover_image_url: form.cover_image_url,
-      p_address: form.address,
-      p_opening_hours: form.opening_hours,
-      p_phone: form.phone,
-      p_email: form.email,
-      p_instagram_url: form.instagram_url,
-      p_website_url: form.website_url,
+    const { data, error } = await (supabase as any).rpc("update_my_merchant_profile_json", {
+      profile: form,
     });
     setSaving(false);
     if (error) return toast.error(error.message);
