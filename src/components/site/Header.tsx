@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { Leaf, Menu, User as UserIcon, X } from "lucide-react";
+import { Languages, Leaf, Menu, User as UserIcon, X } from "lucide-react";
 import { useState } from "react";
+import { useLanguage } from "@/lib/i18n";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,19 +14,20 @@ import {
 
 export function Header() {
   const { isAuthenticated, isMerchant, isAdmin, signOut, user } = useAuth();
+  const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const nav = (
     <>
       <Link to="/about" className="rounded-xl px-3 py-2 text-sm font-medium hover:bg-muted hover:text-primary" onClick={() => setOpen(false)}>
-        About
+        {t("about")}
       </Link>
       <Link to="/browse" className="rounded-xl px-3 py-2 text-sm font-medium hover:bg-muted hover:text-primary" onClick={() => setOpen(false)}>
-        Browse Food
+        {t("browseFood")}
       </Link>
       <Link to="/merchant/onboarding" className="rounded-xl px-3 py-2 text-sm font-medium hover:bg-muted hover:text-primary" onClick={() => setOpen(false)}>
-        For Businesses
+        {t("forBusinesses")}
       </Link>
     </>
   );
@@ -43,6 +45,16 @@ export function Header() {
         <nav className="hidden items-center gap-2 md:flex">{nav}</nav>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 gap-1.5 rounded-full px-3"
+            onClick={toggleLanguage}
+            aria-label={`${t("language")}: ${language === "en" ? t("english") : t("malay")}`}
+          >
+            <Languages className="h-4 w-4" />
+            <span>{language === "en" ? "BM" : "EN"}</span>
+          </Button>
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -53,16 +65,16 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
-                  My orders
+                  {t("myOrders")}
                 </DropdownMenuItem>
                 {isMerchant && (
                   <DropdownMenuItem onClick={() => navigate({ to: "/merchant" })}>
-                    Merchant dashboard
+                    {t("merchantDashboard")}
                   </DropdownMenuItem>
                 )}
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => navigate({ to: "/admin" })}>
-                    Admin panel
+                    {t("adminPanel")}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
@@ -72,17 +84,17 @@ export function Header() {
                     navigate({ to: "/" });
                   }}
                 >
-                  Sign out
+                  {t("signOut")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <>
               <Button asChild variant="ghost" size="sm" className="hidden h-9 sm:inline-flex">
-                <Link to="/auth">Sign in</Link>
+                <Link to="/auth">{t("signIn")}</Link>
               </Button>
               <Button asChild size="sm" className="hidden h-9 rounded-full sm:inline-flex">
-                <Link to="/browse">Browse Food</Link>
+                <Link to="/browse">{t("browseFood")}</Link>
               </Button>
             </>
           )}
@@ -91,7 +103,7 @@ export function Header() {
             size="icon"
             className="h-9 w-9 md:hidden"
             onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle menu"
+            aria-label={t("toggleMenu")}
             aria-expanded={open}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -104,10 +116,10 @@ export function Header() {
           {!isAuthenticated && (
             <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3">
               <Button asChild variant="outline" className="rounded-full" onClick={() => setOpen(false)}>
-                <Link to="/auth">Sign in</Link>
+                <Link to="/auth">{t("signIn")}</Link>
               </Button>
               <Button asChild className="rounded-full" onClick={() => setOpen(false)}>
-                <Link to="/browse">Browse Food</Link>
+                <Link to="/browse">{t("browseFood")}</Link>
               </Button>
             </div>
           )}
