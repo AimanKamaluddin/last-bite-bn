@@ -28,8 +28,6 @@ const minutesUntil = (dateValue: string) => {
   return Math.max(0, Math.round((end.getTime() - Date.now()) / 60000));
 };
 
-const discountPct = (listing: ListingCardData) => Math.round((1 - listing.discounted_price / Math.max(listing.original_price, 0.01)) * 100);
-
 const urgencyLabel = (listing: ListingCardData) => {
   const mins = minutesUntil(listing.pickup_end);
   if (mins === Number.POSITIVE_INFINITY) return "Pickup today";
@@ -54,7 +52,6 @@ function Landing() {
   const liveListings = useMemo(() => listings.filter((l) => !isExpired(l.pickup_end) && l.quantity_available > 0), [listings]);
   const availableNow = useMemo(() => [...liveListings].sort((a, b) => minutesUntil(a.pickup_end) - minutesUntil(b.pickup_end) || a.quantity_available - b.quantity_available).slice(0, 6), [liveListings]);
   const sellingFast = useMemo(() => [...liveListings].sort((a, b) => a.quantity_available - b.quantity_available || minutesUntil(a.pickup_end) - minutesUntil(b.pickup_end)).slice(0, 3), [liveListings]);
-  const bestDeal = useMemo(() => [...liveListings].sort((a, b) => discountPct(b) - discountPct(a))[0], [liveListings]);
   const underFive = liveListings.filter((l) => l.discounted_price <= 5).length;
   const offersAvailable = liveListings.reduce((sum, l) => sum + Number(l.quantity_available || 0), 0);
   const customerSavings = liveListings.reduce((sum, l) => sum + Math.max(0, l.original_price - l.discounted_price) * Number(l.quantity_available || 0), 0);
@@ -81,17 +78,6 @@ function Landing() {
 
         <div className="relative">
           <AdSlot size="billboard" id="ad-space-01-home-hero" slotCode="AD SPACE 01" label="AD SPACE 01 homepage hero" className="h-full min-h-[360px] md:min-h-[460px]" />
-          <Card className="absolute -bottom-4 left-4 right-4 rounded-3xl border-border/60 p-4 shadow-xl md:left-auto md:w-80">
-            {bestDeal ? <div>
-              <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground"><Flame className="h-3.5 w-3.5" /> Best deal right now</div>
-              <div className="font-semibold">{bestDeal.title}</div>
-              <div className="text-sm text-muted-foreground">{bestDeal.merchant.business_name} · {bestDeal.quantity_available} left</div>
-              <div className="mt-3 flex items-end justify-between gap-3">
-                <div><div className="text-xs text-muted-foreground line-through">{formatBND(bestDeal.original_price)}</div><div className="text-2xl font-bold text-primary">{formatBND(bestDeal.discounted_price)}</div></div>
-                <Button asChild size="sm" className="rounded-full"><Link to="/listing/$id" params={{ id: bestDeal.id }}>Reserve</Link></Button>
-              </div>
-            </div> : <div><div className="font-semibold">Every rescued meal helps</div><div className="text-sm text-muted-foreground">Support local businesses and reduce waste.</div></div>}
-          </Card>
         </div>
       </div>
     </section>
