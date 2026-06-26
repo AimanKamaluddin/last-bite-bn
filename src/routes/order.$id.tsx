@@ -15,6 +15,8 @@ export const Route = createFileRoute("/order/$id")({
   component: OrderConfirmation,
 });
 
+const getPickupTime = (order: any) => order.pickup_time || String(order.payment_method ?? "").match(/pickup_time=([^|]+)/)?.[1] || "";
+
 function OrderConfirmation() {
   const { id } = Route.useParams();
   const { code: demoCode, demo, pickupTime } = useSearch({ from: "/order/$id" });
@@ -94,6 +96,7 @@ function OrderConfirmation() {
 
   // simple QR proxy
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(order.pickup_code)}`;
+  const selectedPickupTime = getPickupTime(order) || pickupTime;
 
   return (
     <SiteLayout>
@@ -106,7 +109,7 @@ function OrderConfirmation() {
           <img src={qr} alt="Pickup QR code" className="mx-auto" width={200} height={200} />
           <div className="mt-4 text-3xl font-bold tracking-[0.4em] text-primary">{order.pickup_code}</div>
           <div className="mt-1 text-sm text-muted-foreground">Pickup code</div>
-          {order.pickup_time && <div className="mt-4 rounded-2xl bg-cream/60 p-3 text-sm"><span className="text-muted-foreground">Pickup time:</span> <strong>{order.pickup_time}</strong></div>}
+          {selectedPickupTime && <div className="mt-4 rounded-2xl bg-cream/60 p-4 text-sm"><div className="text-muted-foreground">Pickup time reminder</div><strong className="text-lg">{selectedPickupTime}</strong></div>}
 
           <div className="my-6 h-px bg-border" />
           <div className="text-left text-sm">
