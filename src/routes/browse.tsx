@@ -91,7 +91,7 @@ function Browse() {
       <section className="container mx-auto px-4 py-10">
         <h1 className="text-3xl font-bold md:text-4xl">Browse surplus food</h1>
         <p className="mt-2 text-muted-foreground">
-          {loading ? "Loading nearby food…" : `${filtered.length} surprise bags & meals available.`}
+          {loading ? "Loading available food…" : `${filtered.length} offers available.`}
         </p>
 
         <div className="mt-6 rounded-3xl border bg-card p-4 shadow-sm">
@@ -109,14 +109,10 @@ function Browse() {
           <FilterRow label="Category" value={category} onChange={setCategory} options={CATEGORIES as readonly string[]} />
         </div>
 
-        <div className="mt-6">
-          <AdSlot size="leaderboard" id="browse-top" label="Sponsored" />
-        </div>
-
         {filtered.length === 0 ? (
           <div className="mx-auto mt-16 max-w-md rounded-3xl border bg-card p-10 text-center">
             <div className="text-lg font-semibold">No food matches your filters</div>
-            <p className="mt-2 text-sm text-muted-foreground">Try clearing a filter or check back later — new bags drop throughout the day.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Try clearing a filter or check back later — new offers can appear throughout the day.</p>
             <Button className="mt-4 rounded-full" onClick={() => { setQ(""); setDistrict(""); setCategory(""); }}>Clear filters</Button>
           </div>
         ) : (
@@ -124,9 +120,14 @@ function Browse() {
             {filtered.map((l, i) => (
               <Fragment key={l.id}>
                 <ListingCard listing={l} />
-                {(i + 1) % 6 === 0 && i !== filtered.length - 1 && (
+                {(i + 1) === 9 && i !== filtered.length - 1 && (
                   <div className="sm:col-span-2 lg:col-span-3">
-                    <AdSlot size="billboard" id={`browse-inline-${i}`} label="Sponsored" />
+                    <AdSlot size="inline" id="browse-inline-primary" label="Sponsored" />
+                  </div>
+                )}
+                {(i + 1) === 18 && i !== filtered.length - 1 && (
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <AdSlot size="leaderboard" id="browse-inline-secondary" label="Sponsored" />
                   </div>
                 )}
               </Fragment>
