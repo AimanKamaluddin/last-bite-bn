@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Star, Store, Clock } from "lucide-react";
+import { Clock, ExternalLink, Mail, MapPin, Phone, Star, Store } from "lucide-react";
 
 export const Route = createFileRoute("/merchant-profile/$id")({ component: MerchantProfile });
 
@@ -29,7 +29,7 @@ function MerchantProfile() {
       const [{ data: m }, { data: l }] = await Promise.all([
         (supabase as any)
           .from("merchants_public")
-          .select("id, business_name, business_type, district, image_url, rating")
+          .select("id, business_name, business_type, district, image_url, rating, tagline, cover_image_url, description, address, opening_hours, phone, email, instagram_url, website_url")
           .eq("id", id)
           .maybeSingle(),
         (supabase as any)
@@ -75,17 +75,18 @@ function MerchantProfile() {
     <SiteLayout>
       <section className="container mx-auto max-w-6xl px-4 py-10">
         <Card className="overflow-hidden rounded-3xl p-0">
-          <div className="h-44 bg-gradient-to-br from-primary via-emerald-600 to-accent">
-            {merchant.image_url && <img src={merchant.image_url} alt={merchant.business_name} className="h-full w-full object-cover opacity-90" />}
+          <div className="h-52 bg-gradient-to-br from-primary via-emerald-600 to-accent md:h-64">
+            {(merchant.cover_image_url || merchant.image_url) && <img src={merchant.cover_image_url || merchant.image_url} alt={merchant.business_name} className="h-full w-full object-cover opacity-95" />}
           </div>
           <div className="p-6 md:p-8">
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div>
-                <div className="mb-3 grid h-16 w-16 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-                  <Store className="h-8 w-8" />
+                <div className="-mt-16 mb-4 grid h-24 w-24 place-items-center overflow-hidden rounded-3xl bg-primary text-primary-foreground shadow-lg ring-4 ring-background">
+                  {merchant.image_url ? <img src={merchant.image_url} alt={merchant.business_name} className="h-full w-full object-cover" /> : <Store className="h-10 w-10" />}
                 </div>
                 <h1 className="text-3xl font-bold md:text-4xl">{merchant.business_name}</h1>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                {merchant.tagline && <p className="mt-2 max-w-2xl text-lg text-muted-foreground">{merchant.tagline}</p>}
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                   {merchant.business_type && <Badge variant="secondary" className="rounded-full">{merchant.business_type}</Badge>}
                   <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" />{merchant.district}</span>
                   <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-sun text-sun" />{Number(merchant.rating ?? 0).toFixed(1)}</span>
@@ -93,14 +94,28 @@ function MerchantProfile() {
               </div>
               <Button asChild className="rounded-full"><Link to="/browse">Browse all food</Link></Button>
             </div>
+
+            {(merchant.description || merchant.address || merchant.opening_hours || merchant.phone || merchant.email || merchant.instagram_url || merchant.website_url) && (
+              <div className="mt-8 grid gap-4 md:grid-cols-[1.4fr_1fr]">
+                {merchant.description && <Card className="rounded-2xl p-4"><h2 className="font-semibold">About</h2><p className="mt-2 text-sm text-muted-foreground">{merchant.description}</p></Card>}
+                <Card className="rounded-2xl p-4">
+                  <h2 className="font-semibold">Business details</h2>
+                  <div className="mt-3 grid gap-2 text-sm text-muted-foreground">
+                    {merchant.address && <span className="inline-flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 text-primary" />{merchant.address}</span>}
+                    {merchant.opening_hours && <span className="inline-flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 text-primary" />{merchant.opening_hours}</span>}
+                    {merchant.phone && <span className="inline-flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 text-primary" />{merchant.phone}</span>}
+                    {merchant.email && <span className="inline-flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 text-primary" />{merchant.email}</span>}
+                    {merchant.instagram_url && <a className="inline-flex items-start gap-2 text-primary hover:underline" href={merchant.instagram_url} target="_blank" rel="noreferrer"><ExternalLink className="mt-0.5 h-4 w-4" />Instagram / social</a>}
+                    {merchant.website_url && <a className="inline-flex items-start gap-2 text-primary hover:underline" href={merchant.website_url} target="_blank" rel="noreferrer"><ExternalLink className="mt-0.5 h-4 w-4" />Website / menu</a>}
+                  </div>
+                </Card>
+              </div>
+            )}
           </div>
         </Card>
 
         <section className="mt-10">
-          <div className="mb-4 flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary" />
-            <h2 className="text-2xl font-bold">Offers today</h2>
-          </div>
+          <div className="mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /><h2 className="text-2xl font-bold">Offers today</h2></div>
           {offersToday.length === 0 ? <EmptyCard msg="This merchant has no current offers available right now." /> : <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{offersToday.map((l) => <ListingCard key={l.id} listing={l} />)}</div>}
         </section>
 
@@ -119,6 +134,4 @@ function MerchantProfile() {
   );
 }
 
-function EmptyCard({ msg }: { msg: string }) {
-  return <Card className="mt-4 rounded-3xl p-8 text-center text-muted-foreground">{msg}</Card>;
-}
+function EmptyCard({ msg }: { msg: string }) { return <Card className="mt-4 rounded-3xl p-8 text-center text-muted-foreground">{msg}</Card>; }
