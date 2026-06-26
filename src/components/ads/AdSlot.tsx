@@ -18,21 +18,28 @@ interface AdSlotProps {
   label?: string;
   className?: string;
   id?: string;
+  slotCode?: string;
   ctaHref?: string;
 }
 
 const AD_EMAIL = "lastbite.bn@gmail.com";
 const DEFAULT_CTA = `mailto:${AD_EMAIL}?subject=Advertise%20on%20Last%20Bite`;
 
-export function AdSlot({ size = "leaderboard", label, className, id, ctaHref = DEFAULT_CTA }: AdSlotProps) {
+function formatSlotCode(id?: string) {
+  if (!id) return "AD SPACE";
+  return id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+export function AdSlot({ size = "leaderboard", label, className, id, slotCode, ctaHref = DEFAULT_CTA }: AdSlotProps) {
   const isSlim = size === "leaderboard" || size === "mobile-banner" || size === "inline";
   const isTall = size === "skyscraper";
   const isCompact = size === "rectangle" || size === "square";
+  const code = slotCode ?? formatSlotCode(id);
 
   return (
     <aside
       role="complementary"
-      aria-label={label ?? "Sponsored space"}
+      aria-label={label ?? `${code} sponsored space`}
       data-ad-slot={id ?? size}
       className={cn(
         "group relative mx-auto w-full max-w-6xl overflow-hidden rounded-[2rem]",
@@ -47,21 +54,24 @@ export function AdSlot({ size = "leaderboard", label, className, id, ctaHref = D
       <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/25 blur-3xl" />
       <div className="pointer-events-none absolute -right-12 -bottom-16 h-64 w-64 rounded-full bg-accent/45 blur-3xl" />
 
+      <span className="absolute left-4 top-4 z-10 rounded-full bg-white px-3 py-1 text-[11px] font-black uppercase tracking-wider text-primary shadow-md">
+        {code}
+      </span>
       <span className="absolute right-4 top-4 z-10 rounded-full bg-white/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm ring-1 ring-white/25">
         Premium ad space
       </span>
 
-      {isTall ? <TallLayout ctaHref={ctaHref} /> : isSlim ? <SlimLayout ctaHref={ctaHref} /> : isCompact ? <CompactLayout ctaHref={ctaHref} /> : <FullLayout ctaHref={ctaHref} />}
+      {isTall ? <TallLayout ctaHref={ctaHref} code={code} /> : isSlim ? <SlimLayout ctaHref={ctaHref} code={code} /> : isCompact ? <CompactLayout ctaHref={ctaHref} code={code} /> : <FullLayout ctaHref={ctaHref} code={code} />}
     </aside>
   );
 }
 
-function FullLayout({ ctaHref }: { ctaHref: string }) {
+function FullLayout({ ctaHref, code }: { ctaHref: string; code: string }) {
   return (
-    <div className="relative z-10 flex h-full items-center justify-between gap-6 px-6 py-7 md:px-10 md:py-9">
+    <div className="relative z-10 flex h-full items-center justify-between gap-6 px-6 py-7 pt-16 md:px-10 md:py-9 md:pt-16">
       <div className="max-w-2xl">
         <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold backdrop-blur-sm">
-          <Sparkles className="h-3 w-3" /> Prime sponsor placement
+          <Sparkles className="h-3 w-3" /> {code} · Prime sponsor placement
         </div>
         <h3 className="mt-3 text-2xl font-bold leading-tight md:text-4xl">
           Put your business in front of Last Bite customers.
@@ -83,12 +93,12 @@ function FullLayout({ ctaHref }: { ctaHref: string }) {
   );
 }
 
-function CompactLayout({ ctaHref }: { ctaHref: string }) {
+function CompactLayout({ ctaHref, code }: { ctaHref: string; code: string }) {
   return (
-    <div className="relative z-10 flex h-full flex-col justify-between gap-4 p-6">
+    <div className="relative z-10 flex h-full flex-col justify-between gap-4 p-6 pt-16">
       <div>
         <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold backdrop-blur-sm">
-          <Store className="h-3 w-3" /> Sponsor spotlight
+          <Store className="h-3 w-3" /> {code}
         </div>
         <h3 className="mt-3 text-2xl font-bold leading-tight">Advertise your business here.</h3>
         <p className="mt-2 text-sm opacity-95">Reach customers browsing food offers across Brunei.</p>
@@ -101,16 +111,16 @@ function CompactLayout({ ctaHref }: { ctaHref: string }) {
   );
 }
 
-function SlimLayout({ ctaHref }: { ctaHref: string }) {
+function SlimLayout({ ctaHref, code }: { ctaHref: string; code: string }) {
   return (
-    <div className="relative z-10 flex h-full items-center justify-between gap-5 px-5 py-5 md:px-8">
+    <div className="relative z-10 flex h-full items-center justify-between gap-5 px-5 py-5 pt-14 md:px-8 md:pt-12">
       <div className="flex min-w-0 items-center gap-4">
         <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/15 backdrop-blur-sm ring-1 ring-white/20">
           <Megaphone className="h-7 w-7" />
         </div>
         <div className="min-w-0 pr-20 md:pr-0">
           <div className="text-lg font-bold leading-tight md:text-2xl">Advertise on Last Bite</div>
-          <div className="mt-1 truncate text-xs opacity-90 md:text-sm">Premium placement for local food and lifestyle brands</div>
+          <div className="mt-1 truncate text-xs opacity-90 md:text-sm">{code} · Premium placement for local food and lifestyle brands</div>
           <div className="mt-2 hidden text-xs font-medium opacity-90 md:block">Contact {AD_EMAIL}</div>
         </div>
       </div>
@@ -119,12 +129,12 @@ function SlimLayout({ ctaHref }: { ctaHref: string }) {
   );
 }
 
-function TallLayout({ ctaHref }: { ctaHref: string }) {
+function TallLayout({ ctaHref, code }: { ctaHref: string; code: string }) {
   return (
-    <div className="relative z-10 flex h-full flex-col items-center justify-between gap-4 p-5 text-center">
+    <div className="relative z-10 flex h-full flex-col items-center justify-between gap-4 p-5 pt-16 text-center">
       <div>
         <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold backdrop-blur-sm">
-          <Sparkles className="h-3 w-3" /> Sponsor space
+          <Sparkles className="h-3 w-3" /> {code}
         </div>
         <h3 className="mt-4 text-xl font-bold leading-tight">Your business could be here.</h3>
         <p className="mt-2 text-xs opacity-95">Reach customers browsing nearby offers.</p>
