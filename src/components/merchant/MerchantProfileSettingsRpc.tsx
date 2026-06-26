@@ -35,8 +35,8 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
 
   const save = async () => {
     setSaving(true);
-    const { data, error } = await (supabase as any).rpc("update_my_merchant_profile_json", {
-      profile: form,
+    const { data, error } = await (supabase as any).rpc("save_vendor_profile", {
+      p_profile: form,
     });
     setSaving(false);
     if (error) return toast.error(error.message);
