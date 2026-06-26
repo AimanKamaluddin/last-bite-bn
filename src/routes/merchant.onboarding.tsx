@@ -17,6 +17,8 @@ export const Route = createFileRoute("/merchant/onboarding")({
   component: Onboarding,
 });
 
+const BUSINESS_TYPES = [...CATEGORIES, "Gerai"] as const;
+
 function Onboarding() {
   const { user, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
@@ -92,7 +94,7 @@ function Onboarding() {
             <Field label="Business type">
               <Select value={form.business_type} onValueChange={(v) => setForm({ ...form, business_type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectContent>{BUSINESS_TYPES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
             <Field label="District">
