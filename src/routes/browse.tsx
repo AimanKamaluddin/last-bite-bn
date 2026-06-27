@@ -26,11 +26,15 @@ export const Route = createFileRoute("/browse")({
 
 type Row = SampleListing & { _isLive?: boolean };
 
+const isExpired = (pickupEnd: string) => {
+  const end = new Date(pickupEnd);
+  return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
+};
+
 function Browse() {
   const [q, setQ] = useState("");
   const [district, setDistrict] = useState<string>("");
   const [category, setCategory] = useState<string>("");
-  
   const [live, setLive] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,18 +79,24 @@ function Browse() {
     })();
   }, []);
 
-  const all: Row[] = live;
-
   const filtered = useMemo(() => {
-    return all.filter((l) => {
+    return live.filter((l) => {
       if (q && !`${l.title} ${l.merchant.business_name}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (district && l.merchant.district !== district) return false;
       if (category && l.category !== category) return false;
       return true;
     });
-  }, [all, q, district, category]);
+  }, [live, q, district, category]);
+
+  const grouped = useMemo(() => {
+    const available = filtered.filter((l) => l.quantity_available > 0 && !isExpired(l.pickup_end));
+    const soldOut = filtered.filter((l) => l.quantity_available <= 0 && !isExpired(l.pickup_end));
+    const expired = filtered.filter((l) => isExpired(l.pickup_end));
+    return { available, soldOut, expired };
+  }, [filtered]);
 
   const activeFilterCount = [district, category].filter(Boolean).length;
+  const hasResults = filtered.length > 0;
 
   return (
     <SiteLayout>
@@ -95,7 +105,7 @@ function Browse() {
           <div>
             <h1 className="text-2xl font-black leading-tight sm:text-3xl md:text-4xl">Browse surplus food</h1>
             <p className="mt-1 text-sm text-muted-foreground sm:text-base">
-              {loading ? "Loading available food…" : `${filtered.length} offers available.`}
+              {loading ? "Loading available food…" : `${grouped.available.length} available now · ${grouped.soldOut.length} sold out · ${grouped.expired.length} expired`}
             </p>
           </div>
           {activeFilterCount > 0 && <Badge className="shrink-0 rounded-full">{activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""}</Badge>}
@@ -117,39 +127,102 @@ function Browse() {
           <FilterRow label="Category" value={category} onChange={setCategory} options={CATEGORIES as readonly string[]} />
         </div>
 
-        {filtered.length > 0 && (
+        {hasResults && (
           <div className="mt-5 sm:mt-8">
             <AdSlot size="leaderboard" id="ad-space-04-browse-top" slotCode="AD SPACE 04" label="AD SPACE 04 browse top" />
           </div>
         )}
 
-        {filtered.length === 0 ? (
+        {!hasResults ? (
           <div className="mx-auto mt-8 max-w-md rounded-3xl border bg-card p-6 text-center shadow-sm sm:mt-16 sm:p-10">
             <div className="text-lg font-semibold">No food matches your filters</div>
             <p className="mt-2 text-sm text-muted-foreground">Try clearing a filter or check back later — new offers can appear throughout the day.</p>
             <Button className="mt-4 h-11 rounded-full px-6" onClick={() => { setQ(""); setDistrict(""); setCategory(""); }}>Clear filters</Button>
           </div>
         ) : (
-          <div className="mt-5 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-            {filtered.map((l, i) => (
-              <Fragment key={l.id}>
-                <ListingCard listing={l} />
-                {(i + 1) === 6 && i !== filtered.length - 1 && (
-                  <div className="sm:col-span-2 lg:col-span-3">
-                    <AdSlot size="billboard" id="ad-space-05-browse-billboard" slotCode="AD SPACE 05" label="AD SPACE 05 browse billboard" />
-                  </div>
-                )}
-                {(i + 1) === 15 && i !== filtered.length - 1 && (
-                  <div className="sm:col-span-2 lg:col-span-3">
-                    <AdSlot size="leaderboard" id="ad-space-06-browse-lower" slotCode="AD SPACE 06" label="AD SPACE 06 browse lower" />
-                  </div>
-                )}
-              </Fragment>
-            ))}
+          <div className="mt-6 space-y-12 sm:mt-8">
+            <ListingSection
+              title="Available Now"
+              description="These listings are in stock and still within the pickup window."
+              count={grouped.available.length}
+              listings={grouped.available}
+              emptyMessage="No available listings match your filters right now."
+              showBrowseAds
+            />
+            <ListingSection
+              title="Sold Out"
+              description="These offers are still visible, but all portions have already been reserved."
+              count={grouped.soldOut.length}
+              listings={grouped.soldOut}
+              emptyMessage="No sold out listings match your filters."
+              muted
+            />
+            <ListingSection
+              title="Offer Expired"
+              description="These pickup windows have already ended and cannot be reserved."
+              count={grouped.expired.length}
+              listings={grouped.expired}
+              emptyMessage="No expired offers match your filters."
+              muted
+            />
           </div>
         )}
       </section>
     </SiteLayout>
+  );
+}
+
+function ListingSection({
+  title,
+  description,
+  count,
+  listings,
+  emptyMessage,
+  muted,
+  showBrowseAds,
+}: {
+  title: string;
+  description: string;
+  count: number;
+  listings: Row[];
+  emptyMessage: string;
+  muted?: boolean;
+  showBrowseAds?: boolean;
+}) {
+  return (
+    <section>
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-black sm:text-2xl">{title}</h2>
+            <Badge variant={muted ? "secondary" : "default"} className="rounded-full">{count}</Badge>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        </div>
+      </div>
+
+      {listings.length === 0 ? (
+        <div className="rounded-3xl border bg-card p-6 text-center text-sm text-muted-foreground shadow-sm">{emptyMessage}</div>
+      ) : (
+        <div className={`grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 ${muted ? "opacity-75" : ""}`}>
+          {listings.map((l, i) => (
+            <Fragment key={l.id}>
+              <ListingCard listing={l} />
+              {showBrowseAds && (i + 1) === 6 && i !== listings.length - 1 && (
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <AdSlot size="billboard" id="ad-space-05-browse-billboard" slotCode="AD SPACE 05" label="AD SPACE 05 browse billboard" />
+                </div>
+              )}
+              {showBrowseAds && (i + 1) === 15 && i !== listings.length - 1 && (
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <AdSlot size="leaderboard" id="ad-space-06-browse-lower" slotCode="AD SPACE 06" label="AD SPACE 06 browse lower" />
+                </div>
+              )}
+            </Fragment>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
