@@ -21,20 +21,20 @@ export function Header() {
 
   const nav = (
     <>
-      <Link to="/about" className="rounded-xl px-3 py-2 text-sm font-medium hover:bg-muted hover:text-primary" onClick={() => setOpen(false)}>
+      <Link to="/about" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
         {t("about")}
       </Link>
-      <Link to="/browse" className="rounded-xl px-3 py-2 text-sm font-medium hover:bg-muted hover:text-primary" onClick={() => setOpen(false)}>
+      <Link to="/browse" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
         {t("browseFood")}
       </Link>
-      <Link to="/merchant/onboarding" className="rounded-xl px-3 py-2 text-sm font-medium hover:bg-muted hover:text-primary" onClick={() => setOpen(false)}>
+      <Link to="/merchant/onboarding" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
         {t("forBusinesses")}
       </Link>
     </>
   );
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-3 sm:h-16 sm:px-4">
         <Link to="/" className="flex min-w-0 items-center gap-2" onClick={() => setOpen(false)}>
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
@@ -64,7 +64,7 @@ export function Header() {
                   <span className="hidden max-w-28 truncate sm:inline">@{username}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1">
                 <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
                   {t("myOrders")}
                 </DropdownMenuItem>
@@ -102,7 +102,7 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 md:hidden"
+            className="h-10 w-10 rounded-full md:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-label={t("toggleMenu")}
             aria-expanded={open}
@@ -113,13 +113,19 @@ export function Header() {
       </div>
       {open && (
         <div className="container mx-auto border-t px-3 py-3 md:hidden">
-          <nav className="flex flex-col gap-1">{nav}</nav>
-          {!isAuthenticated && (
+          {isAuthenticated && <div className="mb-3 rounded-2xl bg-muted px-4 py-3 text-sm font-semibold">Signed in as @{username}</div>}
+          <nav className="grid gap-1">{nav}</nav>
+          {isAuthenticated ? (
+            <div className="mt-3 grid gap-2 border-t pt-3">
+              <Button asChild variant="outline" className="h-11 justify-start rounded-2xl" onClick={() => setOpen(false)}><Link to="/dashboard">{t("myOrders")}</Link></Button>
+              {isMerchant && <Button asChild variant="outline" className="h-11 justify-start rounded-2xl" onClick={() => setOpen(false)}><Link to="/merchant">{t("merchantDashboard")}</Link></Button>}
+            </div>
+          ) : (
             <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3">
-              <Button asChild variant="outline" className="rounded-full" onClick={() => setOpen(false)}>
+              <Button asChild variant="outline" className="h-11 rounded-full" onClick={() => setOpen(false)}>
                 <Link to="/auth">{t("signIn")}</Link>
               </Button>
-              <Button asChild className="rounded-full" onClick={() => setOpen(false)}>
+              <Button asChild className="h-11 rounded-full" onClick={() => setOpen(false)}>
                 <Link to="/browse">{t("browseFood")}</Link>
               </Button>
             </div>
