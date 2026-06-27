@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBND } from "@/lib/sample-data";
+import { formatTime12Hour } from "@/lib/time";
 import { CheckCircle2 } from "lucide-react";
 
 const searchSchema = z.object({ code: z.string().optional(), demo: z.coerce.number().optional(), pickupTime: z.string().optional() });
@@ -96,7 +97,7 @@ function OrderConfirmation() {
 
   // simple QR proxy
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(order.pickup_code)}`;
-  const selectedPickupTime = getPickupTime(order) || pickupTime;
+  const selectedPickupTime = formatTime12Hour(getPickupTime(order) || pickupTime);
 
   return (
     <SiteLayout>
