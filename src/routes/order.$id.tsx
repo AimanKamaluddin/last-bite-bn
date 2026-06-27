@@ -4,6 +4,7 @@ import { z } from "zod";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBND } from "@/lib/sample-data";
 import { formatTime12Hour } from "@/lib/time";
@@ -44,52 +45,19 @@ function OrderConfirmation() {
 
     (async () => {
       setLoading(true);
-
-      const { data: orderData, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
-
+      const { data: orderData, error } = await supabase.from("orders").select("*").eq("id", id).maybeSingle();
       if (cancelled) return;
-
-      if (error || !orderData) {
-        setOrder(null);
-        setLoading(false);
-        return;
-      }
-
+      if (error || !orderData) { setOrder(null); setLoading(false); return; }
       const [{ data: listing }, { data: merchant }] = await Promise.all([
-        supabase
-          .from("listings")
-          .select("title, image_url")
-          .eq("id", orderData.listing_id)
-          .maybeSingle(),
-        (supabase as any)
-          .from("merchants_public")
-          .select("business_name, district, phone, email")
-          .eq("id", orderData.merchant_id)
-          .maybeSingle(),
+        supabase.from("listings").select("title, image_url").eq("id", orderData.listing_id).maybeSingle(),
+        (supabase as any).from("merchants_public").select("business_name, district, phone, email").eq("id", orderData.merchant_id).maybeSingle(),
       ]);
-
       if (cancelled) return;
-
-      setOrder({
-        ...orderData,
-        listings: listing ?? null,
-        merchants: {
-          business_name: merchant?.business_name ?? "Merchant",
-          address: merchant?.district ?? "",
-          phone: merchant?.phone ?? "",
-          email: merchant?.email ?? "",
-        },
-      });
+      setOrder({ ...orderData, listings: listing ?? null, merchants: { business_name: merchant?.business_name ?? "Merchant", address: merchant?.district ?? "", phone: merchant?.phone ?? "", email: merchant?.email ?? "" } });
       setLoading(false);
     })();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [id, demo, demoCode, pickupTime]);
 
   if (loading) return <SiteLayout><div className="p-10">Loading…</div></SiteLayout>;
@@ -110,14 +78,11 @@ function OrderConfirmation() {
             <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Buyer name</div>
             <div className="mt-1 text-2xl font-bold">{buyerName}</div>
           </div>
-
           <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 p-5">
             <div className="text-sm text-muted-foreground">Pickup code</div>
             <div className="mt-2 text-4xl font-black tracking-[0.25em] text-primary">{order.pickup_code}</div>
           </div>
-
           {selectedPickupTime && <div className="mt-4 rounded-2xl bg-cream/60 p-4 text-sm"><div className="text-muted-foreground">Pickup time reminder</div><strong className="text-lg">{selectedPickupTime}</strong></div>}
-
           <div className="my-6 h-px bg-border" />
           <div className="text-left text-sm">
             <div className="font-semibold">{order.listings?.title}</div>
@@ -125,14 +90,13 @@ function OrderConfirmation() {
             {order.merchants?.address && <div className="text-muted-foreground">{order.merchants.address}</div>}
             {order.merchants?.phone && <div className="text-muted-foreground">{order.merchants.phone}</div>}
           </div>
-
           <div className="mt-6 rounded-2xl bg-cream/60 p-4 text-left text-sm">
             <p className="font-semibold">Payment</p>
-            <p className="mt-1 text-muted-foreground">
-              Pay <strong>{formatBND(Number(order.total_price))}</strong> in cash or by card when you collect your order.
-            </p>
+            <p className="mt-1 text-muted-foreground">Pay <strong>{formatBND(Number(order.total_price))}</strong> in cash or by card when you collect your order.</p>
           </div>
         </Card>
+
+        <div className="mt-6"><AdSlot size="inline" id="ad-space-16-reservation-confirmation" slotCode="AD SPACE 16" label="AD SPACE 16 reservation confirmation" /></div>
 
         <Button asChild className="mt-6 rounded-full">
           <Link to="/dashboard">Go to my orders</Link>
