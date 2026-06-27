@@ -116,7 +116,7 @@ function Landing() {
       </div>
     </section>
 
-    {availableNow.length > 0 && <Section title="Available Today" subtitle={t("reserveBeforePickup")} notice={<PickupWindowAlert compact />} action={<Button asChild variant="outline" className="rounded-full"><Link to="/browse">{t("browseAll")} <ArrowRight className="h-4 w-4" /></Link></Button>}>
+    {availableNow.length > 0 && <Section title="Available Today" notice={<PickupWindowAlert compact />} action={<Button asChild variant="outline" className="rounded-full"><Link to="/browse">{t("browseAll")} <ArrowRight className="h-4 w-4" /></Link></Button>}>
       <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{availableNow.map((l) => <div key={l.id} className="relative"><div className="absolute left-3 top-3 z-10 rounded-full bg-background/95 px-3 py-1 text-xs font-semibold shadow"><Clock className="mr-1 inline h-3.5 w-3.5 text-primary" />{urgencyLabel(l)}</div><ListingCard listing={l} /></div>)}</div>
     </Section>}
 
