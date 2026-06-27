@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { formatBND } from "@/lib/sample-data";
 import { formatTime12Hour } from "@/lib/time";
+import { OrderStatusNotice } from "@/components/orders/OrderStatusNotice";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { toast } from "sonner";
 
@@ -67,7 +68,7 @@ function Dashboard() {
 
   const upcoming = orders.filter((o) => ["reserved", "ready"].includes(o.status));
   const past = orders.filter((o) => ["collected", "cancelled"].includes(o.status));
-  const cancel = async (id: string) => { const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", id); if (error) return toast.error(error.message); setOrders((o) => o.map((x) => (x.id === id ? { ...x, status: "cancelled" } : x))); toast.success("Order cancelled"); };
+  const cancel = async (id: string) => { const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", id); if (error) return toast.error(error.message); setOrders((o) => o.map((x) => (x.id === id ? { ...x, status: "cancelled" } : x))); toast.warning("Order cancelled. This reservation can no longer be picked up."); };
   const onReviewSaved = (review: any) => setReviews((r) => ({ ...r, [review.order_id]: review }));
 
   return (
@@ -90,7 +91,7 @@ function OrderRow({ o, onCancel, review, onReviewSaved, userId }: { o: any; onCa
   const upcoming = ["reserved", "ready"].includes(o.status);
   const pickupTimeRaw = o.pickup_time || String(o.payment_method ?? "").split("pickup_time=")[1]?.split("|")[0] || "";
   const pickupTime = formatTime12Hour(pickupTimeRaw);
-  return <Card className="rounded-3xl p-4"><div className="flex items-center gap-4">{o.listings?.image_url && <img src={o.listings.image_url} alt="" className="h-16 w-16 rounded-xl object-cover" />}<div className="flex-1"><div className="font-semibold">{o.listings?.title ?? "Reserved surprise bag"}</div><div className="text-sm text-muted-foreground">{o.merchants?.business_name ?? "Merchant"}</div><div className="mt-1 flex flex-wrap items-center gap-2"><Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge><span className="text-xs text-muted-foreground">Code: <strong>{o.pickup_code}</strong></span>{pickupTime && <Badge variant="outline" className="rounded-full text-xs"><Clock className="mr-1 h-3 w-3" />Pickup {pickupTime}</Badge>}{upcoming && <Badge variant="outline" className="rounded-full text-xs"><Banknote className="mr-1 h-3 w-3" />Pay at pickup</Badge>}</div>{pickupTime && upcoming && <div className="mt-2 rounded-xl bg-cream/60 px-3 py-2 text-xs"><span className="text-muted-foreground">Pickup time reminder:</span> <strong>{pickupTime}</strong></div>}</div><div className="text-right"><div className="font-semibold">{formatBND(Number(o.total_price))}</div>{onCancel && o.status === "reserved" && <Button variant="ghost" size="sm" className="mt-2" onClick={onCancel}>Cancel</Button>}</div></div>{o.status === "collected" && userId && <ReviewForm order={o} existing={review} userId={userId} onSaved={onReviewSaved} />}</Card>;
+  return <Card className="rounded-3xl p-4"><div className="grid gap-3"><OrderStatusNotice status={o.status} audience="buyer" /><div className="flex items-center gap-4">{o.listings?.image_url && <img src={o.listings.image_url} alt="" className="h-16 w-16 rounded-xl object-cover" />}<div className="flex-1"><div className="font-semibold">{o.listings?.title ?? "Reserved surprise bag"}</div><div className="text-sm text-muted-foreground">{o.merchants?.business_name ?? "Merchant"}</div><div className="mt-1 flex flex-wrap items-center gap-2"><Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge><span className="text-xs text-muted-foreground">Code: <strong>{o.pickup_code}</strong></span>{pickupTime && <Badge variant="outline" className="rounded-full text-xs"><Clock className="mr-1 h-3 w-3" />Pickup {pickupTime}</Badge>}{upcoming && <Badge variant="outline" className="rounded-full text-xs"><Banknote className="mr-1 h-3 w-3" />Pay at pickup</Badge>}</div>{pickupTime && upcoming && <div className="mt-2 rounded-xl bg-cream/60 px-3 py-2 text-xs"><span className="text-muted-foreground">Pickup time reminder:</span> <strong>{pickupTime}</strong></div>}</div><div className="text-right"><div className="font-semibold">{formatBND(Number(o.total_price))}</div>{onCancel && o.status === "reserved" && <Button variant="ghost" size="sm" className="mt-2" onClick={onCancel}>Cancel</Button>}</div></div></div>{o.status === "collected" && userId && <ReviewForm order={o} existing={review} userId={userId} onSaved={onReviewSaved} />}</Card>;
 }
 
 function ReviewForm({ order, existing, userId, onSaved }: { order: any; existing?: any; userId: string; onSaved?: (r: any) => void }) {
