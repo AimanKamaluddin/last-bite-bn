@@ -85,7 +85,7 @@ function Checkout() {
     if (!listing.merchant_id) {
       setPlacing(false);
       const fakeCode = genCode();
-      toast.success("Demo reservation created!");
+      toast.success("Reservation confirmed — show your pickup code to the seller during pickup.");
       navigate({ to: "/order/$id", params: { id: `demo-${fakeCode}` }, search: { code: fakeCode, demo: 1, pickupTime } as any });
       return;
     }
@@ -94,7 +94,7 @@ function Checkout() {
     if (!error && data) await supabase.from("listings").update({ quantity_available: Math.max(0, listing.quantity_available - qty) }).eq("id", listing.id);
     setPlacing(false);
     if (error) return toast.error(error.message);
-    toast.success("Reservation confirmed!");
+    toast.success("Reservation confirmed — the seller has received your order.");
     navigate({ to: "/order/$id", params: { id: data!.id }, search: { pickupTime } as any });
   };
 
