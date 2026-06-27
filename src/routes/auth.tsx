@@ -18,12 +18,15 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const cleanUsername = (value: string) => value.trim().replace(/^@+/, "");
+
 function AuthPage() {
   const navigate = useNavigate();
   const { redirect } = useSearch({ from: "/auth" });
   const [loading, setLoading] = useState(false);
 
   // Sign up fields
+  const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -42,18 +45,22 @@ function AuthPage() {
 
   const signUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    const finalUsername = cleanUsername(username);
+    if (finalUsername.length < 3) return toast.error("Username must be at least 3 characters.");
+    if (!/^[a-zA-Z0-9._-]+$/.test(finalUsername)) return toast.error("Username can only use letters, numbers, dots, underscores, and hyphens.");
+
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { name, phone },
+        data: { username: finalUsername, name, phone, display_name: finalUsername },
       },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created! You're signed in.");
+    toast.success(`Account created! Welcome, @${finalUsername}.`);
     goAfterAuth();
   };
 
@@ -117,6 +124,7 @@ function AuthPage() {
               </Button>
               <Divider />
               <form onSubmit={signUp} className="space-y-3">
+                <Field label="Username"><Input required value={username} onChange={(e) => setUsername(cleanUsername(e.target.value))} placeholder="e.g. aiman_bn" minLength={3} pattern="[A-Za-z0-9._-]+" /></Field>
                 <Field label="Name"><Input required value={name} onChange={(e) => setName(e.target.value)} /></Field>
                 <Field label="Phone"><Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+673 ..." /></Field>
                 <Field label="Email"><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
