@@ -11,7 +11,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
       <Header />
       <main className="flex-1">{children}</main>
       <div className="container mx-auto px-3 py-6 sm:px-4 sm:py-8">
-        <AdSlot size="leaderboard" id="footer-leaderboard" label="Footer ad" />
+        <AdSlot size="leaderboard" id="ad-space-99-footer-global" slotCode="AD SPACE 99" label="AD SPACE 99 global footer sponsor space" />
       </div>
       <Footer />
       <MobileBottomNav />
