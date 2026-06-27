@@ -15,27 +15,12 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/listing/$id")({ component: ListingDetail });
 
-const isPastPickup = (pickupEnd: string) => {
-  const end = new Date(pickupEnd);
-  return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
-};
-const formatDateWithDay = (iso?: string | null) => {
-  if (!iso) return "";
-  try { return new Date(iso).toLocaleDateString([], { weekday: "long", year: "numeric", month: "short", day: "numeric" }); } catch { return ""; }
-};
-const formatDateTime = (iso?: string | null) => {
-  if (!iso) return "";
-  try { return new Date(iso).toLocaleString([], { weekday: "short", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); } catch { return ""; }
-};
+const isPastPickup = (pickupEnd: string) => { const end = new Date(pickupEnd); return !Number.isNaN(end.getTime()) && end.getTime() < Date.now(); };
+const formatDateWithDay = (iso?: string | null) => { if (!iso) return ""; try { return new Date(iso).toLocaleDateString([], { weekday: "long", year: "numeric", month: "short", day: "numeric" }); } catch { return ""; } };
+const formatDateTime = (iso?: string | null) => { if (!iso) return ""; try { return new Date(iso).toLocaleString([], { weekday: "short", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); } catch { return ""; } };
 
 const getListingImages = (listing: any) => {
-  const images = [
-    listing?.image_url,
-    ...(Array.isArray(listing?.images) ? listing.images : []),
-    ...(Array.isArray(listing?.image_urls) ? listing.image_urls : []),
-    ...(Array.isArray(listing?.gallery_images) ? listing.gallery_images : []),
-  ].filter((url): url is string => typeof url === "string" && url.trim().length > 0);
-
+  const images = [listing?.image_url, ...(Array.isArray(listing?.images) ? listing.images : []), ...(Array.isArray(listing?.image_urls) ? listing.image_urls : []), ...(Array.isArray(listing?.gallery_images) ? listing.gallery_images : [])].filter((url): url is string => typeof url === "string" && url.trim().length > 0);
   return Array.from(new Set(images));
 };
 
@@ -48,29 +33,8 @@ function ListingDetail() {
   const [related, setRelated] = useState<ListingCardData[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  useEffect(() => {
-    (async () => {
-      const local = sampleListings.find((l) => l.id === id);
-      if (local) {
-        setData(local);
-        setRelated(sampleListings.filter((l) => l.merchant.id === local.merchant.id && l.id !== local.id).map((l) => toCardData(l)));
-        setLoading(false);
-        return;
-      }
-      const { data } = await (supabase as any).from("listings").select("*").eq("id", id).maybeSingle();
-      if (data) {
-        const { data: m } = await (supabase as any).from("merchants_public").select("business_name, district, rating, business_type").eq("id", data.merchant_id).maybeSingle();
-        setData({ ...data, merchant: { business_name: m?.business_name ?? "", district: m?.district ?? "", address: "", rating: Number(m?.rating ?? 0), business_type: m?.business_type ?? "" } });
-        const { data: others } = await (supabase as any).from("listings").select("*").eq("merchant_id", data.merchant_id).eq("status", "active").neq("id", id).gt("quantity_available", 0).limit(6);
-        if (others && m) setRelated(others.map((o: any) => ({ id: o.id, title: o.title, image_url: o.image_url, category: o.category, original_price: Number(o.original_price), discounted_price: Number(o.discounted_price), quantity_available: o.quantity_available, pickup_start: o.pickup_start, pickup_end: o.pickup_end, created_at: o.created_at, produced_at: o.produced_at, merchant: { business_name: m.business_name ?? "", district: m.district ?? "", rating: Number(m.rating ?? 0) } })));
-      }
-      setLoading(false);
-    })();
-  }, [id]);
-
-  useEffect(() => {
-    setSelectedImageIndex(0);
-  }, [id]);
+  useEffect(() => { (async () => { const local = sampleListings.find((l) => l.id === id); if (local) { setData(local); setRelated(sampleListings.filter((l) => l.merchant.id === local.merchant.id && l.id !== local.id).map((l) => toCardData(l))); setLoading(false); return; } const { data } = await (supabase as any).from("listings").select("*").eq("id", id).maybeSingle(); if (data) { const { data: m } = await (supabase as any).from("merchants_public").select("business_name, district, rating, business_type").eq("id", data.merchant_id).maybeSingle(); setData({ ...data, merchant: { business_name: m?.business_name ?? "", district: m?.district ?? "", address: "", rating: Number(m?.rating ?? 0), business_type: m?.business_type ?? "" } }); const { data: others } = await (supabase as any).from("listings").select("*").eq("merchant_id", data.merchant_id).eq("status", "active").neq("id", id).gt("quantity_available", 0).limit(6); if (others && m) setRelated(others.map((o: any) => ({ id: o.id, title: o.title, image_url: o.image_url, category: o.category, original_price: Number(o.original_price), discounted_price: Number(o.discounted_price), quantity_available: o.quantity_available, pickup_start: o.pickup_start, pickup_end: o.pickup_end, created_at: o.created_at, produced_at: o.produced_at, merchant: { business_name: m.business_name ?? "", district: m.district ?? "", rating: Number(m.rating ?? 0) } }))); } setLoading(false); })(); }, [id]);
+  useEffect(() => { setSelectedImageIndex(0); }, [id]);
 
   if (loading) return <SiteLayout><div className="container mx-auto p-6 sm:p-10">Loading…</div></SiteLayout>;
   if (!data) return <SiteLayout><div className="container mx-auto p-6 text-center sm:p-10"><h1 className="text-2xl font-bold">Listing not found</h1><Button asChild className="mt-4 rounded-full"><Link to="/browse">Back to browse</Link></Button></div></SiteLayout>;
@@ -83,12 +47,7 @@ function ListingDetail() {
   const hasMultipleImages = listingImages.length > 1;
   const showPreviousImage = () => setSelectedImageIndex((index) => (index - 1 + listingImages.length) % listingImages.length);
   const showNextImage = () => setSelectedImageIndex((index) => (index + 1) % listingImages.length);
-
-  const reserve = () => {
-    if (expired) { toast.error("This offer has expired."); return; }
-    if (!isAuthenticated) { toast.info("Please sign in to reserve."); navigate({ to: "/auth", search: { redirect: `/listing/${id}` } }); return; }
-    navigate({ to: "/checkout/$id", params: { id } });
-  };
+  const reserve = () => { if (expired) { toast.error("This offer has expired."); return; } if (!isAuthenticated) { toast.info("Please sign in to reserve."); navigate({ to: "/auth", search: { redirect: `/listing/${id}` } }); return; } navigate({ to: "/checkout/$id", params: { id } }); };
 
   return (
     <SiteLayout>
@@ -96,50 +55,28 @@ function ListingDetail() {
         <div>
           <div className="relative overflow-hidden rounded-3xl bg-muted">
             <img src={selectedImage} alt={data.title} className="aspect-[4/3] w-full object-cover" />
-            {hasMultipleImages && (
-              <>
-                <Button type="button" variant="secondary" size="icon" className="absolute left-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-background/90 shadow-md hover:bg-background" onClick={showPreviousImage} aria-label="Previous photo">
-                  <ChevronLeft className="h-5 w-5" />
-                </Button>
-                <Button type="button" variant="secondary" size="icon" className="absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-background/90 shadow-md hover:bg-background" onClick={showNextImage} aria-label="Next photo">
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
-                <div className="absolute bottom-3 right-3 rounded-full bg-black/65 px-3 py-1 text-xs font-medium text-white">
-                  {selectedImageIndex + 1}/{listingImages.length}
-                </div>
-              </>
-            )}
+            {hasMultipleImages && <><Button type="button" variant="secondary" size="icon" className="absolute left-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-background/90 shadow-md hover:bg-background" onClick={showPreviousImage} aria-label="Previous photo"><ChevronLeft className="h-5 w-5" /></Button><Button type="button" variant="secondary" size="icon" className="absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-background/90 shadow-md hover:bg-background" onClick={showNextImage} aria-label="Next photo"><ChevronRight className="h-5 w-5" /></Button><div className="absolute bottom-3 right-3 rounded-full bg-black/65 px-3 py-1 text-xs font-medium text-white">{selectedImageIndex + 1}/{listingImages.length}</div></>}
           </div>
           {hasMultipleImages && <div className="mt-3 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible">{listingImages.slice(0, 8).map((u, i) => <button key={u} type="button" onClick={() => setSelectedImageIndex(i)} className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 bg-muted transition sm:aspect-square sm:h-auto sm:w-full ${selectedImageIndex === i ? "border-primary ring-2 ring-primary/20" : "border-transparent hover:border-primary/50"}`} aria-label={`View photo ${i + 1}`} aria-current={selectedImageIndex === i ? "true" : undefined}><img src={u} alt={`${data.title} photo ${i + 1}`} className="h-full w-full object-cover" /></button>)}</div>}
           <h1 className="mt-5 text-3xl font-bold leading-tight md:mt-6 md:text-4xl">{data.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground sm:text-base">{data.merchant.business_name} · {data.merchant.district}</p>
           <div className="mt-4 flex flex-wrap gap-2"><Badge variant="secondary" className="rounded-full">{data.category}</Badge><Badge variant="secondary" className="rounded-full"><Star className="mr-1 h-3 w-3 fill-sun text-sun" /> {data.merchant.rating?.toFixed(1) ?? "—"}</Badge>{expired && <Badge variant="outline" className="rounded-full">Offer expired</Badge>}</div>
+          <div className="mt-7"><AdSlot size="inline" id="ad-space-12-listing-midpage" slotCode="AD SPACE 12" label="AD SPACE 12 listing middle" /></div>
           <h2 className="mt-7 text-lg font-semibold md:mt-8">About this offer</h2><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{data.description}</p>
           <Card className="mt-7 rounded-2xl p-4 md:mt-8"><h2 className="text-lg font-semibold">Listing details</h2><div className="mt-3 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2"><div className="flex items-start gap-2"><CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Listed:</strong><br />{formatDateWithDay(data.created_at)}</span></div><div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Produced:</strong><br />{formatDateTime(data.produced_at) || "Not provided"}</span></div></div></Card>
           <h2 className="mt-7 text-lg font-semibold md:mt-8">Customer reviews</h2><ReviewList listingId={data.id} />
           <h2 className="mt-7 text-lg font-semibold md:mt-8">Allergen info</h2><ul className="mt-2 space-y-2 text-sm text-muted-foreground"><li className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-accent" />{data.allergen_info || "Ask the merchant for allergen details."}</li></ul>
           <h2 className="mt-7 text-lg font-semibold md:mt-8">Pickup location</h2><Card className="mt-2 rounded-2xl p-4"><div className="flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 shrink-0 text-primary" />{data.merchant.address || `${data.merchant.business_name}, ${data.merchant.district}`}</div><div className="mt-3 grid h-36 place-items-center rounded-xl bg-muted text-xs text-muted-foreground sm:h-40">Map preview (coming soon)</div></Card>
         </div>
-        <aside className="hidden md:block"><Card className="sticky top-24 rounded-3xl p-6"><PriceBox data={data} expired={expired} soldOut={soldOut} unavailable={unavailable} reserve={reserve} /></Card></aside>
+        <aside className="hidden md:block"><div className="sticky top-24 space-y-4"><Card className="rounded-3xl p-6"><PriceBox data={data} expired={expired} soldOut={soldOut} unavailable={unavailable} reserve={reserve} /></Card><AdSlot size="rectangle" id="ad-space-11-listing-sidebar" slotCode="AD SPACE 11" label="AD SPACE 11 listing sidebar" /></div></aside>
       </section>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 shadow-2xl backdrop-blur md:hidden">
-        <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
-          <div>
-            <div className="text-xs text-muted-foreground line-through">{formatBND(Number(data.original_price))}</div>
-            <div className="text-2xl font-bold leading-none text-primary">{formatBND(Number(data.discounted_price))}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{expired ? "Pickup ended" : `${data.quantity_available} left`}</div>
-          </div>
-          <Button className="h-12 rounded-full px-6" onClick={reserve} disabled={unavailable}>{expired ? "Expired" : soldOut ? "Sold out" : "Reserve"}</Button>
-        </div>
-      </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 shadow-2xl backdrop-blur md:hidden"><div className="mx-auto flex max-w-xl items-center justify-between gap-3"><div><div className="text-xs text-muted-foreground line-through">{formatBND(Number(data.original_price))}</div><div className="text-2xl font-bold leading-none text-primary">{formatBND(Number(data.discounted_price))}</div><div className="mt-1 text-xs text-muted-foreground">{expired ? "Pickup ended" : `${data.quantity_available} left`}</div></div><Button className="h-12 rounded-full px-6" onClick={reserve} disabled={unavailable}>{expired ? "Expired" : soldOut ? "Sold out" : "Reserve"}</Button></div></div>
       {related.length > 0 && <section className="container mx-auto px-3 pb-10 sm:px-4"><div className="mb-4 flex items-end justify-between gap-3"><h2 className="text-xl font-bold sm:text-2xl">More from {data.merchant.business_name}</h2><Link to="/browse" className="shrink-0 text-sm text-primary hover:underline">Browse all →</Link></div><div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{related.map((l) => <ListingCard key={l.id} listing={l} />)}</div></section>}
-      <section className="container mx-auto px-3 pb-10 sm:px-4"><AdSlot size="leaderboard" id="listing-bottom" label="Sponsored" /></section>
+      <section className="container mx-auto px-3 pb-10 sm:px-4"><AdSlot size="leaderboard" id="ad-space-13-listing-bottom" slotCode="AD SPACE 13" label="AD SPACE 13 listing bottom" /></section>
     </SiteLayout>
   );
 }
 
-function PriceBox({ data, expired, soldOut, unavailable, reserve }: { data: any; expired: boolean; soldOut: boolean; unavailable: boolean; reserve: () => void }) {
-  return <><div className="text-sm text-muted-foreground line-through">{formatBND(Number(data.original_price))}</div><div className="text-4xl font-bold text-primary">{formatBND(Number(data.discounted_price))}</div><div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground"><Clock className="h-4 w-4" /> {formatTime(data.pickup_start)} – {formatTime(data.pickup_end)}</div><div className="mt-1 text-sm text-muted-foreground">{expired ? "Pickup window has ended" : `${data.quantity_available} left`}</div><Button className="mt-5 w-full rounded-full" size="lg" onClick={reserve} disabled={unavailable}>{expired ? "Offer expired" : soldOut ? "Sold out" : "Reserve now"}</Button><p className="mt-3 text-xs text-muted-foreground">Merchant contact details are shared after your reservation is confirmed.</p></>;
-}
+function PriceBox({ data, expired, soldOut, unavailable, reserve }: { data: any; expired: boolean; soldOut: boolean; unavailable: boolean; reserve: () => void }) { return <><div className="text-sm text-muted-foreground line-through">{formatBND(Number(data.original_price))}</div><div className="text-4xl font-bold text-primary">{formatBND(Number(data.discounted_price))}</div><div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground"><Clock className="h-4 w-4" /> {formatTime(data.pickup_start)} – {formatTime(data.pickup_end)}</div><div className="mt-1 text-sm text-muted-foreground">{expired ? "Pickup window has ended" : `${data.quantity_available} left`}</div><Button className="mt-5 w-full rounded-full" size="lg" onClick={reserve} disabled={unavailable}>{expired ? "Offer expired" : soldOut ? "Sold out" : "Reserve now"}</Button><p className="mt-3 text-xs text-muted-foreground">Merchant contact details are shared after your reservation is confirmed.</p></>; }
 function formatTime(t: string) { if (!t) return ""; if (t.length <= 5) return t; try { return new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); } catch { return t; } }
 function toCardData(l: SampleListing): ListingCardData { return { id: l.id, title: l.title, image_url: l.image_url, category: l.category, original_price: l.original_price, discounted_price: l.discounted_price, quantity_available: l.quantity_available, pickup_start: l.pickup_start, pickup_end: l.pickup_end, merchant: { business_name: l.merchant.business_name, district: l.merchant.district, rating: l.merchant.rating } }; }
