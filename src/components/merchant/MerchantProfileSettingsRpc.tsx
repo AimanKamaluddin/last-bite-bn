@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/upload/ImageUpload";
 import { CATEGORIES, DISTRICTS } from "@/lib/sample-data";
+import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink, Save, Store } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,17 +34,59 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
   }, [merchant]);
 
   const save = async () => {
+    if (!merchant?.id) return toast.error("Merchant profile not found.");
     setSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    const basePayload = {
+      business_name: form.business_name,
+      business_type: form.business_type,
+      district: form.district,
+      description: form.description || null,
+      image_url: form.image_url || null,
+      address: form.address || null,
+      opening_hours: form.opening_hours || null,
+      phone: form.phone || null,
+      email: form.email || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const extendedPayload = {
+      ...basePayload,
+      tagline: form.tagline || null,
+      cover_image_url: form.cover_image_url || null,
+      instagram_url: form.instagram_url || null,
+      website_url: form.website_url || null,
+    };
+
+    let { data, error } = await (supabase as any)
+      .from("merchants")
+      .update(extendedPayload)
+      .eq("id", merchant.id)
+      .select("*")
+      .single();
+
+    if (error && /tagline|cover_image_url|instagram_url|website_url|schema cache/i.test(error.message ?? "")) {
+      const retry = await (supabase as any)
+        .from("merchants")
+        .update(basePayload)
+        .eq("id", merchant.id)
+        .select("*")
+        .single();
+      data = retry.data;
+      error = retry.error;
+      if (!error) toast.warning("Core profile saved. Extra fields will save after the new database migration is applied.");
+    }
+
     setSaving(false);
-    toast.success("Profile preview updated.");
-    onSaved?.({ ...merchant, ...form });
+    if (error) return toast.error(error.message);
+    toast.success("Public profile updated.");
+    onSaved?.({ ...merchant, ...form, ...(data ?? {}) });
   };
 
   return (
     <Card className="rounded-3xl p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h2 className="text-xl font-semibold">Public profile settings</h2><p className="text-sm text-muted-foreground">Customize your profile preview. Publishing these edits to the live database requires Supabase migrations to be applied.</p></div>
+        <div><h2 className="text-xl font-semibold">Public profile settings</h2><p className="text-sm text-muted-foreground">Customize the details customers see on your public vendor profile.</p></div>
         <Button asChild variant="outline" className="rounded-full"><a href={`/merchant-profile/${merchant.id}`} target="_blank" rel="noreferrer"><ExternalLink className="mr-2 h-4 w-4" />View public profile</a></Button>
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
@@ -66,7 +109,7 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
           <Field label="Website / menu link"><Input value={form.website_url ?? ""} onChange={(e) => setForm({ ...form, website_url: e.target.value })} /></Field>
         </div>
       </div>
-      <div className="mt-6 flex justify-end"><Button onClick={save} disabled={saving} className="rounded-full"><Save className="mr-2 h-4 w-4" />{saving ? "Saving…" : "Save profile preview"}</Button></div>
+      <div className="mt-6 flex justify-end"><Button onClick={save} disabled={saving} className="rounded-full"><Save className="mr-2 h-4 w-4" />{saving ? "Saving…" : "Save public profile"}</Button></div>
     </Card>
   );
 }
