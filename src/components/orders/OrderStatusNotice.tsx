@@ -63,12 +63,12 @@ export function OrderStatusNotice({ status, audience }: { status?: string | null
   const Icon = item.icon;
 
   return (
-    <div className={`rounded-2xl border px-4 py-3 ${item.className}`}>
-      <div className="flex items-start gap-3">
-        <Icon className="mt-0.5 h-5 w-5 shrink-0" />
-        <div>
-          <div className="text-sm font-bold">{item.title}</div>
-          <div className="mt-0.5 text-xs opacity-85">{item.body}</div>
+    <div className={`rounded-2xl border px-3 py-2.5 sm:px-4 sm:py-3 ${item.className}`}>
+      <div className="flex items-start gap-2.5 sm:gap-3">
+        <Icon className="mt-0.5 h-4.5 w-4.5 shrink-0 sm:h-5 sm:w-5" />
+        <div className="min-w-0">
+          <div className="text-sm font-bold leading-tight">{item.title}</div>
+          <div className="mt-0.5 text-[11px] leading-snug opacity-85 sm:text-xs">{item.body}</div>
         </div>
       </div>
     </div>
