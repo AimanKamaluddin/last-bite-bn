@@ -17,6 +17,7 @@ export function Header() {
   const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const username = user?.user_metadata?.username || user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0];
 
   const nav = (
     <>
@@ -60,7 +61,7 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="h-9 gap-2 rounded-full px-3">
                   <UserIcon className="h-4 w-4" />
-                  <span className="hidden max-w-28 truncate sm:inline">{user?.email?.split("@")[0]}</span>
+                  <span className="hidden max-w-28 truncate sm:inline">@{username}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
