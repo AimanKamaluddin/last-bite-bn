@@ -4,32 +4,15 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  CATEGORIES,
-  DISTRICTS,
-  type SampleListing,
-} from "@/lib/sample-data";
+import { CATEGORIES, DISTRICTS, type SampleListing } from "@/lib/sample-data";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, SlidersHorizontal } from "lucide-react";
 
-export const Route = createFileRoute("/browse")({
-  head: () => ({
-    meta: [
-      { title: "Browse surplus food in Brunei — Last Bite" },
-      { name: "description", content: "Discover discounted surplus food from Brunei merchants. Filter by district and category." },
-    ],
-  }),
-  component: Browse,
-});
-
+export const Route = createFileRoute("/browse")({ head: () => ({ meta: [{ title: "Browse surplus food in Brunei — Last Bite" }, { name: "description", content: "Discover discounted surplus food from Brunei merchants. Filter by district and category." }] }), component: Browse });
 type Row = SampleListing & { _isLive?: boolean };
-
-const isExpired = (pickupEnd: string) => {
-  const end = new Date(pickupEnd);
-  return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
-};
+const isExpired = (pickupEnd: string) => { const end = new Date(pickupEnd); return !Number.isNaN(end.getTime()) && end.getTime() < Date.now(); };
 
 function Browse() {
   const [q, setQ] = useState("");
@@ -38,231 +21,16 @@ function Browse() {
   const [live, setLive] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await (supabase as any)
-        .from("listings")
-        .select("*, merchants_public!inner(business_name, district, rating)")
-        .eq("visible", true)
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
+  useEffect(() => { (async () => { const { data } = await (supabase as any).from("listings").select("*, merchants_public!inner(business_name, district, rating)").eq("visible", true).eq("status", "active").order("created_at", { ascending: false }); if (data && data.length) setLive(data.map((d: any) => ({ id: d.id, title: d.title, category: d.category, description: d.description ?? "", original_price: Number(d.original_price), discounted_price: Number(d.discounted_price), quantity_available: d.quantity_available, pickup_start: d.pickup_start, pickup_end: d.pickup_end, image_url: d.image_url || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=70", allergen_info: d.allergen_info ?? "", merchant: { id: d.merchant_id, business_name: d.merchants_public?.business_name ?? "", business_type: "", district: d.merchants_public?.district ?? "", rating: Number(d.merchants_public?.rating ?? 0), image_url: "" }, _isLive: true }))); setLoading(false); })(); }, []);
 
-      if (data && data.length) {
-        setLive(
-          data.map((d: any) => ({
-            id: d.id,
-            title: d.title,
-            category: d.category,
-            description: d.description ?? "",
-            original_price: Number(d.original_price),
-            discounted_price: Number(d.discounted_price),
-            quantity_available: d.quantity_available,
-            pickup_start: d.pickup_start,
-            pickup_end: d.pickup_end,
-            image_url:
-              d.image_url ||
-              "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=70",
-            allergen_info: d.allergen_info ?? "",
-            merchant: {
-              id: d.merchant_id,
-              business_name: d.merchants_public?.business_name ?? "",
-              business_type: "",
-              district: d.merchants_public?.district ?? "",
-              rating: Number(d.merchants_public?.rating ?? 0),
-              image_url: "",
-            },
-            _isLive: true,
-          })),
-        );
-      }
-      setLoading(false);
-    })();
-  }, []);
-
-  const filtered = useMemo(() => {
-    return live.filter((l) => {
-      if (q && !`${l.title} ${l.merchant.business_name}`.toLowerCase().includes(q.toLowerCase())) return false;
-      if (district && l.merchant.district !== district) return false;
-      if (category && l.category !== category) return false;
-      return true;
-    });
-  }, [live, q, district, category]);
-
-  const grouped = useMemo(() => {
-    const available = filtered.filter((l) => l.quantity_available > 0 && !isExpired(l.pickup_end));
-    const soldOut = filtered.filter((l) => l.quantity_available <= 0 && !isExpired(l.pickup_end));
-    const expired = filtered.filter((l) => isExpired(l.pickup_end));
-    return { available, soldOut, expired };
-  }, [filtered]);
-
+  const filtered = useMemo(() => live.filter((l) => { if (q && !`${l.title} ${l.merchant.business_name}`.toLowerCase().includes(q.toLowerCase())) return false; if (district && l.merchant.district !== district) return false; if (category && l.category !== category) return false; return true; }), [live, q, district, category]);
+  const grouped = useMemo(() => ({ available: filtered.filter((l) => l.quantity_available > 0 && !isExpired(l.pickup_end)), soldOut: filtered.filter((l) => l.quantity_available <= 0 && !isExpired(l.pickup_end)), expired: filtered.filter((l) => isExpired(l.pickup_end)) }), [filtered]);
   const activeFilterCount = [district, category].filter(Boolean).length;
   const hasResults = filtered.length > 0;
 
-  return (
-    <SiteLayout>
-      <section className="container mx-auto px-3 py-5 sm:px-4 sm:py-10">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-black leading-tight sm:text-3xl md:text-4xl">Browse surplus food</h1>
-            <p className="mt-1 text-sm text-muted-foreground sm:text-base">
-              {loading ? "Loading available food…" : `${grouped.available.length} available now · ${grouped.soldOut.length} sold out · ${grouped.expired.length} expired`}
-            </p>
-          </div>
-          {activeFilterCount > 0 && <Badge className="shrink-0 rounded-full">{activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""}</Badge>}
-        </div>
-
-        <div className="sticky top-14 z-30 -mx-3 mt-4 border-y bg-background/95 px-3 py-3 shadow-sm backdrop-blur sm:static sm:mx-0 sm:mt-6 sm:rounded-3xl sm:border sm:bg-card sm:p-4 sm:shadow-sm">
-          <div className="relative mb-3 sm:mb-4">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search food or merchants…"
-              className="h-12 rounded-full pl-9 pr-4 text-base shadow-sm sm:h-11"
-            />
-          </div>
-
-          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:hidden"><SlidersHorizontal className="h-3.5 w-3.5" /> Filters</div>
-          <FilterRow label="District" value={district} onChange={setDistrict} options={DISTRICTS as readonly string[]} />
-          <FilterRow label="Category" value={category} onChange={setCategory} options={CATEGORIES as readonly string[]} />
-        </div>
-
-        {hasResults && (
-          <div className="mt-5 sm:mt-8">
-            <AdSlot size="leaderboard" id="ad-space-04-browse-top" slotCode="AD SPACE 04" label="AD SPACE 04 browse top" />
-          </div>
-        )}
-
-        {!hasResults ? (
-          <div className="mx-auto mt-8 max-w-md rounded-3xl border bg-card p-6 text-center shadow-sm sm:mt-16 sm:p-10">
-            <div className="text-lg font-semibold">No food matches your filters</div>
-            <p className="mt-2 text-sm text-muted-foreground">Try clearing a filter or check back later — new offers can appear throughout the day.</p>
-            <Button className="mt-4 h-11 rounded-full px-6" onClick={() => { setQ(""); setDistrict(""); setCategory(""); }}>Clear filters</Button>
-          </div>
-        ) : (
-          <div className="mt-6 space-y-12 sm:mt-8">
-            <ListingSection
-              title="Available Now"
-              description="These listings are in stock and still within the pickup window."
-              count={grouped.available.length}
-              listings={grouped.available}
-              emptyMessage="No available listings match your filters right now."
-              showBrowseAds
-            />
-            <ListingSection
-              title="Sold Out"
-              description="These offers are still visible, but all portions have already been reserved."
-              count={grouped.soldOut.length}
-              listings={grouped.soldOut}
-              emptyMessage="No sold out listings match your filters."
-              muted
-            />
-            <ListingSection
-              title="Offer Expired"
-              description="These pickup windows have already ended and cannot be reserved."
-              count={grouped.expired.length}
-              listings={grouped.expired}
-              emptyMessage="No expired offers match your filters."
-              muted
-            />
-          </div>
-        )}
-      </section>
-    </SiteLayout>
-  );
+  return <SiteLayout><section className="container mx-auto px-3 py-5 sm:px-4 sm:py-10"><div className="flex items-end justify-between gap-3"><div><h1 className="text-2xl font-black leading-tight sm:text-3xl md:text-4xl">Browse surplus food</h1><p className="mt-1 text-sm text-muted-foreground sm:text-base">{loading ? "Loading available food…" : `${grouped.available.length} available today · ${grouped.soldOut.length} sold out · ${grouped.expired.length} expired`}</p></div>{activeFilterCount > 0 && <Badge className="shrink-0 rounded-full">{activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""}</Badge>}</div><div className="sticky top-14 z-30 -mx-3 mt-4 border-y bg-background/95 px-3 py-3 shadow-sm backdrop-blur sm:static sm:mx-0 sm:mt-6 sm:rounded-3xl sm:border sm:bg-card sm:p-4 sm:shadow-sm"><div className="relative mb-3 sm:mb-4"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search food or merchants…" className="h-12 rounded-full pl-9 pr-4 text-base shadow-sm sm:h-11" /></div><div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:hidden"><SlidersHorizontal className="h-3.5 w-3.5" /> Filters</div><FilterRow label="District" value={district} onChange={setDistrict} options={DISTRICTS as readonly string[]} /><FilterRow label="Category" value={category} onChange={setCategory} options={CATEGORIES as readonly string[]} /></div>{hasResults && <div className="mt-5 sm:mt-8"><AdSlot size="leaderboard" id="ad-space-04-browse-top" slotCode="AD SPACE 04" label="AD SPACE 04 browse top" /></div>}{!hasResults ? <div className="mx-auto mt-8 max-w-md rounded-3xl border bg-card p-6 text-center shadow-sm sm:mt-16 sm:p-10"><div className="text-lg font-semibold">No food matches your filters</div><p className="mt-2 text-sm text-muted-foreground">Try clearing a filter or check back later — new offers can appear throughout the day.</p><Button className="mt-4 h-11 rounded-full px-6" onClick={() => { setQ(""); setDistrict(""); setCategory(""); }}>Clear filters</Button></div> : <div className="mt-6 space-y-12 sm:mt-8"><ListingSection title="Available Today" description="These listings are in stock today. They can only be collected during the allocated pickup window shown on each card." count={grouped.available.length} listings={grouped.available} emptyMessage="No available listings match your filters today." showBrowseAds /><ListingSection title="Sold Out" description="These offers are still visible, but all portions have already been reserved." count={grouped.soldOut.length} listings={grouped.soldOut} emptyMessage="No sold out listings match your filters." muted /><ListingSection title="Offer Expired" description="These pickup windows have already ended and cannot be reserved." count={grouped.expired.length} listings={grouped.expired} emptyMessage="No expired offers match your filters." muted /></div>}</section></SiteLayout>;
 }
 
-function ListingSection({
-  title,
-  description,
-  count,
-  listings,
-  emptyMessage,
-  muted,
-  showBrowseAds,
-}: {
-  title: string;
-  description: string;
-  count: number;
-  listings: Row[];
-  emptyMessage: string;
-  muted?: boolean;
-  showBrowseAds?: boolean;
-}) {
-  return (
-    <section>
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-black sm:text-2xl">{title}</h2>
-            <Badge variant={muted ? "secondary" : "default"} className="rounded-full">{count}</Badge>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        </div>
-      </div>
-
-      {listings.length === 0 ? (
-        <div className="rounded-3xl border bg-card p-6 text-center text-sm text-muted-foreground shadow-sm">{emptyMessage}</div>
-      ) : (
-        <div className={`grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 ${muted ? "opacity-75" : ""}`}>
-          {listings.map((l, i) => (
-            <Fragment key={l.id}>
-              <ListingCard listing={l} />
-              {showBrowseAds && (i + 1) === 6 && i !== listings.length - 1 && (
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <AdSlot size="billboard" id="ad-space-05-browse-billboard" slotCode="AD SPACE 05" label="AD SPACE 05 browse billboard" />
-                </div>
-              )}
-              {showBrowseAds && (i + 1) === 15 && i !== listings.length - 1 && (
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <AdSlot size="leaderboard" id="ad-space-06-browse-lower" slotCode="AD SPACE 06" label="AD SPACE 06 browse lower" />
-                </div>
-              )}
-            </Fragment>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function FilterRow({
-  label,
-  value,
-  onChange,
-  options,
-  labelFor,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: readonly string[];
-  labelFor?: (v: string) => string;
-}) {
-  return (
-    <div className="mb-2 sm:mb-3">
-      <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-      <div className="mobile-scrollbar-none flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
-        <Chip active={value === ""} onClick={() => onChange("")}>All</Chip>
-        {options.map((o) => (
-          <Chip key={o} active={value === o} onClick={() => onChange(o)}>
-            {labelFor ? labelFor(o) : o}
-          </Chip>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button onClick={onClick} type="button" className="shrink-0">
-      <Badge
-        variant={active ? "default" : "secondary"}
-        className="cursor-pointer rounded-full px-3.5 py-2 text-xs font-semibold"
-      >
-        {children}
-      </Badge>
-    </button>
-  );
-}
+function ListingSection({ title, description, count, listings, emptyMessage, muted, showBrowseAds }: { title: string; description: string; count: number; listings: Row[]; emptyMessage: string; muted?: boolean; showBrowseAds?: boolean }) { return <section><div className="mb-4 flex flex-wrap items-end justify-between gap-3"><div><div className="flex items-center gap-2"><h2 className="text-xl font-black sm:text-2xl">{title}</h2><Badge variant={muted ? "secondary" : "default"} className="rounded-full">{count}</Badge></div><p className="mt-1 text-sm text-muted-foreground">{description}</p></div></div>{listings.length === 0 ? <div className="rounded-3xl border bg-card p-6 text-center text-sm text-muted-foreground shadow-sm">{emptyMessage}</div> : <div className={`grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 ${muted ? "opacity-75" : ""}`}>{listings.map((l, i) => <Fragment key={l.id}><ListingCard listing={l} />{showBrowseAds && (i + 1) === 6 && i !== listings.length - 1 && <div className="sm:col-span-2 lg:col-span-3"><AdSlot size="billboard" id="ad-space-05-browse-billboard" slotCode="AD SPACE 05" label="AD SPACE 05 browse billboard" /></div>}{showBrowseAds && (i + 1) === 15 && i !== listings.length - 1 && <div className="sm:col-span-2 lg:col-span-3"><AdSlot size="leaderboard" id="ad-space-06-browse-lower" slotCode="AD SPACE 06" label="AD SPACE 06 browse lower" /></div>}</Fragment>)}</div>}</section>; }
+function FilterRow({ label, value, onChange, options, labelFor }: { label: string; value: string; onChange: (v: string) => void; options: readonly string[]; labelFor?: (v: string) => string }) { return <div className="mb-2 sm:mb-3"><span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span><div className="mobile-scrollbar-none flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible"><Chip active={value === ""} onClick={() => onChange("")}>All</Chip>{options.map((o) => <Chip key={o} active={value === o} onClick={() => onChange(o)}>{labelFor ? labelFor(o) : o}</Chip>)}</div></div>; }
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) { return <button onClick={onClick} type="button" className="shrink-0"><Badge variant={active ? "default" : "secondary"} className="cursor-pointer rounded-full px-3.5 py-2 text-xs font-semibold">{children}</Badge></button>; }
