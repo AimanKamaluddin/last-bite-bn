@@ -26,20 +26,29 @@ function MerchantProfile() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const [{ data: m }, { data: l }] = await Promise.all([
-        (supabase as any)
+      let { data: m, error: merchantError } = await (supabase as any)
+        .from("merchants_public")
+        .select("id, business_name, business_type, district, image_url, rating, description, opening_hours, address, phone, email, tagline, cover_image_url, instagram_url, website_url")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (merchantError && /tagline|cover_image_url|instagram_url|website_url|schema cache/i.test(merchantError.message ?? "")) {
+        const fallback = await (supabase as any)
           .from("merchants_public")
-          .select("id, business_name, business_type, district, image_url, rating, description, opening_hours")
+          .select("id, business_name, business_type, district, image_url, rating, description, opening_hours, address, phone, email")
           .eq("id", id)
-          .maybeSingle(),
-        (supabase as any)
-          .from("listings")
-          .select("*")
-          .eq("merchant_id", id)
-          .eq("visible", true)
-          .eq("status", "active")
-          .order("created_at", { ascending: false }),
-      ]);
+          .maybeSingle();
+        m = fallback.data;
+      }
+
+      const { data: l } = await (supabase as any)
+        .from("listings")
+        .select("*")
+        .eq("merchant_id", id)
+        .eq("visible", true)
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+
       if (cancelled) return;
       setMerchant(m);
       setListings((l ?? []).map((d: any) => ({
@@ -76,7 +85,7 @@ function MerchantProfile() {
       <section className="container mx-auto max-w-6xl px-4 py-10">
         <Card className="overflow-hidden rounded-3xl p-0">
           <div className="h-52 bg-gradient-to-br from-primary via-emerald-600 to-accent md:h-64">
-            {merchant.image_url && <img src={merchant.image_url} alt={merchant.business_name} className="h-full w-full object-cover opacity-95" />}
+            {(merchant.cover_image_url || merchant.image_url) && <img src={merchant.cover_image_url || merchant.image_url} alt={merchant.business_name} className="h-full w-full object-cover opacity-95" />}
           </div>
           <div className="p-6 md:p-8">
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
