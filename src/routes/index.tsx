@@ -31,12 +31,19 @@ const minutesUntil = (dateValue: string) => {
   return Math.max(0, Math.round((end.getTime() - Date.now()) / 60000));
 };
 
-const urgencyLabel = (listing: ListingCardData) => {
-  const mins = minutesUntil(listing.pickup_end);
-  if (mins === Number.POSITIVE_INFINITY) return "Pickup today";
-  if (mins < 60) return `Ends in ${mins} min`;
+const formatDuration = (mins: number) => {
+  if (mins === Number.POSITIVE_INFINITY) return "today";
+  if (mins < 60) return `${mins} min`;
   const hours = Math.floor(mins / 60);
-  return `Ends in ${hours}h ${mins % 60}m`;
+  return `${hours}h ${mins % 60}m`;
+};
+
+const urgencyLabel = (listing: ListingCardData) => {
+  const minsToStart = minutesUntil(listing.pickup_start);
+  const minsToEnd = minutesUntil(listing.pickup_end);
+  if (minsToStart === Number.POSITIVE_INFINITY && minsToEnd === Number.POSITIVE_INFINITY) return "Pickup today";
+  if (minsToStart > 0) return `Pickup window starts in ${formatDuration(minsToStart)}`;
+  return `Pickup ends in ${formatDuration(minsToEnd)}`;
 };
 
 function Landing() {
