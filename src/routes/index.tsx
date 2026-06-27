@@ -117,7 +117,7 @@ function Landing() {
     </section>
 
     {availableNow.length > 0 && <Section title="Available Today" notice={<PickupWindowAlert compact />} action={<Button asChild variant="outline" className="rounded-full"><Link to="/browse">{t("browseAll")} <ArrowRight className="h-4 w-4" /></Link></Button>}>
-      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{availableNow.map((l) => <div key={l.id} className="relative"><div className="absolute left-3 top-3 z-10 rounded-full bg-background/95 px-3 py-1 text-xs font-semibold shadow"><Clock className="mr-1 inline h-3.5 w-3.5 text-primary" />{urgencyLabel(l)}</div><ListingCard listing={l} /></div>)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{availableNow.map((l) => <div key={l.id} className="overflow-hidden rounded-[1.35rem] sm:rounded-3xl"><div className="mb-2 flex items-center gap-1.5 rounded-full border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground shadow-sm"><Clock className="h-3.5 w-3.5 shrink-0 text-primary" /><span className="truncate">{urgencyLabel(l)}</span></div><ListingCard listing={l} /></div>)}</div>
     </Section>}
 
     <div className="container mx-auto px-3 py-2 sm:px-4"><AdSlot size="inline" id="ad-space-02-home-after-offers" slotCode="AD SPACE 02" label="AD SPACE 02 homepage after offers" /></div>
