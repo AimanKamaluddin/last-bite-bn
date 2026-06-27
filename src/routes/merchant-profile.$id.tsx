@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
 import { ReviewList } from "@/components/reviews/ReviewList";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
 import { Clock, ExternalLink, Mail, MapPin, Phone, Star, Store } from "lucide-react";
 
@@ -51,24 +52,7 @@ function MerchantProfile() {
 
       if (cancelled) return;
       setMerchant(m);
-      setListings((l ?? []).map((d: any) => ({
-        id: d.id,
-        title: d.title,
-        category: d.category,
-        original_price: Number(d.original_price),
-        discounted_price: Number(d.discounted_price),
-        quantity_available: d.quantity_available,
-        pickup_start: d.pickup_start,
-        pickup_end: d.pickup_end,
-        created_at: d.created_at,
-        produced_at: d.produced_at,
-        image_url: d.image_url || "",
-        merchant: {
-          business_name: m?.business_name ?? "",
-          district: m?.district ?? "",
-          rating: Number(m?.rating ?? 0),
-        },
-      })));
+      setListings((l ?? []).map((d: any) => ({ id: d.id, title: d.title, category: d.category, original_price: Number(d.original_price), discounted_price: Number(d.discounted_price), quantity_available: d.quantity_available, pickup_start: d.pickup_start, pickup_end: d.pickup_end, created_at: d.created_at, produced_at: d.produced_at, image_url: d.image_url || "", merchant: { business_name: m?.business_name ?? "", district: m?.district ?? "", rating: Number(m?.rating ?? 0) } })));
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -123,10 +107,14 @@ function MerchantProfile() {
           </div>
         </Card>
 
+        <div className="mt-8"><AdSlot size="leaderboard" id="ad-space-14-merchant-profile-top" slotCode="AD SPACE 14" label="AD SPACE 14 merchant profile top" /></div>
+
         <section className="mt-10">
           <div className="mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /><h2 className="text-2xl font-bold">Offers today</h2></div>
           {offersToday.length === 0 ? <EmptyCard msg="This merchant has no current offers available right now." /> : <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{offersToday.map((l) => <ListingCard key={l.id} listing={l} />)}</div>}
         </section>
+
+        <div className="mt-10"><AdSlot size="inline" id="ad-space-15-merchant-profile-after-offers" slotCode="AD SPACE 15" label="AD SPACE 15 merchant profile after offers" /></div>
 
         <section className="mt-12">
           <h2 className="text-2xl font-bold">Past offers</h2>
