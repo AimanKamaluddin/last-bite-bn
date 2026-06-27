@@ -52,7 +52,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
         </div>
         <div className="grid gap-2 rounded-2xl bg-muted/45 p-3 text-xs text-muted-foreground sm:flex sm:flex-wrap sm:items-center sm:gap-3 sm:bg-transparent sm:p-0">
           <span className="inline-flex min-w-0 items-center gap-1.5"><MapPin className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{listing.merchant.district}</span></span>
-          <span className="inline-flex min-w-0 items-center gap-1.5"><Clock className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{fmtTime(listing.pickup_start)} – {fmtTime(listing.pickup_end)}</span></span>
+          <span className="inline-flex min-w-0 items-center gap-1.5 font-medium text-foreground"><Clock className="h-3.5 w-3.5 shrink-0 text-primary" /><span className="truncate">Pickup window: {fmtTime(listing.pickup_start)} – {fmtTime(listing.pickup_end)}</span></span>
           {expired && <Badge variant="outline" className="w-fit rounded-full text-[10px]">Offer expired</Badge>}
         </div>
         <div className="flex items-end justify-between gap-3 pt-1">
