@@ -95,21 +95,27 @@ function OrderConfirmation() {
   if (loading) return <SiteLayout><div className="p-10">Loading…</div></SiteLayout>;
   if (!order) return <SiteLayout><div className="p-10">Order not found.</div></SiteLayout>;
 
-  // simple QR proxy
-  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(order.pickup_code)}`;
   const selectedPickupTime = formatTime12Hour(getPickupTime(order) || pickupTime);
+  const buyerName = order.customer_name || order.buyer_name || order.user_name || "Buyer";
 
   return (
     <SiteLayout>
       <section className="container mx-auto max-w-xl px-4 py-12 text-center">
         <CheckCircle2 className="mx-auto h-14 w-14 text-primary" />
         <h1 className="mt-4 text-3xl font-bold">Reservation confirmed!</h1>
-        <p className="mt-2 text-muted-foreground">Show this code to the merchant during pickup.</p>
+        <p className="mt-2 text-muted-foreground">Show your name and pickup code to the merchant.</p>
 
         <Card className="mt-6 rounded-3xl p-8">
-          <img src={qr} alt="Pickup QR code" className="mx-auto" width={200} height={200} />
-          <div className="mt-4 text-3xl font-bold tracking-[0.4em] text-primary">{order.pickup_code}</div>
-          <div className="mt-1 text-sm text-muted-foreground">Pickup code</div>
+          <div className="rounded-2xl bg-cream/60 p-4 text-left">
+            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Buyer name</div>
+            <div className="mt-1 text-2xl font-bold">{buyerName}</div>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 p-5">
+            <div className="text-sm text-muted-foreground">Pickup code</div>
+            <div className="mt-2 text-4xl font-black tracking-[0.25em] text-primary">{order.pickup_code}</div>
+          </div>
+
           {selectedPickupTime && <div className="mt-4 rounded-2xl bg-cream/60 p-4 text-sm"><div className="text-muted-foreground">Pickup time reminder</div><strong className="text-lg">{selectedPickupTime}</strong></div>}
 
           <div className="my-6 h-px bg-border" />
