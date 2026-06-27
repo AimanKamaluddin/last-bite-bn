@@ -12,7 +12,7 @@ import {
 import { ListingCard } from "@/components/listings/ListingCard";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 
 export const Route = createFileRoute("/browse")({
   head: () => ({
@@ -86,43 +86,51 @@ function Browse() {
     });
   }, [all, q, district, category]);
 
+  const activeFilterCount = [district, category].filter(Boolean).length;
+
   return (
     <SiteLayout>
-      <section className="container mx-auto px-3 py-6 sm:px-4 sm:py-10">
-        <h1 className="text-3xl font-bold leading-tight md:text-4xl">Browse surplus food</h1>
-        <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-          {loading ? "Loading available food…" : `${filtered.length} offers available.`}
-        </p>
+      <section className="container mx-auto px-3 py-5 sm:px-4 sm:py-10">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-black leading-tight sm:text-3xl md:text-4xl">Browse surplus food</h1>
+            <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+              {loading ? "Loading available food…" : `${filtered.length} offers available.`}
+            </p>
+          </div>
+          {activeFilterCount > 0 && <Badge className="shrink-0 rounded-full">{activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""}</Badge>}
+        </div>
 
-        <div className="sticky top-14 z-30 -mx-3 mt-5 border-y bg-background/95 px-3 py-3 shadow-sm backdrop-blur sm:static sm:mx-0 sm:mt-6 sm:rounded-3xl sm:border sm:bg-card sm:p-4 sm:shadow-sm">
+        <div className="sticky top-14 z-30 -mx-3 mt-4 border-y bg-background/95 px-3 py-3 shadow-sm backdrop-blur sm:static sm:mx-0 sm:mt-6 sm:rounded-3xl sm:border sm:bg-card sm:p-4 sm:shadow-sm">
           <div className="relative mb-3 sm:mb-4">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search meals or merchants…"
-              className="h-11 rounded-full pl-9 text-base"
+              placeholder="Search food or merchants…"
+              className="h-12 rounded-full pl-9 pr-4 text-base shadow-sm sm:h-11"
             />
           </div>
 
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:hidden"><SlidersHorizontal className="h-3.5 w-3.5" /> Filters</div>
           <FilterRow label="District" value={district} onChange={setDistrict} options={DISTRICTS as readonly string[]} />
           <FilterRow label="Category" value={category} onChange={setCategory} options={CATEGORIES as readonly string[]} />
         </div>
 
         {filtered.length > 0 && (
-          <div className="mt-6 sm:mt-8">
+          <div className="mt-5 sm:mt-8">
             <AdSlot size="leaderboard" id="ad-space-04-browse-top" slotCode="AD SPACE 04" label="AD SPACE 04 browse top" />
           </div>
         )}
 
         {filtered.length === 0 ? (
-          <div className="mx-auto mt-10 max-w-md rounded-3xl border bg-card p-6 text-center sm:mt-16 sm:p-10">
+          <div className="mx-auto mt-8 max-w-md rounded-3xl border bg-card p-6 text-center shadow-sm sm:mt-16 sm:p-10">
             <div className="text-lg font-semibold">No food matches your filters</div>
             <p className="mt-2 text-sm text-muted-foreground">Try clearing a filter or check back later — new offers can appear throughout the day.</p>
-            <Button className="mt-4 rounded-full" onClick={() => { setQ(""); setDistrict(""); setCategory(""); }}>Clear filters</Button>
+            <Button className="mt-4 h-11 rounded-full px-6" onClick={() => { setQ(""); setDistrict(""); setCategory(""); }}>Clear filters</Button>
           </div>
         ) : (
-          <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+          <div className="mt-5 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {filtered.map((l, i) => (
               <Fragment key={l.id}>
                 <ListingCard listing={l} />
@@ -161,7 +169,7 @@ function FilterRow({
   return (
     <div className="mb-2 sm:mb-3">
       <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-      <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible">
+      <div className="mobile-scrollbar-none flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
         <Chip active={value === ""} onClick={() => onChange("")}>All</Chip>
         {options.map((o) => (
           <Chip key={o} active={value === o} onClick={() => onChange(o)}>
@@ -178,7 +186,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     <button onClick={onClick} type="button" className="shrink-0">
       <Badge
         variant={active ? "default" : "secondary"}
-        className="cursor-pointer rounded-full px-3 py-1.5 text-xs"
+        className="cursor-pointer rounded-full px-3.5 py-2 text-xs font-semibold"
       >
         {children}
       </Badge>
