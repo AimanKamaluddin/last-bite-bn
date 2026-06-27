@@ -25,44 +25,7 @@ function Dashboard() {
   const [reviews, setReviews] = useState<Record<string, any>>({});
   const [busy, setBusy] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    (async () => {
-      setBusy(true);
-      const [{ data: orderRows, error: ordersError }, { data: savedRows }, { data: reviewRows }] = await Promise.all([
-        supabase.from("orders").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-        supabase.from("saved_merchants").select("merchant_id").eq("user_id", user.id),
-        (supabase as any).from("reviews").select("*").eq("user_id", user.id),
-      ]);
-      if (cancelled) return;
-      setReviews(Object.fromEntries((reviewRows ?? []).map((r: any) => [r.order_id, r])));
-      if (ordersError) { toast.error(ordersError.message); setOrders([]); }
-      else {
-        const rows = orderRows ?? [];
-        const listingIds = [...new Set(rows.map((o: any) => o.listing_id).filter(Boolean))];
-        const merchantIds = [...new Set(rows.map((o: any) => o.merchant_id).filter(Boolean))];
-        const [{ data: listings }, { data: merchants }] = await Promise.all([
-          listingIds.length ? supabase.from("listings").select("id, title, image_url").in("id", listingIds) : Promise.resolve({ data: [] as any[] }),
-          merchantIds.length ? (supabase as any).from("merchants_public").select("id, business_name, district").in("id", merchantIds) : Promise.resolve({ data: [] as any[] }),
-        ]);
-        if (cancelled) return;
-        const listingById = new Map((listings ?? []).map((l: any) => [l.id, l]));
-        const merchantById = new Map((merchants ?? []).map((m: any) => [m.id, m]));
-        setOrders(rows.map((o: any) => ({ ...o, listings: listingById.get(o.listing_id) ?? null, merchants: merchantById.get(o.merchant_id) ?? null })));
-      }
-      const savedMerchantIds = [...new Set((savedRows ?? []).map((s: any) => s.merchant_id).filter(Boolean))];
-      if (savedMerchantIds.length) {
-        const { data: savedMerchants } = await (supabase as any).from("merchants_public").select("id, business_name, district, image_url").in("id", savedMerchantIds);
-        if (!cancelled) {
-          const merchantById = new Map((savedMerchants ?? []).map((m: any) => [m.id, m]));
-          setSaved((savedRows ?? []).map((s: any) => ({ merchant_id: s.merchant_id, merchants: merchantById.get(s.merchant_id) ?? null })));
-        }
-      } else if (!cancelled) setSaved([]);
-      if (!cancelled) setBusy(false);
-    })();
-    return () => { cancelled = true; };
-  }, [user]);
+  useEffect(() => { if (!user) return; let cancelled = false; (async () => { setBusy(true); const [{ data: orderRows, error: ordersError }, { data: savedRows }, { data: reviewRows }] = await Promise.all([supabase.from("orders").select("*").eq("user_id", user.id).order("created_at", { ascending: false }), supabase.from("saved_merchants").select("merchant_id").eq("user_id", user.id), (supabase as any).from("reviews").select("*").eq("user_id", user.id)]); if (cancelled) return; setReviews(Object.fromEntries((reviewRows ?? []).map((r: any) => [r.order_id, r]))); if (ordersError) { toast.error(ordersError.message); setOrders([]); } else { const rows = orderRows ?? []; const listingIds = [...new Set(rows.map((o: any) => o.listing_id).filter(Boolean))]; const merchantIds = [...new Set(rows.map((o: any) => o.merchant_id).filter(Boolean))]; const [{ data: listings }, { data: merchants }] = await Promise.all([listingIds.length ? supabase.from("listings").select("id, title, image_url").in("id", listingIds) : Promise.resolve({ data: [] as any[] }), merchantIds.length ? (supabase as any).from("merchants_public").select("id, business_name, district").in("id", merchantIds) : Promise.resolve({ data: [] as any[] })]); if (cancelled) return; const listingById = new Map((listings ?? []).map((l: any) => [l.id, l])); const merchantById = new Map((merchants ?? []).map((m: any) => [m.id, m])); setOrders(rows.map((o: any) => ({ ...o, listings: listingById.get(o.listing_id) ?? null, merchants: merchantById.get(o.merchant_id) ?? null }))); } const savedMerchantIds = [...new Set((savedRows ?? []).map((s: any) => s.merchant_id).filter(Boolean))]; if (savedMerchantIds.length) { const { data: savedMerchants } = await (supabase as any).from("merchants_public").select("id, business_name, district, image_url").in("id", savedMerchantIds); if (!cancelled) { const merchantById = new Map((savedMerchants ?? []).map((m: any) => [m.id, m])); setSaved((savedRows ?? []).map((s: any) => ({ merchant_id: s.merchant_id, merchants: merchantById.get(s.merchant_id) ?? null }))); } } else if (!cancelled) setSaved([]); if (!cancelled) setBusy(false); })(); return () => { cancelled = true; }; }, [user]);
 
   if (loading) return <SiteLayout><div className="p-10">Loading…</div></SiteLayout>;
   if (!isAuthenticated) return <Navigate to="/auth" search={{ redirect: "/dashboard" }} />;
@@ -76,10 +39,10 @@ function Dashboard() {
     <SiteLayout>
       <section className="container mx-auto max-w-5xl px-4 py-10">
         <h1 className="text-3xl font-bold">My account</h1><p className="mt-1 text-muted-foreground">Welcome back, @{username}</p>
-        <div className="mt-6"><AdSlot size="leaderboard" id="dashboard-top" label="Sponsored" /></div>
+        <div className="mt-6"><AdSlot size="leaderboard" id="ad-space-17-customer-dashboard-top" slotCode="AD SPACE 17" label="AD SPACE 17 customer dashboard top" /></div>
         <Tabs defaultValue="upcoming" className="mt-6">
           <TabsList><TabsTrigger value="upcoming">Upcoming pickups</TabsTrigger><TabsTrigger value="past">Past orders</TabsTrigger><TabsTrigger value="saved">Saved merchants</TabsTrigger></TabsList>
-          <TabsContent value="upcoming" className="mt-6">{busy ? <Skel /> : upcoming.length === 0 ? <Empty msg="No upcoming pickups." /> : <div className="grid gap-4">{upcoming.map((o) => <OrderRow key={o.id} o={o} onCancel={() => cancel(o.id)} />)}</div>}</TabsContent>
+          <TabsContent value="upcoming" className="mt-6">{busy ? <Skel /> : upcoming.length === 0 ? <Empty msg="No upcoming pickups." /> : <div className="grid gap-4">{upcoming.map((o, i) => <>{i === 2 && <AdSlot size="inline" id="ad-space-18-customer-orders-inline" slotCode="AD SPACE 18" label="AD SPACE 18 customer orders inline" />}<OrderRow key={o.id} o={o} onCancel={() => cancel(o.id)} /></>)}</div>}</TabsContent>
           <TabsContent value="past" className="mt-6">{busy ? <Skel /> : past.length === 0 ? <Empty msg="No past orders yet." /> : <div className="grid gap-4">{past.map((o) => <OrderRow key={o.id} o={o} review={reviews[o.id]} onReviewSaved={onReviewSaved} userId={user!.id} />)}</div>}</TabsContent>
           <TabsContent value="saved" className="mt-6">{busy ? <Skel /> : saved.length === 0 ? <Empty msg="You haven't saved any merchants yet." /> : <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">{saved.map((s) => <Card key={s.merchant_id} className="overflow-hidden rounded-3xl p-0">{s.merchants?.image_url && <img src={s.merchants.image_url} alt="" className="h-32 w-full object-cover" />}<div className="p-4"><div className="font-semibold">{s.merchants?.business_name ?? "Merchant"}</div><div className="text-sm text-muted-foreground">{s.merchants?.district}</div></div></Card>)}</div>}</TabsContent>
         </Tabs>
@@ -88,29 +51,7 @@ function Dashboard() {
   );
 }
 
-function OrderRow({ o, onCancel, review, onReviewSaved, userId }: { o: any; onCancel?: () => void; review?: any; onReviewSaved?: (r: any) => void; userId?: string }) {
-  const upcoming = ["reserved", "ready"].includes(o.status);
-  const pickupTimeRaw = o.pickup_time || String(o.payment_method ?? "").split("pickup_time=")[1]?.split("|")[0] || "";
-  const pickupTime = formatTime12Hour(pickupTimeRaw);
-  return <Card className="rounded-3xl p-4"><div className="grid gap-3"><OrderStatusNotice status={o.status} audience="buyer" /><div className="flex items-center gap-4">{o.listings?.image_url && <img src={o.listings.image_url} alt="" className="h-16 w-16 rounded-xl object-cover" />}<div className="flex-1"><div className="font-semibold">{o.listings?.title ?? "Reserved surprise bag"}</div><div className="text-sm text-muted-foreground">{o.merchants?.business_name ?? "Merchant"}</div><div className="mt-1 flex flex-wrap items-center gap-2"><Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge><span className="text-xs text-muted-foreground">Code: <strong>{o.pickup_code}</strong></span>{pickupTime && <Badge variant="outline" className="rounded-full text-xs"><Clock className="mr-1 h-3 w-3" />Pickup {pickupTime}</Badge>}{upcoming && <Badge variant="outline" className="rounded-full text-xs"><Banknote className="mr-1 h-3 w-3" />Pay at pickup</Badge>}</div>{pickupTime && upcoming && <div className="mt-2 rounded-xl bg-cream/60 px-3 py-2 text-xs"><span className="text-muted-foreground">Pickup time reminder:</span> <strong>{pickupTime}</strong></div>}</div><div className="text-right"><div className="font-semibold">{formatBND(Number(o.total_price))}</div>{onCancel && o.status === "reserved" && <Button variant="ghost" size="sm" className="mt-2" onClick={onCancel}>Cancel</Button>}</div></div></div>{o.status === "collected" && userId && <ReviewForm order={o} existing={review} userId={userId} onSaved={onReviewSaved} />}</Card>;
-}
-
-function ReviewForm({ order, existing, userId, onSaved }: { order: any; existing?: any; userId: string; onSaved?: (r: any) => void }) {
-  const [rating, setRating] = useState(existing?.rating ?? 5);
-  const [comment, setComment] = useState(existing?.comment ?? "");
-  const [saving, setSaving] = useState(false);
-  const save = async () => {
-    setSaving(true);
-    const payload = { order_id: order.id, user_id: userId, merchant_id: order.merchant_id, listing_id: order.listing_id, rating, comment };
-    const query = existing ? (supabase as any).from("reviews").update(payload).eq("id", existing.id).select("*").single() : (supabase as any).from("reviews").insert(payload).select("*").single();
-    const { data, error } = await query;
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success(existing ? "Review updated" : "Review submitted");
-    onSaved?.(data);
-  };
-  return <div className="mt-4 rounded-2xl border bg-muted/30 p-4"><div className="font-medium">{existing ? "Your review" : "Rate your pickup"}</div><div className="mt-2 flex gap-1">{[1,2,3,4,5].map((n) => <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} stars`}><Star className={`h-6 w-6 ${n <= rating ? "fill-sun text-sun" : "text-muted-foreground/40"}`} /></button>)}</div><Textarea className="mt-3" rows={3} placeholder="Share your experience with this merchant or food item…" value={comment} onChange={(e) => setComment(e.target.value)} /><Button className="mt-3 rounded-full" size="sm" disabled={saving} onClick={save}>{saving ? "Saving…" : existing ? "Update review" : "Submit review"}</Button></div>;
-}
-
+function OrderRow({ o, onCancel, review, onReviewSaved, userId }: { o: any; onCancel?: () => void; review?: any; onReviewSaved?: (r: any) => void; userId?: string }) { const upcoming = ["reserved", "ready"].includes(o.status); const pickupTimeRaw = o.pickup_time || String(o.payment_method ?? "").split("pickup_time=")[1]?.split("|")[0] || ""; const pickupTime = formatTime12Hour(pickupTimeRaw); return <Card className="rounded-3xl p-4"><div className="grid gap-3"><OrderStatusNotice status={o.status} audience="buyer" /><div className="flex items-center gap-4">{o.listings?.image_url && <img src={o.listings.image_url} alt="" className="h-16 w-16 rounded-xl object-cover" />}<div className="flex-1"><div className="font-semibold">{o.listings?.title ?? "Reserved surprise bag"}</div><div className="text-sm text-muted-foreground">{o.merchants?.business_name ?? "Merchant"}</div><div className="mt-1 flex flex-wrap items-center gap-2"><Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge><span className="text-xs text-muted-foreground">Code: <strong>{o.pickup_code}</strong></span>{pickupTime && <Badge variant="outline" className="rounded-full text-xs"><Clock className="mr-1 h-3 w-3" />Pickup {pickupTime}</Badge>}{upcoming && <Badge variant="outline" className="rounded-full text-xs"><Banknote className="mr-1 h-3 w-3" />Pay at pickup</Badge>}</div>{pickupTime && upcoming && <div className="mt-2 rounded-xl bg-cream/60 px-3 py-2 text-xs"><span className="text-muted-foreground">Pickup time reminder:</span> <strong>{pickupTime}</strong></div>}</div><div className="text-right"><div className="font-semibold">{formatBND(Number(o.total_price))}</div>{onCancel && o.status === "reserved" && <Button variant="ghost" size="sm" className="mt-2" onClick={onCancel}>Cancel</Button>}</div></div></div>{o.status === "collected" && userId && <ReviewForm order={o} existing={review} userId={userId} onSaved={onReviewSaved} />}</Card>; }
+function ReviewForm({ order, existing, userId, onSaved }: { order: any; existing?: any; userId: string; onSaved?: (r: any) => void }) { const [rating, setRating] = useState(existing?.rating ?? 5); const [comment, setComment] = useState(existing?.comment ?? ""); const [saving, setSaving] = useState(false); const save = async () => { setSaving(true); const payload = { order_id: order.id, user_id: userId, merchant_id: order.merchant_id, listing_id: order.listing_id, rating, comment }; const query = existing ? (supabase as any).from("reviews").update(payload).eq("id", existing.id).select("*").single() : (supabase as any).from("reviews").insert(payload).select("*").single(); const { data, error } = await query; setSaving(false); if (error) return toast.error(error.message); toast.success(existing ? "Review updated" : "Review submitted"); onSaved?.(data); }; return <div className="mt-4 rounded-2xl border bg-muted/30 p-4"><div className="font-medium">{existing ? "Your review" : "Rate your pickup"}</div><div className="mt-2 flex gap-1">{[1,2,3,4,5].map((n) => <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} stars`}><Star className={`h-6 w-6 ${n <= rating ? "fill-sun text-sun" : "text-muted-foreground/40"}`} /></button>)}</div><Textarea className="mt-3" rows={3} placeholder="Share your experience with this merchant or food item…" value={comment} onChange={(e) => setComment(e.target.value)} /><Button className="mt-3 rounded-full" size="sm" disabled={saving} onClick={save}>{saving ? "Saving…" : existing ? "Update review" : "Submit review"}</Button></div>; }
 function Empty({ msg }: { msg: string }) { return <Card className="rounded-3xl p-10 text-center"><p className="text-muted-foreground">{msg}</p><Button asChild className="mt-4 rounded-full"><Link to="/browse">Browse food</Link></Button></Card>; }
 function Skel() { return <div className="grid gap-3">{[1,2,3].map((i) => <div key={i} className="h-20 animate-pulse rounded-3xl bg-muted" />)}</div>; }
