@@ -19,6 +19,7 @@ export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
 function Dashboard() {
   const { user, isAuthenticated, loading } = useAuth();
+  const username = user?.user_metadata?.username || user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0];
   const [orders, setOrders] = useState<any[]>([]);
   const [saved, setSaved] = useState<any[]>([]);
   const [reviews, setReviews] = useState<Record<string, any>>({});
@@ -74,7 +75,7 @@ function Dashboard() {
   return (
     <SiteLayout>
       <section className="container mx-auto max-w-5xl px-4 py-10">
-        <h1 className="text-3xl font-bold">My account</h1><p className="mt-1 text-muted-foreground">Welcome back, {user?.email}</p>
+        <h1 className="text-3xl font-bold">My account</h1><p className="mt-1 text-muted-foreground">Welcome back, @{username}</p>
         <div className="mt-6"><AdSlot size="leaderboard" id="dashboard-top" label="Sponsored" /></div>
         <Tabs defaultValue="upcoming" className="mt-6">
           <TabsList><TabsTrigger value="upcoming">Upcoming pickups</TabsTrigger><TabsTrigger value="past">Past orders</TabsTrigger><TabsTrigger value="saved">Saved merchants</TabsTrigger></TabsList>
