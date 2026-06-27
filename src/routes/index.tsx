@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
+import { PickupWindowAlert } from "@/components/orders/PickupWindowAlert";
 import { formatBND } from "@/lib/sample-data";
 import { useLanguage } from "@/lib/i18n";
 import { ArrowRight, Clock, Coffee, CupSoda, Flame, HandCoins, Leaf, MapPin, PackageSearch, Search, ShoppingBag, Sparkles, Store, Timer, TrendingUp, Utensils } from "lucide-react";
@@ -108,7 +109,7 @@ function Landing() {
       </div>
     </section>
 
-    {availableNow.length > 0 && <Section title={t("availableRightNow")} subtitle={t("reserveBeforePickup")} action={<Button asChild variant="outline" className="rounded-full"><Link to="/browse">{t("browseAll")} <ArrowRight className="h-4 w-4" /></Link></Button>}>
+    {availableNow.length > 0 && <Section title="Available Today" subtitle={t("reserveBeforePickup")} notice={<PickupWindowAlert compact />} action={<Button asChild variant="outline" className="rounded-full"><Link to="/browse">{t("browseAll")} <ArrowRight className="h-4 w-4" /></Link></Button>}>
       <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{availableNow.map((l) => <div key={l.id} className="relative"><div className="absolute left-3 top-3 z-10 rounded-full bg-background/95 px-3 py-1 text-xs font-semibold shadow"><Clock className="mr-1 inline h-3.5 w-3.5 text-primary" />{urgencyLabel(l)}</div><ListingCard listing={l} /></div>)}</div>
     </Section>}
 
@@ -134,5 +135,5 @@ function Landing() {
 
 function HeroProof({ icon: Icon, title, body }: { icon: any; title: string; body: string }) { return <div className="rounded-2xl border bg-background/70 p-3 shadow-sm"><div className="flex items-center gap-2 font-semibold text-foreground"><Icon className="h-4 w-4 text-primary" />{title}</div><div className="mt-1 text-xs text-muted-foreground">{body}</div></div>; }
 function QuickChip({ icon: Icon, label, count }: { icon: any; label: string; count?: number }) { return <Button asChild variant="outline" className="h-10 shrink-0 rounded-full px-4"><Link to="/browse"><Icon className="h-4 w-4" />{label}{typeof count === "number" && count > 0 ? <span className="ml-1 rounded-full bg-primary/10 px-1.5 text-xs text-primary">{count}</span> : null}</Link></Button>; }
-function Section({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode }) { return <section className="container mx-auto px-3 py-10 sm:px-4 md:py-16"><div className="mb-6 flex flex-col gap-4 sm:mb-8 md:flex-row md:items-end md:justify-between"><div className="max-w-2xl"><h2 className="text-2xl font-bold leading-tight sm:text-3xl md:text-4xl">{title}</h2>{subtitle && <p className="mt-2 text-sm text-muted-foreground sm:text-base">{subtitle}</p>}</div>{action}</div>{children}</section>; }
+function Section({ title, subtitle, notice, action, children }: { title: string; subtitle?: string; notice?: ReactNode; action?: ReactNode; children: ReactNode }) { return <section className="container mx-auto px-3 py-10 sm:px-4 md:py-16"><div className="mb-6 flex flex-col gap-4 sm:mb-8 md:flex-row md:items-end md:justify-between"><div className="max-w-2xl"><h2 className="text-2xl font-bold leading-tight sm:text-3xl md:text-4xl">{title}</h2>{subtitle && <p className="mt-2 text-sm text-muted-foreground sm:text-base">{subtitle}</p>}{notice && <div className="mt-3">{notice}</div>}</div>{action}</div>{children}</section>; }
 function BenefitCard({ title, items }: { title: string; items: string[] }) { return <Card className="rounded-3xl p-5 sm:p-6"><h3 className="text-xl font-semibold">{title}</h3><ul className="mt-4 space-y-3 text-sm">{items.map((it) => <li key={it} className="flex items-start gap-2"><TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span>{it}</span></li>)}</ul></Card>; }
