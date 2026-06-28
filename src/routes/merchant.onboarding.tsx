@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Card } from "@/components/ui/card";
@@ -18,12 +18,17 @@ export const Route = createFileRoute("/merchant/onboarding")({
 });
 
 const BUSINESS_TYPES = [...CATEGORIES, "Gerai"] as const;
+const VENDOR_AGREEMENT_VERSION = "Last Bite Vendor Agreement v1.0 — 28 June 2026";
 
 function Onboarding() {
   const { user, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [existing, setExisting] = useState<any>(null);
+  const [acceptedVendorAgreement, setAcceptedVendorAgreement] = useState(false);
+  const [acceptedFoodSafety, setAcceptedFoodSafety] = useState(false);
+  const [acceptedLicensing, setAcceptedLicensing] = useState(false);
+  const [acceptedOrderHonour, setAcceptedOrderHonour] = useState(false);
 
   const [form, setForm] = useState({
     business_name: "",
@@ -33,12 +38,13 @@ function Onboarding() {
     email: "",
     address: "",
     district: DISTRICTS[0] as string,
-    
     business_reg_no: "",
     opening_hours: "",
     description: "",
     image_url: "",
   });
+
+  const agreementReady = acceptedVendorAgreement && acceptedFoodSafety && acceptedLicensing && acceptedOrderHonour;
 
   useEffect(() => {
     if (!user) return;
@@ -55,9 +61,10 @@ function Onboarding() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (!agreementReady) return toast.error("Please accept the required vendor agreement confirmations before submitting.");
     setSubmitting(true);
-    const { error } = await supabase.from("merchants").insert({ ...form, user_id: user.id, email: form.email || user.email });
-    // Note: 'merchant' role is granted by admin upon approval.
+    const legalNote = `\n\nVendor legal acceptance: ${VENDOR_AGREEMENT_VERSION}; accepted at ${new Date().toISOString()}. Vendor certified licensing, food safety compliance, and confirmed-order fulfilment.`;
+    const { error } = await supabase.from("merchants").insert({ ...form, description: `${form.description}${legalNote}`, user_id: user.id, email: form.email || user.email });
     setSubmitting(false);
     if (error) return toast.error(error.message);
     toast.success("Application submitted! We'll review it shortly.");
@@ -114,8 +121,17 @@ function Onboarding() {
             </Field>
             <Field label="Short description" full><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
 
+            <div className="rounded-2xl border bg-muted/40 p-4 text-sm sm:col-span-2">
+              <p className="mb-3 font-semibold">Required vendor agreement</p>
+              <Check checked={acceptedVendorAgreement} onChange={setAcceptedVendorAgreement}>I have read and agree to the <Link to="/legal/merchant-agreement" className="font-semibold text-primary underline">Merchant Agreement</Link>.</Check>
+              <Check checked={acceptedFoodSafety} onChange={setAcceptedFoodSafety}>I certify that food listed on Last Bite will comply with food safety, hygiene, allergen, storage and handling obligations.</Check>
+              <Check checked={acceptedLicensing} onChange={setAcceptedLicensing}>I certify that my business holds all permits, approvals, licences and registrations required to operate and sell food in Brunei Darussalam.</Check>
+              <Check checked={acceptedOrderHonour} onChange={setAcceptedOrderHonour}>I agree to honour confirmed orders, maintain accurate listings, and provide food within stated pickup windows.</Check>
+              <p className="mt-3 text-xs text-muted-foreground">Agreement version: {VENDOR_AGREEMENT_VERSION}</p>
+            </div>
+
             <div className="sm:col-span-2">
-              <Button type="submit" disabled={submitting} className="w-full rounded-full" size="lg">
+              <Button type="submit" disabled={submitting || !agreementReady} className="w-full rounded-full" size="lg">
                 {submitting ? "Submitting…" : "Submit for approval"}
               </Button>
             </div>
@@ -124,6 +140,10 @@ function Onboarding() {
       </section>
     </SiteLayout>
   );
+}
+
+function Check({ checked, onChange, children }: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode }) {
+  return <label className="mt-2 flex gap-2 leading-5"><input type="checkbox" className="mt-1" checked={checked} onChange={(e) => onChange(e.target.checked)} required /> <span>{children}</span></label>;
 }
 
 function Field({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
