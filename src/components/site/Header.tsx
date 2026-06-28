@@ -1,9 +1,10 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { Languages, Leaf, Menu, User as UserIcon, X } from "lucide-react";
+import { Languages, Menu, User as UserIcon, X } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/lib/i18n";
+import { LASTBITE_LOGO } from "@/assets/lastbite-logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,11 +37,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-3 sm:h-16 sm:px-4">
-        <Link to="/" className="flex min-w-0 items-center gap-2" onClick={() => setOpen(false)}>
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
-            <Leaf className="h-5 w-5" />
-          </span>
-          <span className="truncate text-base font-bold tracking-tight sm:text-lg">Last Bite</span>
+        <Link to="/" className="flex min-w-0 items-center" onClick={() => setOpen(false)} aria-label="LastBite home">
+          <img src={LASTBITE_LOGO} alt="LastBite" className="h-12 w-auto object-contain sm:h-14" />
         </Link>
 
         <nav className="hidden items-center gap-2 md:flex">{nav}</nav>
