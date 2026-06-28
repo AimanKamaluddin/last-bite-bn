@@ -63,8 +63,7 @@ function Onboarding() {
     if (!user) return;
     if (!agreementReady) return toast.error("Please accept the required vendor agreement confirmations before submitting.");
     setSubmitting(true);
-    const legalNote = `\n\nVendor legal acceptance: ${VENDOR_AGREEMENT_VERSION}; accepted at ${new Date().toISOString()}. Vendor certified licensing, food safety compliance, and confirmed-order fulfilment.`;
-    const { error } = await supabase.from("merchants").insert({ ...form, description: `${form.description}${legalNote}`, user_id: user.id, email: form.email || user.email });
+    const { error } = await supabase.from("merchants").insert({ ...form, user_id: user.id, email: form.email || user.email });
     setSubmitting(false);
     if (error) return toast.error(error.message);
     toast.success("Application submitted! We'll review it shortly.");
