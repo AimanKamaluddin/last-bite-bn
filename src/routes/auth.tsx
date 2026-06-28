@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -12,6 +12,7 @@ import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
+const AGREEMENT_VERSION = "Last Bite Customer Terms v1.0 — 28 June 2026";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s) => searchSchema.parse(s),
@@ -25,19 +26,20 @@ function AuthPage() {
   const { redirect } = useSearch({ from: "/auth" });
   const [loading, setLoading] = useState(false);
 
-  // Sign up fields
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [acceptedMarketplace, setAcceptedMarketplace] = useState(false);
 
-  // Sign in fields
   const [siEmail, setSiEmail] = useState("");
   const [siPassword, setSiPassword] = useState("");
-
-  // Forgot
   const [forgotEmail, setForgotEmail] = useState("");
+
+  const signupReady = acceptedTerms && acceptedPrivacy && acceptedMarketplace;
 
   const goAfterAuth = () => {
     navigate({ to: (redirect ?? "/dashboard") as any });
@@ -45,17 +47,29 @@ function AuthPage() {
 
   const signUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!signupReady) return toast.error("Please accept the required Last Bite agreements before creating an account.");
     const finalUsername = cleanUsername(username);
     if (finalUsername.length < 3) return toast.error("Username must be at least 3 characters.");
     if (!/^[a-zA-Z0-9._-]+$/.test(finalUsername)) return toast.error("Username can only use letters, numbers, dots, underscores, and hyphens.");
 
     setLoading(true);
+    const acceptedAt = new Date().toISOString();
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { username: finalUsername, name, phone, display_name: finalUsername },
+        data: {
+          username: finalUsername,
+          name,
+          phone,
+          display_name: finalUsername,
+          legal_agreement_version: AGREEMENT_VERSION,
+          legal_accepted_at: acceptedAt,
+          accepted_terms: true,
+          accepted_privacy_policy: true,
+          accepted_marketplace_disclaimer: true,
+        },
       },
     });
     setLoading(false);
@@ -122,6 +136,7 @@ function AuthPage() {
               <Button onClick={google} variant="outline" className="w-full rounded-full" disabled={loading}>
                 Sign up with Google
               </Button>
+              <p className="text-xs leading-5 text-muted-foreground">By using Google sign-up, you will be asked to comply with the same Last Bite customer terms, privacy policy and marketplace disclaimer.</p>
               <Divider />
               <form onSubmit={signUp} className="space-y-3">
                 <Field label="Username"><Input required value={username} onChange={(e) => setUsername(cleanUsername(e.target.value))} placeholder="e.g. aiman_bn" minLength={3} pattern="[A-Za-z0-9._-]+" /></Field>
@@ -129,7 +144,15 @@ function AuthPage() {
                 <Field label="Phone"><Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+673 ..." /></Field>
                 <Field label="Email"><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
                 <Field label="Password"><Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} /></Field>
-                <Button type="submit" className="w-full rounded-full" disabled={loading}>Create account</Button>
+                <AgreementChecks
+                  acceptedTerms={acceptedTerms}
+                  setAcceptedTerms={setAcceptedTerms}
+                  acceptedPrivacy={acceptedPrivacy}
+                  setAcceptedPrivacy={setAcceptedPrivacy}
+                  acceptedMarketplace={acceptedMarketplace}
+                  setAcceptedMarketplace={setAcceptedMarketplace}
+                />
+                <Button type="submit" className="w-full rounded-full" disabled={loading || !signupReady}>Create account</Button>
               </form>
             </TabsContent>
 
@@ -144,6 +167,22 @@ function AuthPage() {
       </section>
     </SiteLayout>
   );
+}
+
+function AgreementChecks({ acceptedTerms, setAcceptedTerms, acceptedPrivacy, setAcceptedPrivacy, acceptedMarketplace, setAcceptedMarketplace }: { acceptedTerms: boolean; setAcceptedTerms: (v: boolean) => void; acceptedPrivacy: boolean; setAcceptedPrivacy: (v: boolean) => void; acceptedMarketplace: boolean; setAcceptedMarketplace: (v: boolean) => void }) {
+  return (
+    <div className="rounded-2xl border bg-muted/40 p-4 text-sm">
+      <p className="mb-3 font-semibold">Required customer agreement</p>
+      <Check checked={acceptedTerms} onChange={setAcceptedTerms}>I have read and agree to the <Link to="/legal/terms" className="font-semibold text-primary underline">Terms & Conditions</Link>.</Check>
+      <Check checked={acceptedPrivacy} onChange={setAcceptedPrivacy}>I acknowledge the <Link to="/legal/privacy" className="font-semibold text-primary underline">Privacy Policy</Link>.</Check>
+      <Check checked={acceptedMarketplace} onChange={setAcceptedMarketplace}>I understand Last Bite is a marketplace, not the food seller, and food is supplied by independent vendors.</Check>
+      <p className="mt-3 text-xs text-muted-foreground">Agreement version: {AGREEMENT_VERSION}</p>
+    </div>
+  );
+}
+
+function Check({ checked, onChange, children }: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode }) {
+  return <label className="mt-2 flex gap-2 leading-5"><input type="checkbox" className="mt-1" checked={checked} onChange={(e) => onChange(e.target.checked)} required /> <span>{children}</span></label>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
