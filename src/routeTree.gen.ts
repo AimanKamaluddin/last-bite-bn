@@ -18,6 +18,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MerchantIndexRouteImport } from './routes/merchant.index'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
+import { Route as MerchantProfileIdRouteImport } from './routes/merchant-profile.$id'
 import { Route as MerchantOnboardingRouteImport } from './routes/merchant.onboarding'
 import { Route as MerchantNewListingRouteImport } from './routes/merchant.new-listing'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
@@ -71,6 +72,11 @@ const MerchantIndexRoute = MerchantIndexRouteImport.update({
 const OrderIdRoute = OrderIdRouteImport.update({
   id: '/order/$id',
   path: '/order/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MerchantProfileIdRoute = MerchantProfileIdRouteImport.update({
+  id: '/merchant-profile/$id',
+  path: '/merchant-profile/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MerchantOnboardingRoute = MerchantOnboardingRouteImport.update({
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/listing/$id': typeof ListingIdRoute
+  '/merchant-profile/$id': typeof MerchantProfileIdRoute
   '/merchant/new-listing': typeof MerchantNewListingRoute
   '/merchant/onboarding': typeof MerchantOnboardingRoute
   '/order/$id': typeof OrderIdRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/listing/$id': typeof ListingIdRoute
+  '/merchant-profile/$id': typeof MerchantProfileIdRoute
   '/merchant/new-listing': typeof MerchantNewListingRoute
   '/merchant/onboarding': typeof MerchantOnboardingRoute
   '/order/$id': typeof OrderIdRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/listing/$id': typeof ListingIdRoute
+  '/merchant-profile/$id': typeof MerchantProfileIdRoute
   '/merchant/new-listing': typeof MerchantNewListingRoute
   '/merchant/onboarding': typeof MerchantOnboardingRoute
   '/order/$id': typeof OrderIdRoute
@@ -196,6 +205,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/listing/$id'
+    | '/merchant-profile/$id'
     | '/merchant/new-listing'
     | '/merchant/onboarding'
     | '/order/$id'
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/listing/$id'
+    | '/merchant-profile/$id'
     | '/merchant/new-listing'
     | '/merchant/onboarding'
     | '/order/$id'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/listing/$id'
+    | '/merchant-profile/$id'
     | '/merchant/new-listing'
     | '/merchant/onboarding'
     | '/order/$id'
@@ -257,6 +269,7 @@ export interface RootRouteChildren {
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
   ListingIdRoute: typeof ListingIdRoute
+  MerchantProfileIdRoute: typeof MerchantProfileIdRoute
   MerchantNewListingRoute: typeof MerchantNewListingRoute
   MerchantOnboardingRoute: typeof MerchantOnboardingRoute
   OrderIdRoute: typeof OrderIdRoute
@@ -327,6 +340,13 @@ declare module '@tanstack/react-router' {
       path: '/order/$id'
       fullPath: '/order/$id'
       preLoaderRoute: typeof OrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/merchant-profile/$id': {
+      id: '/merchant-profile/$id'
+      path: '/merchant-profile/$id'
+      fullPath: '/merchant-profile/$id'
+      preLoaderRoute: typeof MerchantProfileIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/merchant/onboarding': {
@@ -409,6 +429,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
   ListingIdRoute: ListingIdRoute,
+  MerchantProfileIdRoute: MerchantProfileIdRoute,
   MerchantNewListingRoute: MerchantNewListingRoute,
   MerchantOnboardingRoute: MerchantOnboardingRoute,
   OrderIdRoute: OrderIdRoute,
