@@ -73,7 +73,7 @@ function Landing() {
         <div className="space-y-6 xl:pt-6">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-white/75 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-primary shadow-sm backdrop-blur"><Sparkles className="h-3.5 w-3.5 text-accent" /> {t("foodAvailableToday")}</span>
           <div className="space-y-4">
-            <h1 className="max-w-4xl text-5xl font-black leading-[0.92] tracking-[-0.055em] text-foreground sm:text-6xl xl:text-7xl">{t("heroTitleStart")} <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">{t("heroTitleHighlight")}</span></h1>
+            <h1 className="max-w-4xl overflow-visible pb-1 text-5xl font-black leading-[1.02] tracking-[-0.035em] text-foreground sm:text-6xl xl:text-7xl">{t("heroTitleStart")} <span className="-mx-1 inline-block bg-gradient-to-r from-primary via-primary to-accent bg-clip-text px-1 pb-1 text-transparent">{t("heroTitleHighlight")}</span></h1>
             <p className="max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg md:text-xl">{t("heroBody")}</p>
           </div>
           <div className="grid gap-3 sm:flex sm:flex-wrap">
