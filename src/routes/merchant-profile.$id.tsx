@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
 import { ReviewList } from "@/components/reviews/ReviewList";
-import { AdSlot } from "@/components/ads/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
 import { Clock, ExternalLink, Mail, MapPin, Phone, Star, Store } from "lucide-react";
 
@@ -17,6 +16,9 @@ const isExpired = (pickupEnd: string) => {
   return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
 };
 
+const baseMerchantFields = "id, business_name, business_type, district, image_url, rating, description, opening_hours, address, phone, email";
+const enhancedMerchantFields = `${baseMerchantFields}, tagline, cover_image_url, instagram_url, website_url`;
+
 function MerchantProfile() {
   const { id } = Route.useParams();
   const [merchant, setMerchant] = useState<any>(null);
@@ -25,24 +27,34 @@ function MerchantProfile() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+
+    const loadMerchant = async () => {
       setLoading(true);
-      let { data: m, error: merchantError } = await (supabase as any)
+
+      let merchantRecord: any = null;
+      let merchantLookupError: any = null;
+
+      const enhanced = await (supabase as any)
         .from("merchants_public")
-        .select("id, business_name, business_type, district, image_url, rating, description, opening_hours, address, phone, email, tagline, cover_image_url, instagram_url, website_url")
+        .select(enhancedMerchantFields)
         .eq("id", id)
         .maybeSingle();
 
-      if (merchantError && /tagline|cover_image_url|instagram_url|website_url|schema cache/i.test(merchantError.message ?? "")) {
+      merchantRecord = enhanced.data;
+      merchantLookupError = enhanced.error;
+
+      if (!merchantRecord) {
         const fallback = await (supabase as any)
           .from("merchants_public")
-          .select("id, business_name, business_type, district, image_url, rating, description, opening_hours, address, phone, email")
+          .select(baseMerchantFields)
           .eq("id", id)
           .maybeSingle();
-        m = fallback.data;
+
+        merchantRecord = fallback.data;
+        merchantLookupError = fallback.error ?? merchantLookupError;
       }
 
-      const { data: l } = await (supabase as any)
+      const { data: listingRows } = await (supabase as any)
         .from("listings")
         .select("*")
         .eq("merchant_id", id)
@@ -51,10 +63,34 @@ function MerchantProfile() {
         .order("created_at", { ascending: false });
 
       if (cancelled) return;
-      setMerchant(m);
-      setListings((l ?? []).map((d: any) => ({ id: d.id, title: d.title, category: d.category, original_price: Number(d.original_price), discounted_price: Number(d.discounted_price), quantity_available: d.quantity_available, pickup_start: d.pickup_start, pickup_end: d.pickup_end, created_at: d.created_at, produced_at: d.produced_at, image_url: d.image_url || "", merchant: { business_name: m?.business_name ?? "", district: m?.district ?? "", rating: Number(m?.rating ?? 0) } })));
+
+      if (merchantLookupError && !merchantRecord) {
+        console.error("Merchant profile lookup failed", merchantLookupError);
+      }
+
+      setMerchant(merchantRecord);
+      setListings((listingRows ?? []).map((d: any) => ({
+        id: d.id,
+        title: d.title,
+        category: d.category,
+        original_price: Number(d.original_price),
+        discounted_price: Number(d.discounted_price),
+        quantity_available: d.quantity_available,
+        pickup_start: d.pickup_start,
+        pickup_end: d.pickup_end,
+        created_at: d.created_at,
+        produced_at: d.produced_at,
+        image_url: d.image_url || "",
+        merchant: {
+          business_name: merchantRecord?.business_name ?? "",
+          district: merchantRecord?.district ?? "",
+          rating: Number(merchantRecord?.rating ?? 0),
+        },
+      })));
       setLoading(false);
-    })();
+    };
+
+    loadMerchant();
     return () => { cancelled = true; };
   }, [id]);
 
@@ -62,7 +98,7 @@ function MerchantProfile() {
   const pastOffers = useMemo(() => listings.filter((l) => isExpired(l.pickup_end)), [listings]);
 
   if (loading) return <SiteLayout><div className="container mx-auto p-10">Loading merchant profile…</div></SiteLayout>;
-  if (!merchant) return <SiteLayout><div className="container mx-auto p-10 text-center"><h1 className="text-2xl font-bold">Merchant not found</h1><Button asChild className="mt-4 rounded-full"><Link to="/">Back home</Link></Button></div></SiteLayout>;
+  if (!merchant) return <SiteLayout><div className="container mx-auto p-10 text-center"><h1 className="text-2xl font-bold">Merchant not found</h1><p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">This merchant profile may no longer be public, or the link may be out of date.</p><Button asChild className="mt-4 rounded-full"><Link to="/">Back home</Link></Button></div></SiteLayout>;
 
   return (
     <SiteLayout>
@@ -107,14 +143,10 @@ function MerchantProfile() {
           </div>
         </Card>
 
-        <div className="mt-8"><AdSlot size="leaderboard" id="ad-space-14-merchant-profile-top" slotCode="AD SPACE 14" label="AD SPACE 14 merchant profile top" /></div>
-
         <section className="mt-10">
           <div className="mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /><h2 className="text-2xl font-bold">Offers today</h2></div>
           {offersToday.length === 0 ? <EmptyCard msg="This merchant has no current offers available right now." /> : <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{offersToday.map((l) => <ListingCard key={l.id} listing={l} />)}</div>}
         </section>
-
-        <div className="mt-10"><AdSlot size="inline" id="ad-space-15-merchant-profile-after-offers" slotCode="AD SPACE 15" label="AD SPACE 15 merchant profile after offers" /></div>
 
         <section className="mt-12">
           <h2 className="text-2xl font-bold">Past offers</h2>
