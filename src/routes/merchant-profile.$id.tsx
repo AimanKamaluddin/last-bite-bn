@@ -54,13 +54,17 @@ function MerchantProfile() {
         merchantLookupError = fallback.error ?? merchantLookupError;
       }
 
-      const { data: listingRows } = await (supabase as any)
+      const { data: l } = await (supabase as any)
         .from("listings")
-        .select("*")
+        .select("*, merchants_public!inner(id, business_name, business_type, district, image_url, rating, description, opening_hours, address, phone, email)")
         .eq("merchant_id", id)
         .eq("visible", true)
         .eq("status", "active")
         .order("created_at", { ascending: false });
+
+      if (!merchantRecord && Array.isArray(l) && l.length > 0) {
+        merchantRecord = l[0].merchants_public;
+      }
 
       if (cancelled) return;
 
@@ -69,7 +73,7 @@ function MerchantProfile() {
       }
 
       setMerchant(merchantRecord);
-      setListings((listingRows ?? []).map((d: any) => ({
+      setListings((l ?? []).map((d: any) => ({
         id: d.id,
         title: d.title,
         category: d.category,
