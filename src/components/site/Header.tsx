@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { Languages, Menu, User as UserIcon, X } from "lucide-react";
+import { Languages, Menu, ShoppingBasket, User as UserIcon, X } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/lib/i18n";
 import { LASTBITE_LOGO } from "@/assets/lastbite-logo";
@@ -53,6 +53,17 @@ export function Header() {
           >
             <Languages className="h-4 w-4" />
             <span>{language === "en" ? "BM" : "EN"}</span>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="relative h-9 rounded-full border-primary/30 bg-primary/10 px-3 text-primary shadow-sm hover:bg-primary hover:text-primary-foreground"
+          >
+            <Link to={isAuthenticated ? "/dashboard" : "/auth"} aria-label={t("myOrders")} onClick={() => setOpen(false)}>
+              <ShoppingBasket className="h-4 w-4" />
+              <span className="ml-1.5 hidden font-bold sm:inline">{t("myOrders")}</span>
+            </Link>
           </Button>
           {isAuthenticated ? (
             <DropdownMenu>
