@@ -97,6 +97,11 @@ function AuthPage() {
     goAfterAuth();
   };
 
+  const googleSignup = async () => {
+    if (!signupReady) return toast.error("Please accept the required Last Bite agreements before signing up with Google.");
+    await google();
+  };
+
   const forgot = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
@@ -133,10 +138,17 @@ function AuthPage() {
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-3 pt-4">
-              <Button onClick={google} variant="outline" className="w-full rounded-full" disabled={loading}>
+              <AgreementChecks
+                acceptedTerms={acceptedTerms}
+                setAcceptedTerms={setAcceptedTerms}
+                acceptedPrivacy={acceptedPrivacy}
+                setAcceptedPrivacy={setAcceptedPrivacy}
+                acceptedMarketplace={acceptedMarketplace}
+                setAcceptedMarketplace={setAcceptedMarketplace}
+              />
+              <Button onClick={googleSignup} variant="outline" className="w-full rounded-full" disabled={loading || !signupReady}>
                 Sign up with Google
               </Button>
-              <p className="text-xs leading-5 text-muted-foreground">By using Google sign-up, you will be asked to comply with the same Last Bite customer terms, privacy policy and marketplace disclaimer.</p>
               <Divider />
               <form onSubmit={signUp} className="space-y-3">
                 <Field label="Username"><Input required value={username} onChange={(e) => setUsername(cleanUsername(e.target.value))} placeholder="e.g. aiman_bn" minLength={3} pattern="[A-Za-z0-9._-]+" /></Field>
@@ -144,14 +156,6 @@ function AuthPage() {
                 <Field label="Phone"><Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+673 ..." /></Field>
                 <Field label="Email"><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
                 <Field label="Password"><Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} /></Field>
-                <AgreementChecks
-                  acceptedTerms={acceptedTerms}
-                  setAcceptedTerms={setAcceptedTerms}
-                  acceptedPrivacy={acceptedPrivacy}
-                  setAcceptedPrivacy={setAcceptedPrivacy}
-                  acceptedMarketplace={acceptedMarketplace}
-                  setAcceptedMarketplace={setAcceptedMarketplace}
-                />
                 <Button type="submit" className="w-full rounded-full" disabled={loading || !signupReady}>Create account</Button>
               </form>
             </TabsContent>
