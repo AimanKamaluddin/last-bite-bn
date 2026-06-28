@@ -69,11 +69,11 @@ function Landing() {
     <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_10%_10%,hsl(var(--accent)/0.22),transparent_28%),radial-gradient(circle_at_88%_12%,hsl(var(--primary)/0.18),transparent_30%),linear-gradient(180deg,hsl(var(--cream)),hsl(var(--background)))]">
       <div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-accent/20 blur-3xl" />
       <div className="absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-primary/20 blur-3xl" />
-      <div className="container relative mx-auto grid items-center gap-8 px-3 pb-10 pt-8 sm:px-4 md:grid-cols-[1.02fr_0.98fr] md:gap-12 md:pb-16 md:pt-14">
-        <div className="space-y-6">
+      <div className="container relative mx-auto grid items-start gap-8 px-3 pb-10 pt-8 sm:px-4 lg:gap-10 xl:grid-cols-[0.9fr_1.1fr] xl:gap-12 xl:pb-16 xl:pt-14">
+        <div className="space-y-6 xl:pt-6">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-white/75 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-primary shadow-sm backdrop-blur"><Sparkles className="h-3.5 w-3.5 text-accent" /> {t("foodAvailableToday")}</span>
           <div className="space-y-4">
-            <h1 className="max-w-4xl text-5xl font-black leading-[0.92] tracking-[-0.055em] text-foreground sm:text-6xl md:text-7xl">{t("heroTitleStart")} <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">{t("heroTitleHighlight")}</span></h1>
+            <h1 className="max-w-4xl text-5xl font-black leading-[0.92] tracking-[-0.055em] text-foreground sm:text-6xl xl:text-7xl">{t("heroTitleStart")} <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">{t("heroTitleHighlight")}</span></h1>
             <p className="max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg md:text-xl">{t("heroBody")}</p>
           </div>
           <div className="grid gap-3 sm:flex sm:flex-wrap">
@@ -87,46 +87,46 @@ function Landing() {
           </div>
         </div>
 
-        <div className="relative">
-          <Link to={heroListing ? "/listing/$id" : "/browse"} params={heroListing ? { id: heroListing.id } : undefined as any} className="group block rounded-[2rem] border border-white/80 bg-white/90 p-3 shadow-[0_35px_100px_-40px_hsl(var(--primary)/0.95)] backdrop-blur transition hover:-translate-y-1 hover:shadow-[0_45px_120px_-45px_hsl(var(--primary)/1)] md:rounded-[2.5rem] md:p-4">
-            <div className="overflow-hidden rounded-[1.55rem] border border-primary/10 bg-white md:rounded-[2rem]">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-gradient-to-r from-primary/10 via-white to-accent/10 px-4 py-3 sm:px-5">
+        <div className="relative mx-auto w-full max-w-3xl xl:max-w-none">
+          <Link to={heroListing ? "/listing/$id" : "/browse"} params={heroListing ? { id: heroListing.id } : undefined as any} className="group block rounded-[1.75rem] border border-white/80 bg-white/90 p-2 shadow-[0_35px_100px_-40px_hsl(var(--primary)/0.95)] backdrop-blur transition hover:-translate-y-1 hover:shadow-[0_45px_120px_-45px_hsl(var(--primary)/1)] sm:p-3 md:rounded-[2.25rem] md:p-4">
+            <div className="overflow-hidden rounded-[1.35rem] border border-primary/10 bg-white md:rounded-[1.85rem]">
+              <div className="flex flex-col gap-3 border-b border-border/70 bg-gradient-to-r from-primary/10 via-white to-accent/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground shadow-sm"><Sparkles className="h-5 w-5" /></div>
                   <div className="min-w-0">
-                    <div className="text-[0.65rem] font-black uppercase tracking-[0.22em] text-primary">Sponsored feature</div>
+                    <div className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-primary sm:tracking-[0.22em]">Sponsored feature</div>
                     <div className="truncate text-sm font-black text-foreground sm:text-base">Promoted local deal</div>
                   </div>
                 </div>
-                <Badge className="shrink-0 rounded-full bg-white px-3 py-1.5 text-primary shadow-sm ring-1 ring-primary/15"><Clock className="mr-1 h-3.5 w-3.5" /> {heroListing ? urgencyLabel(heroListing) : "Available today"}</Badge>
+                <Badge className="w-fit max-w-full shrink-0 whitespace-normal rounded-full bg-white px-3 py-1.5 text-left text-primary shadow-sm ring-1 ring-primary/15 sm:text-center"><Clock className="mr-1 h-3.5 w-3.5 shrink-0" /> {heroListing ? urgencyLabel(heroListing) : "Available today"}</Badge>
               </div>
 
-              <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
-                <div className="relative min-h-[280px] overflow-hidden sm:min-h-[340px] lg:min-h-[430px]">
-                  {heroListing?.image_url ? <img src={heroListing.image_url} alt={heroListing.title} className="h-full min-h-[280px] w-full object-cover transition duration-700 group-hover:scale-105 sm:min-h-[340px] lg:min-h-[430px]" /> : <div className="grid h-full min-h-[280px] w-full place-items-center bg-[radial-gradient(circle_at_25%_20%,hsl(var(--accent)/0.35),transparent_25%),linear-gradient(135deg,hsl(var(--primary)/0.88),hsl(var(--accent)/0.85))] sm:min-h-[340px] lg:min-h-[430px]"><Utensils className="h-28 w-28 text-white/85" /></div>}
-                  <div className="absolute inset-x-4 bottom-4 flex flex-wrap gap-2">
+              <div className="grid gap-0 2xl:grid-cols-[1.08fr_0.92fr]">
+                <div className="relative min-h-[240px] overflow-hidden sm:min-h-[320px] xl:min-h-[360px] 2xl:min-h-[430px]">
+                  {heroListing?.image_url ? <img src={heroListing.image_url} alt={heroListing.title} className="h-full min-h-[240px] w-full object-cover transition duration-700 group-hover:scale-105 sm:min-h-[320px] xl:min-h-[360px] 2xl:min-h-[430px]" /> : <div className="grid h-full min-h-[240px] w-full place-items-center bg-[radial-gradient(circle_at_25%_20%,hsl(var(--accent)/0.35),transparent_25%),linear-gradient(135deg,hsl(var(--primary)/0.88),hsl(var(--accent)/0.85))] sm:min-h-[320px] xl:min-h-[360px] 2xl:min-h-[430px]"><Utensils className="h-24 w-24 text-white/85 sm:h-28 sm:w-28" /></div>}
+                  <div className="absolute inset-x-3 bottom-3 flex flex-wrap gap-2 sm:inset-x-4 sm:bottom-4">
                     <span className="rounded-full bg-black/35 px-3 py-1 text-xs font-semibold text-white backdrop-blur">Desserts</span>
                     <span className="rounded-full bg-black/35 px-3 py-1 text-xs font-semibold text-white backdrop-blur">Pastries</span>
                     <span className="rounded-full bg-black/35 px-3 py-1 text-xs font-semibold text-white backdrop-blur">Meals</span>
                   </div>
                 </div>
 
-                <div className="flex min-h-full flex-col justify-between gap-6 p-5 sm:p-7 lg:p-8">
+                <div className="flex min-h-full flex-col justify-between gap-5 p-5 sm:p-6 lg:p-7 2xl:p-8">
                   <div className="space-y-4">
                     <Badge variant="secondary" className="w-fit rounded-full bg-primary/10 px-3 py-1.5 text-primary">Featured partner space</Badge>
                     <div>
-                      <h2 className="text-3xl font-black leading-tight tracking-[-0.04em] text-foreground sm:text-4xl">{heroListing?.title ?? "Fresh pastry and meal bags"}</h2>
+                      <h2 className="text-2xl font-black leading-tight tracking-[-0.04em] text-foreground sm:text-3xl xl:text-4xl">{heroListing?.title ?? "Fresh pastry and meal bags"}</h2>
                       <p className="mt-3 text-sm leading-6 text-muted-foreground">{heroListing?.merchant.business_name ?? "Local bakeries, dessert shops and kitchens"} gets the spotlight here without covering the food photo.</p>
                     </div>
                   </div>
 
                   <div className="rounded-3xl border border-border/70 bg-muted/35 p-4">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sponsored deal</div>
-                        {heroListing ? <><div className="mt-2 text-sm text-muted-foreground line-through">{formatBND(heroListing.original_price)}</div><div className="text-4xl font-black text-primary">{formatBND(heroListing.discounted_price)}</div></> : <div className="mt-2 text-3xl font-black text-primary">From BND 3</div>}
+                        {heroListing ? <><div className="mt-2 text-sm text-muted-foreground line-through">{formatBND(heroListing.original_price)}</div><div className="text-3xl font-black text-primary sm:text-4xl">{formatBND(heroListing.discounted_price)}</div></> : <div className="mt-2 text-3xl font-black text-primary">From BND 3</div>}
                       </div>
-                      <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-black text-primary-foreground shadow-sm transition group-hover:translate-x-1">View sponsored deal →</span>
+                      <span className="inline-flex w-full shrink-0 items-center justify-center rounded-full bg-primary px-5 py-3 text-center text-sm font-black text-primary-foreground shadow-sm transition group-hover:translate-x-1 sm:w-auto">View sponsored deal →</span>
                     </div>
                   </div>
                 </div>
