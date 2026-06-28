@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Leaf } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
+import { LASTBITE_LOGO } from "@/assets/lastbite-logo";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -9,12 +9,9 @@ export function Footer() {
     <footer className="mt-12 border-t bg-cream/60 sm:mt-20">
       <div className="container mx-auto grid gap-8 px-3 py-8 sm:px-4 sm:py-12 md:grid-cols-4 md:gap-10">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Leaf className="h-4 w-4" />
-            </span>
-            <span className="font-bold">Last Bite</span>
-          </div>
+          <Link to="/" className="inline-flex items-center" aria-label="LastBite home">
+            <img src={LASTBITE_LOGO} alt="LastBite" className="h-16 w-auto object-contain" />
+          </Link>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
             {t("saveGoodFood")}
           </p>
@@ -45,7 +42,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t px-3 py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Last Bite — {t("allRightsReserved")}
+        © {new Date().getFullYear()} LastBite — {t("allRightsReserved")}
       </div>
     </footer>
   );
