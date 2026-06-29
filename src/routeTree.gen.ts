@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as UserGuideRouteImport } from './routes/user-guide'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -32,6 +33,11 @@ import { Route as MerchantEditListingIdRouteImport } from './routes/merchant.edi
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserGuideRoute = UserGuideRouteImport.update({
+  id: '/user-guide',
+  path: '/user-guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/user-guide': typeof UserGuideRoute
   '/checkout/$id': typeof CheckoutIdRoute
   '/legal/food-safety': typeof LegalFoodSafetyRoute
   '/legal/merchant-agreement': typeof LegalMerchantAgreementRoute
@@ -154,6 +161,7 @@ export interface FileRoutesByTo {
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/user-guide': typeof UserGuideRoute
   '/checkout/$id': typeof CheckoutIdRoute
   '/legal/food-safety': typeof LegalFoodSafetyRoute
   '/legal/merchant-agreement': typeof LegalMerchantAgreementRoute
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/user-guide': typeof UserGuideRoute
   '/checkout/$id': typeof CheckoutIdRoute
   '/legal/food-safety': typeof LegalFoodSafetyRoute
   '/legal/merchant-agreement': typeof LegalMerchantAgreementRoute
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/browse'
     | '/dashboard'
     | '/reset-password'
+    | '/user-guide'
     | '/checkout/$id'
     | '/legal/food-safety'
     | '/legal/merchant-agreement'
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/browse'
     | '/dashboard'
     | '/reset-password'
+    | '/user-guide'
     | '/checkout/$id'
     | '/legal/food-safety'
     | '/legal/merchant-agreement'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/browse'
     | '/dashboard'
     | '/reset-password'
+    | '/user-guide'
     | '/checkout/$id'
     | '/legal/food-safety'
     | '/legal/merchant-agreement'
@@ -263,6 +275,7 @@ export interface RootRouteChildren {
   BrowseRoute: typeof BrowseRoute
   DashboardRoute: typeof DashboardRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  UserGuideRoute: typeof UserGuideRoute
   CheckoutIdRoute: typeof CheckoutIdRoute
   LegalFoodSafetyRoute: typeof LegalFoodSafetyRoute
   LegalMerchantAgreementRoute: typeof LegalMerchantAgreementRoute
@@ -279,139 +292,26 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/browse': {
-      id: '/browse'
-      path: '/browse'
-      fullPath: '/browse'
-      preLoaderRoute: typeof BrowseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/merchant/': {
-      id: '/merchant/'
-      path: '/merchant'
-      fullPath: '/merchant/'
-      preLoaderRoute: typeof MerchantIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/order/$id': {
-      id: '/order/$id'
-      path: '/order/$id'
-      fullPath: '/order/$id'
-      preLoaderRoute: typeof OrderIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/merchant-profile/$id': {
-      id: '/merchant-profile/$id'
-      path: '/merchant-profile/$id'
-      fullPath: '/merchant-profile/$id'
-      preLoaderRoute: typeof MerchantProfileIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/merchant/onboarding': {
-      id: '/merchant/onboarding'
-      path: '/merchant/onboarding'
-      fullPath: '/merchant/onboarding'
-      preLoaderRoute: typeof MerchantOnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/merchant/new-listing': {
-      id: '/merchant/new-listing'
-      path: '/merchant/new-listing'
-      fullPath: '/merchant/new-listing'
-      preLoaderRoute: typeof MerchantNewListingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/listing/$id': {
-      id: '/listing/$id'
-      path: '/listing/$id'
-      fullPath: '/listing/$id'
-      preLoaderRoute: typeof ListingIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/legal/terms': {
-      id: '/legal/terms'
-      path: '/legal/terms'
-      fullPath: '/legal/terms'
-      preLoaderRoute: typeof LegalTermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/legal/privacy': {
-      id: '/legal/privacy'
-      path: '/legal/privacy'
-      fullPath: '/legal/privacy'
-      preLoaderRoute: typeof LegalPrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/legal/merchant-agreement': {
-      id: '/legal/merchant-agreement'
-      path: '/legal/merchant-agreement'
-      fullPath: '/legal/merchant-agreement'
-      preLoaderRoute: typeof LegalMerchantAgreementRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/legal/food-safety': {
-      id: '/legal/food-safety'
-      path: '/legal/food-safety'
-      fullPath: '/legal/food-safety'
-      preLoaderRoute: typeof LegalFoodSafetyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout/$id': {
-      id: '/checkout/$id'
-      path: '/checkout/$id'
-      fullPath: '/checkout/$id'
-      preLoaderRoute: typeof CheckoutIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/merchant/edit-listing/$id': {
-      id: '/merchant/edit-listing/$id'
-      path: '/merchant/edit-listing/$id'
-      fullPath: '/merchant/edit-listing/$id'
-      preLoaderRoute: typeof MerchantEditListingIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    '/reset-password': { id: '/reset-password'; path: '/reset-password'; fullPath: '/reset-password'; preLoaderRoute: typeof ResetPasswordRouteImport; parentRoute: typeof rootRouteImport }
+    '/user-guide': { id: '/user-guide'; path: '/user-guide'; fullPath: '/user-guide'; preLoaderRoute: typeof UserGuideRouteImport; parentRoute: typeof rootRouteImport }
+    '/dashboard': { id: '/dashboard'; path: '/dashboard'; fullPath: '/dashboard'; preLoaderRoute: typeof DashboardRouteImport; parentRoute: typeof rootRouteImport }
+    '/browse': { id: '/browse'; path: '/browse'; fullPath: '/browse'; preLoaderRoute: typeof BrowseRouteImport; parentRoute: typeof rootRouteImport }
+    '/auth': { id: '/auth'; path: '/auth'; fullPath: '/auth'; preLoaderRoute: typeof AuthRouteImport; parentRoute: typeof rootRouteImport }
+    '/admin': { id: '/admin'; path: '/admin'; fullPath: '/admin'; preLoaderRoute: typeof AdminRouteImport; parentRoute: typeof rootRouteImport }
+    '/about': { id: '/about'; path: '/about'; fullPath: '/about'; preLoaderRoute: typeof AboutRouteImport; parentRoute: typeof rootRouteImport }
+    '/': { id: '/'; path: '/'; fullPath: '/'; preLoaderRoute: typeof IndexRouteImport; parentRoute: typeof rootRouteImport }
+    '/merchant/': { id: '/merchant/'; path: '/merchant'; fullPath: '/merchant/'; preLoaderRoute: typeof MerchantIndexRouteImport; parentRoute: typeof rootRouteImport }
+    '/order/$id': { id: '/order/$id'; path: '/order/$id'; fullPath: '/order/$id'; preLoaderRoute: typeof OrderIdRouteImport; parentRoute: typeof rootRouteImport }
+    '/merchant-profile/$id': { id: '/merchant-profile/$id'; path: '/merchant-profile/$id'; fullPath: '/merchant-profile/$id'; preLoaderRoute: typeof MerchantProfileIdRouteImport; parentRoute: typeof rootRouteImport }
+    '/merchant/onboarding': { id: '/merchant/onboarding'; path: '/merchant/onboarding'; fullPath: '/merchant/onboarding'; preLoaderRoute: typeof MerchantOnboardingRouteImport; parentRoute: typeof rootRouteImport }
+    '/merchant/new-listing': { id: '/merchant/new-listing'; path: '/merchant/new-listing'; fullPath: '/merchant/new-listing'; preLoaderRoute: typeof MerchantNewListingRouteImport; parentRoute: typeof rootRouteImport }
+    '/listing/$id': { id: '/listing/$id'; path: '/listing/$id'; fullPath: '/listing/$id'; preLoaderRoute: typeof ListingIdRouteImport; parentRoute: typeof rootRouteImport }
+    '/legal/terms': { id: '/legal/terms'; path: '/legal/terms'; fullPath: '/legal/terms'; preLoaderRoute: typeof LegalTermsRouteImport; parentRoute: typeof rootRouteImport }
+    '/legal/privacy': { id: '/legal/privacy'; path: '/legal/privacy'; fullPath: '/legal/privacy'; preLoaderRoute: typeof LegalPrivacyRouteImport; parentRoute: typeof rootRouteImport }
+    '/legal/merchant-agreement': { id: '/legal/merchant-agreement'; path: '/legal/merchant-agreement'; fullPath: '/legal/merchant-agreement'; preLoaderRoute: typeof LegalMerchantAgreementRouteImport; parentRoute: typeof rootRouteImport }
+    '/legal/food-safety': { id: '/legal/food-safety'; path: '/legal/food-safety'; fullPath: '/legal/food-safety'; preLoaderRoute: typeof LegalFoodSafetyRouteImport; parentRoute: typeof rootRouteImport }
+    '/checkout/$id': { id: '/checkout/$id'; path: '/checkout/$id'; fullPath: '/checkout/$id'; preLoaderRoute: typeof CheckoutIdRouteImport; parentRoute: typeof rootRouteImport }
+    '/merchant/edit-listing/$id': { id: '/merchant/edit-listing/$id'; path: '/merchant/edit-listing/$id'; fullPath: '/merchant/edit-listing/$id'; preLoaderRoute: typeof MerchantEditListingIdRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
@@ -423,6 +323,7 @@ const rootRouteChildren: RootRouteChildren = {
   BrowseRoute: BrowseRoute,
   DashboardRoute: DashboardRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  UserGuideRoute: UserGuideRoute,
   CheckoutIdRoute: CheckoutIdRoute,
   LegalFoodSafetyRoute: LegalFoodSafetyRoute,
   LegalMerchantAgreementRoute: LegalMerchantAgreementRoute,
