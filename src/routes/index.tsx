@@ -109,17 +109,6 @@ function Landing() {
               </div>
             </div>
           </Link>
-
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-3xl border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Today only</div>
-              <div className="mt-1 text-base font-black text-foreground">Pastries & meals up to 60% off</div>
-            </div>
-            <div className="rounded-3xl border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Live now</div>
-              <div className="mt-1 text-base font-black text-primary">{liveListings.length} food deals near you</div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
