@@ -94,7 +94,7 @@ function Landing() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute inset-x-4 bottom-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-primary shadow-sm">Today's pick</Badge>
+                    <Badge className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-primary shadow-sm"><Sparkles className="mr-1 h-3 w-3" /> Sponsored</Badge>
                     <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur"><Clock className="mr-1 inline h-3.5 w-3.5" />{heroListing ? urgencyLabel(heroListing) : "Available today"}</span>
                   </div>
                   <h2 className="mt-3 line-clamp-2 text-2xl font-black leading-tight text-white sm:text-3xl">{heroListing?.title ?? "Fresh pastry and meal bags"}</h2>
