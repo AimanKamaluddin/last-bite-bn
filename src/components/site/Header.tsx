@@ -19,23 +19,26 @@ export function Header() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const username = user?.user_metadata?.username || user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0];
-  const navLinkClass = "rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium";
+  const navGroupClass = "grid gap-1 rounded-[1.35rem] border border-border/70 bg-muted/45 p-1 shadow-sm md:flex md:items-center md:rounded-full md:bg-white/65 md:backdrop-blur";
+  const primaryNavGroupClass = "grid gap-1 rounded-[1.35rem] border border-primary/15 bg-primary/8 p-1 shadow-sm md:flex md:items-center md:rounded-full md:bg-primary/8 md:backdrop-blur";
+  const navLinkClass = "rounded-2xl px-4 py-3 text-base font-bold text-muted-foreground transition hover:bg-background hover:text-primary hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 md:rounded-full md:px-4 md:py-2 md:text-sm";
+  const activeNavClass = "bg-background text-primary shadow-sm ring-1 ring-border/70";
 
   const nav = (
     <>
-      <div className="grid gap-1 md:flex md:items-center md:gap-1">
-        <Link to="/about" className={navLinkClass} onClick={() => setOpen(false)}>
+      <div className={navGroupClass}>
+        <Link to="/about" className={navLinkClass} activeProps={{ className: activeNavClass }} onClick={() => setOpen(false)}>
           {t("about")}
         </Link>
-        <Link to="/user-guide" className={navLinkClass} onClick={() => setOpen(false)}>
+        <Link to="/user-guide" className={navLinkClass} activeProps={{ className: activeNavClass }} onClick={() => setOpen(false)}>
           User Guide
         </Link>
       </div>
-      <div className="grid gap-1 border-t border-border/70 pt-2 md:flex md:items-center md:gap-1 md:border-l md:border-t-0 md:pl-3 md:pt-0">
-        <Link to="/browse" className={navLinkClass} onClick={() => setOpen(false)}>
+      <div className={primaryNavGroupClass}>
+        <Link to="/browse" className={navLinkClass} activeProps={{ className: activeNavClass }} onClick={() => setOpen(false)}>
           {t("browseFood")}
         </Link>
-        <Link to="/merchant/onboarding" className={navLinkClass} onClick={() => setOpen(false)}>
+        <Link to="/merchant/onboarding" className={navLinkClass} activeProps={{ className: activeNavClass }} onClick={() => setOpen(false)}>
           {t("forBusinesses")}
         </Link>
       </div>
@@ -49,7 +52,7 @@ export function Header() {
           <img src={LASTBITE_LOGO} alt="LastBite" className="h-12 w-auto object-contain sm:h-14" />
         </Link>
 
-        <nav className="hidden items-center gap-3 md:flex">{nav}</nav>
+        <nav className="hidden items-center gap-2 md:flex">{nav}</nav>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Button
