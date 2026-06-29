@@ -48,13 +48,17 @@ function Landing() {
   const { t } = useLanguage();
   const [merchants, setMerchants] = useState<any[]>([]);
   const [listings, setListings] = useState<ListingCardData[]>([]);
+  const [sponsoredMerchant, setSponsoredMerchant] = useState<any | null>(null);
 
   useEffect(() => { (async () => {
-    const [{ data: m }, { data: l }] = await Promise.all([
+    const [{ data: m }, { data: l }, { data: sponsor }] = await Promise.all([
       (supabase as any).from("merchants_public").select("id, business_name, business_type, district, image_url, rating").order("created_at", { ascending: false }).limit(6),
       (supabase as any).from("listings").select("*, merchants_public!inner(business_name, district, rating)").eq("visible", true).eq("status", "active").order("created_at", { ascending: false }).limit(24),
+      (supabase as any).from("merchants_public").select("id, business_name, business_type, district, image_url, rating").ilike("business_name", "%LastBite%").limit(1).maybeSingle(),
     ]);
-    setMerchants(m ?? []);
+    const merchantRows = m ?? [];
+    setMerchants(merchantRows);
+    setSponsoredMerchant(sponsor ?? merchantRows.find((merchant: any) => String(merchant.business_name ?? "").toLowerCase().replace(/\s+/g, "") === "lastbite") ?? null);
     setListings((l ?? []).map((d: any) => ({ id: d.id, title: d.title, category: d.category, original_price: Number(d.original_price), discounted_price: Number(d.discounted_price), quantity_available: d.quantity_available, pickup_start: d.pickup_start, pickup_end: d.pickup_end, created_at: d.created_at, produced_at: d.produced_at, image_url: d.image_url || "", merchant: { business_name: d.merchants_public?.business_name ?? "", district: d.merchants_public?.district ?? "", rating: Number(d.merchants_public?.rating ?? 0) } })));
   })(); }, []);
 
@@ -87,25 +91,26 @@ function Landing() {
         </div>
 
         <div className="relative mx-auto w-full max-w-xl">
-          <Link to={heroListing ? "/listing/$id" : "/browse"} params={heroListing ? { id: heroListing.id } : undefined as any} className="group block overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/85 p-2 shadow-2xl shadow-primary/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-primary/20 sm:rounded-[2rem] sm:p-3">
+          <Link to={sponsoredMerchant ? "/merchant-profile/$id" : "/browse"} params={sponsoredMerchant ? { id: sponsoredMerchant.id } : undefined as any} className="group block overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/85 p-2 shadow-2xl shadow-primary/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-primary/20 sm:rounded-[2rem] sm:p-3">
             <div className="overflow-hidden rounded-[1.35rem] border border-primary/10 bg-white">
               <div className="relative h-56 overflow-hidden sm:h-64 xl:h-72">
-                {heroListing?.image_url ? <img src={heroListing.image_url} alt={heroListing.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <div className="grid h-full w-full place-items-center bg-[radial-gradient(circle_at_25%_20%,hsl(var(--accent)/0.35),transparent_25%),linear-gradient(135deg,hsl(var(--primary)/0.88),hsl(var(--accent)/0.85))]"><Utensils className="h-20 w-20 text-white/85 sm:h-24 sm:w-24" /></div>}
+                {sponsoredMerchant?.image_url || heroListing?.image_url ? <img src={sponsoredMerchant?.image_url || heroListing?.image_url} alt={sponsoredMerchant?.business_name ?? "LastBite"} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <div className="grid h-full w-full place-items-center bg-[radial-gradient(circle_at_25%_20%,hsl(var(--accent)/0.35),transparent_25%),linear-gradient(135deg,hsl(var(--primary)/0.88),hsl(var(--accent)/0.85))]"><Utensils className="h-20 w-20 text-white/85 sm:h-24 sm:w-24" /></div>}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute inset-x-4 bottom-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-primary shadow-sm"><Sparkles className="mr-1 h-3 w-3" /> Sponsored</Badge>
-                    <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur"><Clock className="mr-1 inline h-3.5 w-3.5" />{heroListing ? urgencyLabel(heroListing) : "Available today"}</span>
+                    <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur"><Store className="mr-1 inline h-3.5 w-3.5" /> Vendor page</span>
                   </div>
-                  <h2 className="mt-3 line-clamp-2 text-2xl font-black leading-tight text-white sm:text-3xl">{heroListing?.title ?? "Fresh pastry and meal bags"}</h2>
-                  <p className="mt-1 truncate text-sm font-medium text-white/85">{heroListing?.merchant.business_name ?? "Local bakeries, dessert shops and kitchens"}</p>
+                  <h2 className="mt-3 line-clamp-2 text-2xl font-black leading-tight text-white sm:text-3xl">{sponsoredMerchant?.business_name ?? "LastBite"}</h2>
+                  <p className="mt-1 truncate text-sm font-medium text-white/85">{sponsoredMerchant ? `${sponsoredMerchant.business_type ?? "Featured vendor"} · ${sponsoredMerchant.district ?? "Brunei"}` : "Featured vendor on Last Bite"}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between gap-3 p-4">
                 <div>
-                  {heroListing ? <><div className="text-xs text-muted-foreground line-through">{formatBND(heroListing.original_price)}</div><div className="text-2xl font-black leading-none text-primary sm:text-3xl">{formatBND(heroListing.discounted_price)}</div></> : <div className="text-2xl font-black text-primary">From BND 3</div>}
+                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Featured vendor</div>
+                  <div className="mt-1 text-xl font-black leading-none text-primary sm:text-2xl">LastBite</div>
                 </div>
-                <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-black text-primary-foreground shadow-sm transition group-hover:translate-x-0.5 sm:px-5 sm:text-sm">View deal →</span>
+                <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-black text-primary-foreground shadow-sm transition group-hover:translate-x-0.5 sm:px-5 sm:text-sm">View page →</span>
               </div>
             </div>
           </Link>
