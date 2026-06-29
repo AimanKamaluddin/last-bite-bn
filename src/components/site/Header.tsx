@@ -19,21 +19,26 @@ export function Header() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const username = user?.user_metadata?.username || user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0];
+  const navLinkClass = "rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium";
 
   const nav = (
     <>
-      <Link to="/about" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
-        {t("about")}
-      </Link>
-      <Link to="/browse" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
-        {t("browseFood")}
-      </Link>
-      <Link to="/user-guide" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
-        User Guide
-      </Link>
-      <Link to="/merchant/onboarding" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
-        {t("forBusinesses")}
-      </Link>
+      <div className="grid gap-1 md:flex md:items-center md:gap-1">
+        <Link to="/about" className={navLinkClass} onClick={() => setOpen(false)}>
+          {t("about")}
+        </Link>
+        <Link to="/user-guide" className={navLinkClass} onClick={() => setOpen(false)}>
+          User Guide
+        </Link>
+      </div>
+      <div className="grid gap-1 border-t border-border/70 pt-2 md:flex md:items-center md:gap-1 md:border-l md:border-t-0 md:pl-3 md:pt-0">
+        <Link to="/browse" className={navLinkClass} onClick={() => setOpen(false)}>
+          {t("browseFood")}
+        </Link>
+        <Link to="/merchant/onboarding" className={navLinkClass} onClick={() => setOpen(false)}>
+          {t("forBusinesses")}
+        </Link>
+      </div>
     </>
   );
 
@@ -44,7 +49,7 @@ export function Header() {
           <img src={LASTBITE_LOGO} alt="LastBite" className="h-12 w-auto object-contain sm:h-14" />
         </Link>
 
-        <nav className="hidden items-center gap-2 md:flex">{nav}</nav>
+        <nav className="hidden items-center gap-3 md:flex">{nav}</nav>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Button
@@ -126,7 +131,7 @@ export function Header() {
       {open && (
         <div className="container mx-auto border-t px-3 py-3 md:hidden">
           {isAuthenticated && <div className="mb-3 rounded-2xl bg-muted px-4 py-3 text-sm font-semibold">Signed in as @{username}</div>}
-          <nav className="grid gap-1">{nav}</nav>
+          <nav className="grid gap-3">{nav}</nav>
           {isAuthenticated ? (
             <div className="mt-3 grid gap-2 border-t pt-3">
               <Button asChild variant="outline" className="h-11 justify-start rounded-2xl" onClick={() => setOpen(false)}><Link to="/dashboard">{t("myOrders")}</Link></Button>
