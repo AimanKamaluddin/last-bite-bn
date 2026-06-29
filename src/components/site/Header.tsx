@@ -28,6 +28,9 @@ export function Header() {
       <Link to="/browse" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
         {t("browseFood")}
       </Link>
+      <Link to="/user-guide" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
+        User Guide
+      </Link>
       <Link to="/merchant/onboarding" className="rounded-2xl px-4 py-3 text-base font-semibold hover:bg-muted hover:text-primary md:rounded-xl md:px-3 md:py-2 md:text-sm md:font-medium" onClick={() => setOpen(false)}>
         {t("forBusinesses")}
       </Link>
