@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ListingCard, type ListingCardData } from "@/components/listings/ListingCard";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { supabase } from "@/integrations/supabase/client";
-import { Clock, ExternalLink, Mail, MapPin, Phone, Star, Store } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Clock, ExternalLink, Mail, MapPin, MessageCircle, Phone, Star, Store } from "lucide-react";
 
 export const Route = createFileRoute("/merchant-profile/$id")({ component: MerchantProfile });
 
@@ -21,6 +22,7 @@ const enhancedMerchantFields = `${baseMerchantFields}, tagline, cover_image_url,
 
 function MerchantProfile() {
   const { id } = Route.useParams();
+  const { isAuthenticated } = useAuth();
   const [merchant, setMerchant] = useState<any>(null);
   const [listings, setListings] = useState<ListingCardData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,6 +91,7 @@ function MerchantProfile() {
           business_name: merchantRecord?.business_name ?? "",
           district: merchantRecord?.district ?? "",
           rating: Number(merchantRecord?.rating ?? 0),
+          image_url: merchantRecord?.image_url ?? null,
         },
       })));
       setLoading(false);
@@ -125,7 +128,12 @@ function MerchantProfile() {
                   <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-sun text-sun" />{Number(merchant.rating ?? 0).toFixed(1)}</span>
                 </div>
               </div>
-              <Button asChild className="rounded-full"><Link to="/browse">Browse all food</Link></Button>
+              <div className="grid gap-2 sm:flex sm:items-center">
+                <Button asChild variant="outline" className="rounded-full">
+                  {isAuthenticated ? <Link to="/messages" search={{ merchant_id: merchant.id }}><MessageCircle className="mr-2 h-4 w-4" />Message vendor</Link> : <Link to="/auth" search={{ redirect: `/messages?merchant_id=${merchant.id}` }}><MessageCircle className="mr-2 h-4 w-4" />Message vendor</Link>}
+                </Button>
+                <Button asChild className="rounded-full"><Link to="/browse">Browse all food</Link></Button>
+              </div>
             </div>
 
             {(merchant.description || merchant.address || merchant.opening_hours || merchant.phone || merchant.email || merchant.instagram_url || merchant.website_url) && (
