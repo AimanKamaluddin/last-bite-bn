@@ -18,7 +18,7 @@ export type ListingCardData = {
   pickup_end: string;
   created_at?: string;
   produced_at?: string | null;
-  merchant: { business_name: string; district: string; rating: number };
+  merchant: { business_name: string; district: string; rating: number; image_url?: string | null };
 };
 
 const fmtTime = (t: string) => formatTime12Hour(t);
@@ -27,6 +27,17 @@ const isPastPickup = (pickupEnd: string) => {
   const end = new Date(pickupEnd);
   return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
 };
+
+const getMerchantInitial = (name: string) => name.trim().charAt(0).toUpperCase() || "L";
+
+function MerchantAvatar({ name, imageUrl }: { name: string; imageUrl?: string | null }) {
+  return (
+    <div className="relative grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-background bg-primary/10 text-[11px] font-black text-primary shadow-sm ring-1 ring-border sm:h-9 sm:w-9 sm:text-xs" aria-hidden="true">
+      <span>{getMerchantInitial(name)}</span>
+      {imageUrl ? <img src={imageUrl} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : null}
+    </div>
+  );
+}
 
 export function ListingCard({ listing }: { listing: ListingCardData }) {
   const soldOut = listing.quantity_available <= 0;
@@ -44,9 +55,12 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
       </Link>
       <div className="space-y-2 p-3 sm:space-y-3 sm:p-4">
         <div className="flex items-start justify-between gap-2 sm:gap-3">
-          <div className="min-w-0">
-            <Link to="/listing/$id" params={{ id: listing.id }} className="font-semibold leading-tight hover:text-primary hover:underline"><h3 className="line-clamp-2 text-sm leading-snug sm:text-base">{listing.title}</h3></Link>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground sm:mt-1 sm:text-sm">{listing.merchant.business_name}</p>
+          <div className="flex min-w-0 items-start gap-2 sm:gap-2.5">
+            <MerchantAvatar name={listing.merchant.business_name} imageUrl={listing.merchant.image_url} />
+            <div className="min-w-0">
+              <Link to="/listing/$id" params={{ id: listing.id }} className="font-semibold leading-tight hover:text-primary hover:underline"><h3 className="line-clamp-2 text-sm leading-snug sm:text-base">{listing.title}</h3></Link>
+              <p className="mt-0.5 truncate text-xs text-muted-foreground sm:mt-1 sm:text-sm">{listing.merchant.business_name}</p>
+            </div>
           </div>
           <div className="hidden shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium sm:flex"><Star className="h-3.5 w-3.5 fill-sun text-sun" />{listing.merchant.rating?.toFixed(1) ?? "—"}</div>
         </div>
