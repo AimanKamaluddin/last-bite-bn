@@ -23,6 +23,8 @@ export type SampleListing = {
   pickup_end: string;
   image_url: string;
   allergen_info: string;
+  created_at?: string;
+  produced_at?: string | null;
 };
 
 const img = (q: string) =>
