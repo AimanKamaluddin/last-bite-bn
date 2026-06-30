@@ -9,16 +9,7 @@ import { ListingCard, type ListingCardData } from "@/components/listings/Listing
 import { PickupWindowAlert } from "@/components/orders/PickupWindowAlert";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  AlertTriangle,
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  MapPin,
-  Star,
-  Utensils,
-} from "lucide-react";
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, Star, Utensils } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { toast } from "sonner";
@@ -33,12 +24,9 @@ const isPastPickup = (pickupEnd: string) => {
 const formatDateWithDay = (iso?: string | null) => {
   if (!iso) return "";
   try {
-    return new Date(iso).toLocaleDateString([], {
-      weekday: "long",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString([], { weekday: "long", year: "numeric", month: "short", day: "numeric" });
   } catch {
     return "";
   }
@@ -49,7 +37,6 @@ const formatDateTime = (iso?: string | null) => {
   try {
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return "";
-
     return date.toLocaleString([], {
       weekday: "short",
       year: "numeric",
@@ -63,16 +50,17 @@ const formatDateTime = (iso?: string | null) => {
   }
 };
 
-const getProducedAt = (listing: any) => {
-  const candidates = [
-    listing?.produced_at,
-    listing?.production_at,
-    listing?.production_datetime,
-    listing?.made_at,
-    listing?.created_at,
-  ];
+const getProducedText = (listing: any) => {
+  const candidates = [listing?.produced_at, listing?.production_at, listing?.production_datetime, listing?.made_at];
+  for (const value of candidates) {
+    if (typeof value === "string") {
+      const formatted = formatDateTime(value);
+      if (formatted) return formatted;
+    }
+  }
 
-  return candidates.find((value) => typeof value === "string" && formatDateTime(value)) ?? null;
+  const listedDate = formatDateWithDay(listing?.created_at);
+  return listedDate ? `${listedDate} (same as listed date)` : "Same as listed date";
 };
 
 const getListingImages = (listing: any) => {
@@ -153,7 +141,7 @@ function ListingDetail() {
               pickup_start: offer.pickup_start,
               pickup_end: offer.pickup_end,
               created_at: offer.created_at,
-              produced_at: getProducedAt(offer),
+              produced_at: offer.produced_at ?? null,
               merchant: {
                 business_name: merchant.business_name ?? "",
                 district: merchant.district ?? "",
@@ -200,8 +188,7 @@ function ListingDetail() {
   const listingImages = getListingImages(data);
   const selectedImage = listingImages[selectedImageIndex] ?? data.image_url;
   const hasMultipleImages = listingImages.length > 1;
-  const producedAt = getProducedAt(data);
-  const producedText = formatDateTime(producedAt);
+  const producedText = getProducedText(data);
 
   const showPreviousImage = () => setSelectedImageIndex((index) => (index - 1 + listingImages.length) % listingImages.length);
   const showNextImage = () => setSelectedImageIndex((index) => (index + 1) % listingImages.length);
@@ -399,7 +386,7 @@ function toCardData(listing: SampleListing): ListingCardData {
     pickup_start: listing.pickup_start,
     pickup_end: listing.pickup_end,
     created_at: listing.created_at,
-    produced_at: getProducedAt(listing),
+    produced_at: listing.produced_at ?? null,
     merchant: {
       business_name: listing.merchant.business_name,
       district: listing.merchant.district,
