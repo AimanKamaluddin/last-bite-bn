@@ -11,7 +11,7 @@ import { ListingCard, type ListingCardData } from "@/components/listings/Listing
 import { PickupWindowAlert } from "@/components/orders/PickupWindowAlert";
 import { formatBND } from "@/lib/sample-data";
 import { useLanguage } from "@/lib/i18n";
-import { ArrowRight, Clock, Flame, HandCoins, MapPin, PackageSearch, Search, ShoppingBag, Sparkles, Store, TrendingUp, Utensils } from "lucide-react";
+import { ArrowRight, Clock, Flame, HandCoins, Search, ShoppingBag, Sparkles, Store, TrendingUp, Utensils } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [ { title: "Last Bite — Rescue food before it's gone" }, { name: "description", content: "Brunei's surplus food marketplace for desserts, pastries, bakery items and meals before pickup windows end." }, { property: "og:title", content: "Last Bite — Rescue food before it's gone" }, { property: "og:description", content: "Find desserts, pastries, bakery items and meals available today from local Brunei businesses." } ] }),
@@ -70,7 +70,6 @@ function Landing() {
   const heroListing = liveListings[0];
   const availableNow = useMemo(() => [...liveListings].sort((a, b) => minutesUntil(a.pickup_end) - minutesUntil(b.pickup_end) || a.quantity_available - b.quantity_available).slice(0, 6), [liveListings]);
   const sellingFast = useMemo(() => [...liveListings].sort((a, b) => a.quantity_available - b.quantity_available || minutesUntil(a.pickup_end) - minutesUntil(b.pickup_end)).slice(0, 3), [liveListings]);
-  const underFive = liveListings.filter((l) => l.discounted_price <= 5).length;
 
   return <SiteLayout>
     <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_10%_10%,hsl(var(--accent)/0.22),transparent_28%),radial-gradient(circle_at_88%_12%,hsl(var(--primary)/0.18),transparent_30%),linear-gradient(180deg,hsl(var(--cream)),hsl(var(--background)))]">
@@ -94,18 +93,6 @@ function Landing() {
             {(sponsoredMerchants.length > 0 ? sponsoredMerchants : [null, null, null, null]).map((merchant, index) => <SponsoredHeroCard key={merchant?.id ?? index} merchant={merchant} fallbackImage={heroListing?.image_url} />)}
           </div>
         </div>
-      </div>
-    </section>
-
-    <section className="container mx-auto px-3 py-5 sm:px-4 sm:py-7">
-      <div className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <QuickChip icon={Flame} label={t("availableNow")} />
-        <QuickChip icon={PackageSearch} label={t("bakery")} />
-        <QuickChip icon={Sparkles} label={t("desserts")} />
-        <QuickChip icon={Utensils} label={t("meals")} />
-        <QuickChip icon={HandCoins} label={t("underBndFive")} count={underFive} />
-        <QuickChip icon={TrendingUp} label={t("highestDiscount")} />
-        <QuickChip icon={MapPin} label={t("nearMe")} />
       </div>
     </section>
 
@@ -153,7 +140,6 @@ function SponsoredHeroCard({ merchant, fallbackImage }: { merchant: any | null; 
     </div>
   </Link>;
 }
-function QuickChip({ icon: Icon, label, count }: { icon: any; label: string; count?: number }) { return <Button asChild variant="outline" className="h-11 shrink-0 rounded-full border-primary/15 bg-white/70 px-4 font-bold shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"><Link to="/browse"><Icon className="h-4 w-4" />{label}{typeof count === "number" && count > 0 ? <span className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">{count}</span> : null}</Link></Button>; }
 function Section({ eyebrow, title, subtitle, notice, action, children }: { eyebrow?: string; title: string; subtitle?: string; notice?: ReactNode; action?: ReactNode; children: ReactNode }) { return <section className="container mx-auto px-3 py-8 sm:px-4 sm:py-10 md:py-16"><div className="mb-5 flex flex-col gap-4 sm:mb-9 md:flex-row md:items-end md:justify-between"><div className="max-w-2xl">{eyebrow && <div className="mb-2 text-xs font-black uppercase tracking-[0.2em] text-accent">{eyebrow}</div>}<h2 className="text-3xl font-black leading-[0.98] tracking-[-0.04em] sm:text-4xl md:text-5xl">{title}</h2>{subtitle && <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">{subtitle}</p>}{notice && <div className="mt-3">{notice}</div>}</div>{action}</div>{children}</section>; }
 function VendorLogo({ name, imageUrl }: { name: string; imageUrl?: string | null }) { return <div className="absolute bottom-2 left-2 grid h-9 w-9 place-items-center overflow-hidden rounded-full border-2 border-white bg-white text-xs font-black text-primary shadow-lg ring-1 ring-black/10 sm:bottom-3 sm:left-3 sm:h-11 sm:w-11"><span>{name.trim().charAt(0).toUpperCase() || "L"}</span>{imageUrl ? <img src={imageUrl} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : null}</div>; }
 function BenefitCard({ title, items }: { title: string; items: string[] }) { return <Card className="rounded-[1.75rem] border-white/70 bg-white/80 p-6 shadow-sm backdrop-blur"><h3 className="text-2xl font-black">{title}</h3><ul className="mt-5 space-y-3 text-sm">{items.map((it) => <li key={it} className="flex items-start gap-3"><span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/10"><TrendingUp className="h-3.5 w-3.5 text-primary" /></span><span className="leading-6">{it}</span></li>)}</ul></Card>; }
