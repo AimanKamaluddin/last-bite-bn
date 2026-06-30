@@ -74,16 +74,7 @@ function NewListing() {
       status,
     };
 
-    let { error } = await (supabase as any).from("listings").insert(payload);
-
-    if (error && error.message?.includes("produced_at")) {
-      const { produced_at, ...fallbackPayload } = payload;
-      const retry = await (supabase as any).from("listings").insert(fallbackPayload);
-      error = retry.error;
-      if (!error) {
-        toast.warning("Listing published, but production time will save after the database migration is applied.");
-      }
-    }
+    const { error } = await (supabase as any).from("listings").insert(payload);
 
     setSaving(false);
     if (error) return toast.error(error.message);
