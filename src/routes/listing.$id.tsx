@@ -185,6 +185,7 @@ function ListingDetail() {
   const listingImages = getListingImages(data);
   const selectedImage = listingImages[selectedImageIndex] ?? data.image_url;
   const hasMultipleImages = listingImages.length > 1;
+  const producedText = formatDateTime(data.produced_at);
 
   const showPreviousImage = () => setSelectedImageIndex((index) => (index - 1 + listingImages.length) % listingImages.length);
   const showNextImage = () => setSelectedImageIndex((index) => (index + 1) % listingImages.length);
@@ -247,6 +248,18 @@ function ListingDetail() {
           <Card className="mt-5 rounded-[1.75rem] border-primary/10 bg-gradient-to-br from-white via-primary/5 to-accent/10 p-5 shadow-sm">
             <div className="flex items-start gap-3">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-black leading-tight">Produced date & time</h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">{producedText || "Production date and time has not been provided for this offer."}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="mt-5 rounded-[1.75rem] border-primary/10 bg-gradient-to-br from-white via-primary/5 to-accent/10 p-5 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
                 <Utensils className="h-5 w-5" />
               </div>
               <div>
@@ -280,7 +293,7 @@ function ListingDetail() {
             <h2 className="text-lg font-semibold">Listing details</h2>
             <div className="mt-3 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
               <div className="flex items-start gap-2"><CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Listed:</strong><br />{formatDateWithDay(data.created_at)}</span></div>
-              <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Produced:</strong><br />{formatDateTime(data.produced_at) || "Not provided"}</span></div>
+              <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Produced:</strong><br />{producedText || "Not provided"}</span></div>
             </div>
           </Card>
 
