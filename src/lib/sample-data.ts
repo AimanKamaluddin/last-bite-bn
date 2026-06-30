@@ -55,8 +55,8 @@ export const sampleMerchants: SampleMerchant[] = [
   },
   {
     id: "m4",
-    business_name: "Jerudong Hotel Kitchen",
-    business_type: "Hotel kitchen",
+    business_name: "Jerudong Supermarket Kitchen",
+    business_type: "Supermarket",
     district: "Brunei-Muara",
     rating: 4.9,
     image_url: img("photo-1414235077428-338989a2e8c0"),
@@ -113,7 +113,7 @@ export const sampleListings: SampleListing[] = [
     merchant: sampleMerchants[3],
     title: "Bento Pack",
     category: "Meals",
-    description: "Hotel kitchen bento packs with rice, protein and vegetables.",
+    description: "Fresh supermarket bento packs with rice, protein and vegetables.",
     original_price: 22,
     discounted_price: 8,
     quantity_available: 3,
@@ -174,7 +174,7 @@ export const CATEGORIES = [
   "Meals",
   "Local food",
   "Restaurant",
-  "Hotel kitchen",
+  "Supermarket",
 ] as const;
 
 export const formatBND = (n: number) =>
