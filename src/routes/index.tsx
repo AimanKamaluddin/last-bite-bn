@@ -11,7 +11,7 @@ import { ListingCard, type ListingCardData } from "@/components/listings/Listing
 import { PickupWindowAlert } from "@/components/orders/PickupWindowAlert";
 import { formatBND } from "@/lib/sample-data";
 import { useLanguage } from "@/lib/i18n";
-import { ArrowRight, Clock, Flame, HandCoins, Leaf, MapPin, PackageSearch, Search, ShoppingBag, Sparkles, Store, Timer, TrendingUp, Utensils } from "lucide-react";
+import { ArrowRight, Clock, Flame, HandCoins, MapPin, PackageSearch, Search, ShoppingBag, Sparkles, Store, TrendingUp, Utensils } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [ { title: "Last Bite — Rescue food before it's gone" }, { name: "description", content: "Brunei's surplus food marketplace for desserts, pastries, bakery items and meals before pickup windows end." }, { property: "og:title", content: "Last Bite — Rescue food before it's gone" }, { property: "og:description", content: "Find desserts, pastries, bakery items and meals available today from local Brunei businesses." } ] }),
@@ -48,17 +48,21 @@ function Landing() {
   const { t } = useLanguage();
   const [merchants, setMerchants] = useState<any[]>([]);
   const [listings, setListings] = useState<ListingCardData[]>([]);
-  const [sponsoredMerchant, setSponsoredMerchant] = useState<any | null>(null);
+  const [sponsoredMerchants, setSponsoredMerchants] = useState<any[]>([]);
 
   useEffect(() => { (async () => {
     const [{ data: m }, { data: l }, { data: sponsor }] = await Promise.all([
       (supabase as any).from("merchants_public").select("id, business_name, business_type, district, image_url, rating").order("created_at", { ascending: false }).limit(6),
       (supabase as any).from("listings").select("*, merchants_public!inner(business_name, district, image_url, rating)").eq("visible", true).eq("status", "active").order("created_at", { ascending: false }).limit(24),
-      (supabase as any).from("merchants_public").select("id, business_name, business_type, district, image_url, rating").ilike("business_name", "%LastBite%").limit(1).maybeSingle(),
+      (supabase as any).from("merchants_public").select("id, business_name, business_type, district, image_url, rating").order("created_at", { ascending: false }).limit(4),
     ]);
     const merchantRows = m ?? [];
+    const sponsorRows = sponsor ?? [];
+    const sponsorIds = new Set(sponsorRows.map((merchant: any) => merchant.id));
+    const sponsoredRows = [...sponsorRows, ...merchantRows.filter((merchant: any) => !sponsorIds.has(merchant.id))].slice(0, 4);
+
     setMerchants(merchantRows);
-    setSponsoredMerchant(sponsor ?? merchantRows.find((merchant: any) => String(merchant.business_name ?? "").toLowerCase().replace(/\s+/g, "") === "lastbite") ?? null);
+    setSponsoredMerchants(sponsoredRows);
     setListings((l ?? []).map((d: any) => ({ id: d.id, title: d.title, category: d.category, original_price: Number(d.original_price), discounted_price: Number(d.discounted_price), quantity_available: d.quantity_available, pickup_start: d.pickup_start, pickup_end: d.pickup_end, created_at: d.created_at, produced_at: d.produced_at, image_url: d.image_url || "", merchant: { business_name: d.merchants_public?.business_name ?? "", district: d.merchants_public?.district ?? "", rating: Number(d.merchants_public?.rating ?? 0), image_url: d.merchants_public?.image_url ?? null } })));
   })(); }, []);
 
@@ -86,29 +90,9 @@ function Landing() {
         </div>
 
         <div className="relative mx-auto w-full max-w-xl">
-          <Link to={sponsoredMerchant ? "/merchant-profile/$id" : "/browse"} params={sponsoredMerchant ? { id: sponsoredMerchant.id } : undefined as any} className="group block overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/85 p-2 shadow-2xl shadow-primary/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-primary/20 sm:rounded-[2rem] sm:p-3">
-            <div className="overflow-hidden rounded-[1.35rem] border border-primary/10 bg-white">
-              <div className="relative h-56 overflow-hidden sm:h-64 xl:h-72">
-                {sponsoredMerchant?.image_url || heroListing?.image_url ? <img src={sponsoredMerchant?.image_url || heroListing?.image_url} alt={sponsoredMerchant?.business_name ?? "LastBite"} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <div className="grid h-full w-full place-items-center bg-[radial-gradient(circle_at_25%_20%,hsl(var(--accent)/0.35),transparent_25%),linear-gradient(135deg,hsl(var(--primary)/0.88),hsl(var(--accent)/0.85))]"><Utensils className="h-20 w-20 text-white/85 sm:h-24 sm:w-24" /></div>}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute inset-x-4 bottom-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-primary shadow-sm"><Sparkles className="mr-1 h-3 w-3" /> Sponsored</Badge>
-                    <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur"><Store className="mr-1 inline h-3.5 w-3.5" /> Vendor page</span>
-                  </div>
-                  <h2 className="mt-3 line-clamp-2 text-2xl font-black leading-tight text-white sm:text-3xl">{sponsoredMerchant?.business_name ?? "LastBite"}</h2>
-                  <p className="mt-1 truncate text-sm font-medium text-white/85">{sponsoredMerchant ? `${sponsoredMerchant.business_type ?? "Featured vendor"} · ${sponsoredMerchant.district ?? "Brunei"}` : "Featured vendor on Last Bite"}</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between gap-3 p-4">
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Featured vendor</div>
-                  <div className="mt-1 text-xl font-black leading-none text-primary sm:text-2xl">LastBite</div>
-                </div>
-                <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-black text-primary-foreground shadow-sm transition group-hover:translate-x-0.5 sm:px-5 sm:text-sm">View page →</span>
-              </div>
-            </div>
-          </Link>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {(sponsoredMerchants.length > 0 ? sponsoredMerchants : [null, null, null, null]).map((merchant, index) => <SponsoredHeroCard key={merchant?.id ?? index} merchant={merchant} fallbackImage={heroListing?.image_url} />)}
+          </div>
         </div>
       </div>
     </section>
@@ -145,7 +129,30 @@ function Landing() {
   </SiteLayout>;
 }
 
-function HeroProof({ icon: Icon, title, body }: { icon: any; title: string; body: string }) { return <div className="rounded-3xl border border-white/70 bg-white/75 p-4 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex items-center gap-2 font-black text-foreground"><Icon className="h-4 w-4 text-primary" />{title}</div><div className="mt-1 text-xs leading-5 text-muted-foreground">{body}</div></div>; }
+function SponsoredHeroCard({ merchant, fallbackImage }: { merchant: any | null; fallbackImage?: string }) {
+  const imageUrl = merchant?.image_url || fallbackImage;
+
+  return <Link to={merchant ? "/merchant-profile/$id" : "/browse"} params={merchant ? { id: merchant.id } : undefined as any} className="group block overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/85 p-1.5 shadow-xl shadow-primary/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-primary/20 sm:rounded-[1.65rem] sm:p-2">
+    <div className="overflow-hidden rounded-[1rem] border border-primary/10 bg-white sm:rounded-[1.25rem]">
+      <div className="relative h-36 overflow-hidden sm:h-44 xl:h-48">
+        {imageUrl ? <img src={imageUrl} alt={merchant?.business_name ?? "Sponsored vendor"} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <div className="grid h-full w-full place-items-center bg-[radial-gradient(circle_at_25%_20%,hsl(var(--accent)/0.35),transparent_25%),linear-gradient(135deg,hsl(var(--primary)/0.88),hsl(var(--accent)/0.85))]"><Utensils className="h-12 w-12 text-white/85 sm:h-16 sm:w-16" /></div>}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute inset-x-3 bottom-3">
+          <Badge className="rounded-full bg-white px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-primary shadow-sm"><Sparkles className="mr-1 h-2.5 w-2.5" /> Sponsored</Badge>
+          <h2 className="mt-2 line-clamp-2 text-base font-black leading-tight text-white sm:text-xl">{merchant?.business_name ?? "Sponsored spot"}</h2>
+          <p className="mt-0.5 truncate text-xs font-medium text-white/85">{merchant ? `${merchant.business_type ?? "Featured vendor"} · ${merchant.district ?? "Brunei"}` : "Available for a partner"}</p>
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-2 p-3">
+        <div className="min-w-0">
+          <div className="truncate text-xs font-bold uppercase tracking-wider text-muted-foreground">Featured vendor</div>
+          <div className="mt-0.5 truncate text-sm font-black leading-none text-primary sm:text-base">{merchant?.business_name ?? "Sponsor here"}</div>
+        </div>
+        <span className="shrink-0 rounded-full bg-primary px-2.5 py-1.5 text-[10px] font-black text-primary-foreground shadow-sm transition group-hover:translate-x-0.5 sm:px-3 sm:text-xs">View →</span>
+      </div>
+    </div>
+  </Link>;
+}
 function QuickChip({ icon: Icon, label, count }: { icon: any; label: string; count?: number }) { return <Button asChild variant="outline" className="h-11 shrink-0 rounded-full border-primary/15 bg-white/70 px-4 font-bold shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"><Link to="/browse"><Icon className="h-4 w-4" />{label}{typeof count === "number" && count > 0 ? <span className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">{count}</span> : null}</Link></Button>; }
 function Section({ eyebrow, title, subtitle, notice, action, children }: { eyebrow?: string; title: string; subtitle?: string; notice?: ReactNode; action?: ReactNode; children: ReactNode }) { return <section className="container mx-auto px-3 py-8 sm:px-4 sm:py-10 md:py-16"><div className="mb-5 flex flex-col gap-4 sm:mb-9 md:flex-row md:items-end md:justify-between"><div className="max-w-2xl">{eyebrow && <div className="mb-2 text-xs font-black uppercase tracking-[0.2em] text-accent">{eyebrow}</div>}<h2 className="text-3xl font-black leading-[0.98] tracking-[-0.04em] sm:text-4xl md:text-5xl">{title}</h2>{subtitle && <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">{subtitle}</p>}{notice && <div className="mt-3">{notice}</div>}</div>{action}</div>{children}</section>; }
 function VendorLogo({ name, imageUrl }: { name: string; imageUrl?: string | null }) { return <div className="absolute bottom-2 left-2 grid h-9 w-9 place-items-center overflow-hidden rounded-full border-2 border-white bg-white text-xs font-black text-primary shadow-lg ring-1 ring-black/10 sm:bottom-3 sm:left-3 sm:h-11 sm:w-11"><span>{name.trim().charAt(0).toUpperCase() || "L"}</span>{imageUrl ? <img src={imageUrl} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : null}</div>; }
