@@ -18,7 +18,6 @@ export const Route = createFileRoute("/merchant/new-listing")({ component: NewLi
 
 const todayInput = () => new Date().toISOString().slice(0, 10);
 const dayName = (date: string) => date ? new Date(`${date}T00:00:00`).toLocaleDateString([], { weekday: "long" }) : "";
-const toIso = (date: string, time: string) => date && time ? new Date(`${date}T${time}:00`).toISOString() : null;
 
 function NewListing() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -68,7 +67,6 @@ function NewListing() {
       image_url: images[0] ?? null,
       images,
       created_at: new Date(`${listing_date}T00:00:00`).toISOString(),
-      produced_at: toIso(produced_date, produced_time),
       pickup_start: new Date(`${listing_date}T${form.pickup_start}:00`).toISOString(),
       pickup_end: new Date(`${listing_date}T${form.pickup_end}:00`).toISOString(),
       status,
