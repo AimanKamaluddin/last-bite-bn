@@ -47,7 +47,10 @@ const formatDateWithDay = (iso?: string | null) => {
 const formatDateTime = (iso?: string | null) => {
   if (!iso) return "";
   try {
-    return new Date(iso).toLocaleString([], {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "";
+
+    return date.toLocaleString([], {
       weekday: "short",
       year: "numeric",
       month: "short",
@@ -58,6 +61,18 @@ const formatDateTime = (iso?: string | null) => {
   } catch {
     return "";
   }
+};
+
+const getProducedAt = (listing: any) => {
+  const candidates = [
+    listing?.produced_at,
+    listing?.production_at,
+    listing?.production_datetime,
+    listing?.made_at,
+    listing?.created_at,
+  ];
+
+  return candidates.find((value) => typeof value === "string" && formatDateTime(value)) ?? null;
 };
 
 const getListingImages = (listing: any) => {
@@ -138,7 +153,7 @@ function ListingDetail() {
               pickup_start: offer.pickup_start,
               pickup_end: offer.pickup_end,
               created_at: offer.created_at,
-              produced_at: offer.produced_at,
+              produced_at: getProducedAt(offer),
               merchant: {
                 business_name: merchant.business_name ?? "",
                 district: merchant.district ?? "",
@@ -185,7 +200,8 @@ function ListingDetail() {
   const listingImages = getListingImages(data);
   const selectedImage = listingImages[selectedImageIndex] ?? data.image_url;
   const hasMultipleImages = listingImages.length > 1;
-  const producedText = formatDateTime(data.produced_at);
+  const producedAt = getProducedAt(data);
+  const producedText = formatDateTime(producedAt);
 
   const showPreviousImage = () => setSelectedImageIndex((index) => (index - 1 + listingImages.length) % listingImages.length);
   const showNextImage = () => setSelectedImageIndex((index) => (index + 1) % listingImages.length);
@@ -252,7 +268,7 @@ function ListingDetail() {
               </div>
               <div>
                 <h2 className="text-lg font-black leading-tight">Produced date & time</h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">{producedText || "Production date and time has not been provided for this offer."}</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">{producedText}</p>
               </div>
             </div>
           </Card>
@@ -293,7 +309,7 @@ function ListingDetail() {
             <h2 className="text-lg font-semibold">Listing details</h2>
             <div className="mt-3 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
               <div className="flex items-start gap-2"><CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Listed:</strong><br />{formatDateWithDay(data.created_at)}</span></div>
-              <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Produced:</strong><br />{producedText || "Not provided"}</span></div>
+              <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">Produced:</strong><br />{producedText}</span></div>
             </div>
           </Card>
 
@@ -382,6 +398,8 @@ function toCardData(listing: SampleListing): ListingCardData {
     quantity_available: listing.quantity_available,
     pickup_start: listing.pickup_start,
     pickup_end: listing.pickup_end,
+    created_at: listing.created_at,
+    produced_at: getProducedAt(listing),
     merchant: {
       business_name: listing.merchant.business_name,
       district: listing.merchant.district,
