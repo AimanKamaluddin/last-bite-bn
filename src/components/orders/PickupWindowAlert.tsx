@@ -1,4 +1,4 @@
-import { Clock, Info, ShieldCheck } from "lucide-react";
+import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatTime12Hour } from "@/lib/time";
 
@@ -36,23 +36,13 @@ export function PickupWindowAlert({
           <Clock className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-black leading-tight text-foreground sm:text-lg">Pickup Window</h3>
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/10 bg-white/75 px-2.5 py-1 text-[11px] font-black text-primary shadow-sm backdrop-blur">
-              <ShieldCheck className="h-3.5 w-3.5" /> Food quality notice
-            </span>
-          </div>
+          <h3 className="text-base font-black leading-tight text-foreground sm:text-lg">Pickup Window</h3>
           <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
             Please collect your order only during the scheduled pickup time. Merchants may not be able to prepare or hand over food outside this window.
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1.5 text-xs font-black text-primary-foreground shadow-sm">
-              <Clock className="h-3.5 w-3.5" />
-              {windowText}
-            </div>
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1.5 text-[11px] font-bold text-muted-foreground shadow-sm ring-1 ring-border/70">
-              <Info className="h-3.5 w-3.5" /> Arrive on time for best quality
-            </div>
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1.5 text-xs font-black text-primary-foreground shadow-sm">
+            <Clock className="h-3.5 w-3.5" />
+            {windowText}
           </div>
         </div>
       </div>
