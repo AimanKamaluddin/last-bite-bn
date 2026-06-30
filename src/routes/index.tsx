@@ -83,11 +83,6 @@ function Landing() {
             <Button asChild size="lg" className="h-13 rounded-full px-6 text-base shadow-xl shadow-primary/20 transition hover:-translate-y-0.5"><Link to="/browse"><ShoppingBag className="mr-2 h-4 w-4" /> {t("reserveNow")}</Link></Button>
             <Button asChild size="lg" variant="outline" className="h-13 rounded-full border-primary/20 bg-white/70 px-6 text-base backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"><Link to="/merchant/onboarding"><Store className="mr-2 h-4 w-4" /> {t("joinAsMerchant")}</Link></Button>
           </div>
-          <div className="grid gap-3 pt-2 sm:grid-cols-3">
-            <HeroProof icon={Timer} title={t("pickupToday")} body={t("shortPickupWindows")} />
-            <HeroProof icon={HandCoins} title={t("payLess")} body={t("discountedLocalFood")} />
-            <HeroProof icon={Leaf} title={t("wasteLess")} body={t("giveGoodFoodChance")} />
-          </div>
         </div>
 
         <div className="relative mx-auto w-full max-w-xl">
