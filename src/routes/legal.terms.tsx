@@ -28,7 +28,6 @@ export const Route = createFileRoute("/legal/terms")({
       <article className="container mx-auto max-w-4xl px-4 py-12">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Version 1.0 · Effective 28 June 2026</p>
         <h1 className="mt-3 text-4xl font-black tracking-tight">Last Bite Terms & Conditions</h1>
-        <p className="mt-4 rounded-2xl border bg-muted/40 p-4 text-sm leading-6 text-muted-foreground">This page is intended to provide strong marketplace terms for Last Bite, but it is not a substitute for legal advice. Before public launch, have a Brunei-qualified lawyer review these documents.</p>
         <div className="mt-8 space-y-7">
           {sections.map(([title, body]) => <section key={title}><h2 className="text-xl font-bold">{title}</h2><p className="mt-2 leading-7 text-muted-foreground">{body}</p></section>)}
         </div>
