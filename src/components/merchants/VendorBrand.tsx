@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Store } from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 
 export type VendorBrandData = {
   id?: string | null;
@@ -27,7 +27,7 @@ function VendorLogo({ merchant, size = "md" }: { merchant?: VendorBrandData | nu
   return (
     <div className={`relative grid shrink-0 place-items-center overflow-hidden rounded-2xl border bg-primary/10 font-black text-primary shadow-sm ring-1 ring-border ${sizeClass}`} aria-hidden="true">
       <span>{getInitial(name)}</span>
-      {merchant?.image_url ? <img src={merchant.image_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <Store className="h-1/2 w-1/2" />}
+      {merchant?.image_url ? <img src={merchant.image_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : null}
     </div>
   );
 }
