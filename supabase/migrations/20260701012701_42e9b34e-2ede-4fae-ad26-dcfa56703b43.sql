@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.update_my_merchant_profile(text, text, text, text, text, text, text, text, text, text, text, text, text);
