@@ -74,8 +74,8 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <div className="space-y-5">
-          <div><Label className="mb-2 block">Profile photo / logo</Label><ImageUpload value={form.image_url ?? ""} onChange={(v) => setForm({ ...form, image_url: v })} /></div>
-          <div><Label className="mb-2 block">Cover image</Label><ImageUpload value={form.cover_image_url ?? ""} onChange={(v) => setForm({ ...form, cover_image_url: v })} /></div>
+          <div><Label className="mb-2 block">Profile photo / logo</Label><ImageUpload value={form.image_url ?? ""} recommendedSize="800 × 800 px square image" onChange={(v) => setForm({ ...form, image_url: v })} /></div>
+          <div><Label className="mb-2 block">Cover image</Label><ImageUpload value={form.cover_image_url ?? ""} recommendedSize="1600 × 600 px wide banner" onChange={(v) => setForm({ ...form, cover_image_url: v })} /></div>
           <Card className="overflow-hidden rounded-2xl p-0"><div className="h-28 bg-gradient-to-br from-primary via-emerald-600 to-accent">{form.cover_image_url && <img src={form.cover_image_url} alt="" className="h-full w-full object-cover" />}</div><div className="p-4"><div className="-mt-10 grid h-16 w-16 place-items-center overflow-hidden rounded-2xl bg-primary text-primary-foreground ring-4 ring-background">{form.image_url ? <img src={form.image_url} alt="" className="h-full w-full object-cover" /> : <Store className="h-8 w-8" />}</div><div className="mt-3 font-semibold">{form.business_name || "Your business name"}</div><div className="text-sm text-muted-foreground">{form.tagline || "Your tagline will appear here"}</div></div></Card>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
