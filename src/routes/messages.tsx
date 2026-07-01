@@ -119,9 +119,9 @@ function Messages() {
 
     const merchantById = new Map((merchantRows ?? []).map((merchant: any) => [merchant.id, merchant]));
     const buyerById = new Map((profileRows ?? []).map((profile: any) => [profile.id, profile]));
-    const hydrated = rows.map((thread) => ({ ...thread, merchant: merchantById.get(thread.merchant_id) ?? null, buyer: buyerById.get(thread.buyer_id) ?? null }));
+    const hydrated = rows.map((thread) => ({ ...thread, merchant: (merchantById.get(thread.merchant_id) as any) ?? null, buyer: (buyerById.get(thread.buyer_id) as any) ?? null }));
 
-    setThreads(hydrated);
+    setThreads(hydrated as Thread[]);
     setActiveThreadId((current) => openedThread?.id ?? current ?? hydrated[0]?.id ?? null);
     setBusy(false);
   }, [targetMerchantId, user]);
