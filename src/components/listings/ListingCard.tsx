@@ -2,9 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, MapPin, Star } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import { formatBND } from "@/lib/sample-data";
 import { formatTime12Hour } from "@/lib/time";
+import { VendorBrand } from "@/components/merchants/VendorBrand";
 
 export type ListingCardData = {
   id: string;
@@ -18,7 +19,7 @@ export type ListingCardData = {
   pickup_end: string;
   created_at?: string;
   produced_at?: string | null;
-  merchant: { business_name: string; district: string; rating: number; image_url?: string | null };
+  merchant: { id?: string | null; business_name: string; business_type?: string | null; district: string; rating: number; image_url?: string | null };
 };
 
 const fmtTime = (t: string) => formatTime12Hour(t);
@@ -27,17 +28,6 @@ const isPastPickup = (pickupEnd: string) => {
   const end = new Date(pickupEnd);
   return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
 };
-
-const getMerchantInitial = (name: string) => name.trim().charAt(0).toUpperCase() || "L";
-
-function MerchantAvatar({ name, imageUrl }: { name: string; imageUrl?: string | null }) {
-  return (
-    <div className="relative grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-background bg-primary/10 text-[11px] font-black text-primary shadow-sm ring-1 ring-border sm:h-9 sm:w-9 sm:text-xs" aria-hidden="true">
-      <span>{getMerchantInitial(name)}</span>
-      {imageUrl ? <img src={imageUrl} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : null}
-    </div>
-  );
-}
 
 export function ListingCard({ listing }: { listing: ListingCardData }) {
   const soldOut = listing.quantity_available <= 0;
@@ -50,19 +40,16 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
       <Link to="/listing/$id" params={{ id: listing.id }} className="relative block h-32 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-44" aria-label={`View details for ${listing.title}`}>
         <img src={listing.image_url} alt={listing.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
         <Badge className="absolute left-2 top-2 rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold text-accent-foreground sm:left-3 sm:top-3 sm:px-3 sm:py-1 sm:text-xs">-{discountPct}%</Badge>
-        <span className="absolute right-2 bottom-2 hidden rounded-full bg-background/95 px-3 py-1.5 text-xs font-semibold shadow sm:block sm:opacity-0 sm:transition sm:group-hover:opacity-100">View details →</span>
+        <div className="absolute inset-x-2 bottom-2 rounded-2xl bg-background/95 p-2 shadow-sm backdrop-blur sm:inset-x-3 sm:bottom-3">
+          <VendorBrand merchant={listing.merchant} variant="compact" showProfileLink={false} />
+        </div>
         {unavailable && <div className="absolute inset-0 grid place-items-center bg-background/75 text-sm font-semibold">{expired ? "Offer expired" : "Sold out"}</div>}
       </Link>
       <div className="space-y-2 p-3 sm:space-y-3 sm:p-4">
-        <div className="flex items-start justify-between gap-2 sm:gap-3">
-          <div className="flex min-w-0 items-start gap-2 sm:gap-2.5">
-            <MerchantAvatar name={listing.merchant.business_name} imageUrl={listing.merchant.image_url} />
-            <div className="min-w-0">
-              <Link to="/listing/$id" params={{ id: listing.id }} className="font-semibold leading-tight hover:text-primary hover:underline"><h3 className="line-clamp-2 text-sm leading-snug sm:text-base">{listing.title}</h3></Link>
-              <p className="mt-0.5 truncate text-xs text-muted-foreground sm:mt-1 sm:text-sm">{listing.merchant.business_name}</p>
-            </div>
-          </div>
-          <div className="hidden shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium sm:flex"><Star className="h-3.5 w-3.5 fill-sun text-sun" />{listing.merchant.rating?.toFixed(1) ?? "—"}</div>
+        <VendorBrand merchant={listing.merchant} variant="inline" />
+        <div>
+          <Link to="/listing/$id" params={{ id: listing.id }} className="font-semibold leading-tight hover:text-primary hover:underline"><h3 className="line-clamp-2 text-sm leading-snug sm:text-base">{listing.title}</h3></Link>
+          <p className="mt-1 text-xs font-medium text-muted-foreground">Sold by {listing.merchant.business_name}</p>
         </div>
         <div className="grid gap-1 rounded-xl bg-muted/45 p-2 text-[11px] text-muted-foreground sm:flex sm:flex-wrap sm:items-center sm:gap-3 sm:rounded-2xl sm:bg-transparent sm:p-0 sm:text-xs">
           <span className="inline-flex min-w-0 items-center gap-1.5"><MapPin className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{listing.merchant.district}</span></span>
