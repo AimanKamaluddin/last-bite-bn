@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { PickupWindowAlert } from "@/components/orders/PickupWindowAlert";
 import { PickupLocationCard } from "@/components/orders/PickupLocationCard";
+import { VendorBrand } from "@/components/merchants/VendorBrand";
 import { supabase } from "@/integrations/supabase/client";
 import { getPublicMerchantProfile } from "@/lib/public-merchant.functions";
 import { formatBND } from "@/lib/sample-data";
@@ -27,16 +28,7 @@ function OrderConfirmation() {
     let cancelled = false;
 
     if (demo) {
-      setOrder({
-        id,
-        pickup_code: demoCode,
-        pickup_time: pickupTime,
-        status: "reserved",
-        payment_status: "demo",
-        total_price: 0,
-        listings: { title: "Demo surprise bag" },
-        merchants: { business_name: "Sample Merchant", address: "Bandar Seri Begawan", district: "Brunei-Muara", phone: "+673 000 0000" },
-      });
+      setOrder({ id, pickup_code: demoCode, pickup_time: pickupTime, status: "reserved", payment_status: "demo", total_price: 0, listings: { title: "Demo surprise bag" }, merchants: { business_name: "Sample Merchant", address: "Bandar Seri Begawan", district: "Brunei-Muara", phone: "+673 000 0000" } });
       setLoading(false);
       return;
     }
@@ -45,31 +37,21 @@ function OrderConfirmation() {
       setLoading(true);
       const { data: orderData, error } = await supabase.from("orders").select("*").eq("id", id).maybeSingle();
       if (cancelled) return;
-      if (error || !orderData) {
-        setOrder(null);
-        setLoading(false);
-        return;
-      }
+      if (error || !orderData) { setOrder(null); setLoading(false); return; }
 
-      const { data: listing } = await supabase
-        .from("listings")
-        .select("title, image_url, pickup_start, pickup_end")
-        .eq("id", orderData.listing_id)
-        .maybeSingle();
-
+      const { data: listing } = await supabase.from("listings").select("title, image_url, pickup_start, pickup_end").eq("id", orderData.listing_id).maybeSingle();
       let merchant: any = null;
-      try {
-        merchant = await getPublicMerchantProfile({ data: { id: orderData.merchant_id } });
-      } catch (err) {
-        console.error("Order merchant lookup failed", err);
-      }
-
+      try { merchant = await getPublicMerchantProfile({ data: { id: orderData.merchant_id } }); } catch (err) { console.error("Order merchant lookup failed", err); }
       if (cancelled) return;
       setOrder({
         ...orderData,
         listings: listing ?? null,
         merchants: {
+          id: orderData.merchant_id,
           business_name: merchant?.business_name ?? "Merchant",
+          business_type: merchant?.business_type ?? "",
+          image_url: merchant?.image_url ?? null,
+          rating: Number(merchant?.rating ?? 0),
           address: merchant?.address ?? "",
           district: merchant?.district ?? "",
           phone: merchant?.phone ?? "",
@@ -98,6 +80,7 @@ function OrderConfirmation() {
         <CheckCircle2 className="mx-auto h-14 w-14 text-primary" />
         <h1 className="mt-4 text-3xl font-bold">Reservation confirmed!</h1>
         <p className="mt-2 text-muted-foreground">Show your name and pickup code to the merchant.</p>
+        <div className="mt-5 text-left"><VendorBrand merchant={order.merchants} variant="card" /></div>
         <div className="mt-5 text-left"><PickupWindowAlert pickupStart={pickupStart} pickupEnd={pickupEnd} /></div>
         <div className="mt-5 text-left"><PickupLocationCard merchant={order.merchants} pickupStart={pickupStart} pickupEnd={pickupEnd} selectedPickupTime={selectedPickupTime} /></div>
 
@@ -106,7 +89,7 @@ function OrderConfirmation() {
           <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 p-5"><div className="text-sm text-muted-foreground">Pickup code</div><div className="mt-2 text-4xl font-black tracking-[0.25em] text-primary">{order.pickup_code}</div></div>
           {selectedPickupTime && <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900"><div className="font-semibold">Selected pickup time</div><strong className="text-lg">{selectedPickupTime}</strong><p className="mt-1 text-xs">Only collect during the pickup window.</p></div>}
           <div className="my-6 h-px bg-border" />
-          <div className="text-left text-sm"><div className="font-semibold">{order.listings?.title}</div><div className="mt-1 text-muted-foreground">{order.merchants?.business_name}</div>{order.merchants?.address && <div className="text-muted-foreground">{order.merchants.address}</div>}{order.merchants?.phone && <div className="text-muted-foreground">{order.merchants.phone}</div>}</div>
+          <div className="text-left text-sm"><VendorBrand merchant={order.merchants} variant="inline" /><div className="mt-3 font-semibold">{order.listings?.title}</div>{order.merchants?.address && <div className="text-muted-foreground">{order.merchants.address}</div>}{order.merchants?.phone && <div className="text-muted-foreground">{order.merchants.phone}</div>}</div>
           <div className="mt-6 rounded-2xl bg-cream/60 p-4 text-left text-sm"><p className="font-semibold">Payment</p><p className="mt-1 text-muted-foreground">Pay <strong>{formatBND(Number(order.total_price))}</strong> in cash or by card when you collect your order.</p></div>
         </Card>
 
