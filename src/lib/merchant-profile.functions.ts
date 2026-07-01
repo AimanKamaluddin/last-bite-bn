@@ -6,6 +6,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const optionalText = z.string().trim().optional().nullable();
 
 const merchantProfileSchema = z.object({
+  merchant_id: z.string().trim().min(1, "Merchant profile is required"),
   business_name: z.string().trim().min(1, "Business name is required"),
   business_type: z.string().trim().min(1, "Business type is required"),
   district: z.string().trim().min(1, "District is required"),
@@ -52,9 +53,10 @@ export const updateMyMerchantProfile = createServerFn({ method: "POST" })
     const { data: merchant, error } = await supabaseAdmin
       .from("merchants")
       .update(payload)
+      .eq("id", data.merchant_id)
       .eq("user_id", context.userId)
       .select("*")
-      .single();
+      .maybeSingle();
 
     if (error) throw new Error(error.message);
     if (!merchant) throw new Error("Merchant profile not found or you do not have permission to edit it.");
