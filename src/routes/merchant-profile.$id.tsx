@@ -8,7 +8,8 @@ import { ListingCard, type ListingCardData } from "@/components/listings/Listing
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { Clock, ExternalLink, Mail, MapPin, MessageCircle, Phone, Star, Store } from "lucide-react";
+import { getPublicMerchantProfile } from "@/lib/public-merchant.functions";
+import { Clock, Mail, MapPin, MessageCircle, Phone, Star, Store } from "lucide-react";
 
 export const Route = createFileRoute("/merchant-profile/$id")({ component: MerchantProfile });
 
@@ -16,9 +17,6 @@ const isExpired = (pickupEnd: string) => {
   const end = new Date(pickupEnd);
   return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
 };
-
-const baseMerchantFields = "id, business_name, business_type, district, image_url, rating, description, opening_hours, address, phone, email";
-const enhancedMerchantFields = `${baseMerchantFields}, tagline, cover_image_url, instagram_url, website_url`;
 
 function MerchantProfile() {
   const { id } = Route.useParams();
@@ -30,63 +28,40 @@ function MerchantProfile() {
   useEffect(() => {
     let cancelled = false;
 
-    const loadMerchant = async () => {
+    async function loadMerchant() {
       setLoading(true);
-
       let merchantRecord: any = null;
-      let merchantLookupError: any = null;
 
-      const enhanced = await (supabase as any)
-        .from("merchants_public")
-        .select(enhancedMerchantFields)
-        .eq("id", id)
-        .maybeSingle();
-
-      merchantRecord = enhanced.data;
-      merchantLookupError = enhanced.error;
-
-      if (!merchantRecord) {
-        const fallback = await (supabase as any)
-          .from("merchants_public")
-          .select(baseMerchantFields)
-          .eq("id", id)
-          .maybeSingle();
-
-        merchantRecord = fallback.data;
-        merchantLookupError = fallback.error ?? merchantLookupError;
+      try {
+        merchantRecord = await getPublicMerchantProfile({ data: { id } });
+      } catch (error) {
+        console.error("Merchant profile lookup failed", error);
       }
 
-      const { data: l } = await (supabase as any)
+      const { data: listingRows, error: listingsError } = await (supabase as any)
         .from("listings")
-        .select("*, merchants_public!inner(id, business_name, business_type, district, image_url, rating, description, opening_hours, address, phone, email)")
+        .select("*")
         .eq("merchant_id", id)
         .eq("visible", true)
         .eq("status", "active")
         .order("created_at", { ascending: false });
 
-      if (!merchantRecord && Array.isArray(l) && l.length > 0) {
-        merchantRecord = l[0].merchants_public;
-      }
-
+      if (listingsError) console.error("Merchant listings lookup failed", listingsError);
       if (cancelled) return;
 
-      if (merchantLookupError && !merchantRecord) {
-        console.error("Merchant profile lookup failed", merchantLookupError);
-      }
-
       setMerchant(merchantRecord);
-      setListings((l ?? []).map((d: any) => ({
-        id: d.id,
-        title: d.title,
-        category: d.category,
-        original_price: Number(d.original_price),
-        discounted_price: Number(d.discounted_price),
-        quantity_available: d.quantity_available,
-        pickup_start: d.pickup_start,
-        pickup_end: d.pickup_end,
-        created_at: d.created_at,
-        produced_at: d.produced_at,
-        image_url: d.image_url || "",
+      setListings((listingRows ?? []).map((row: any) => ({
+        id: row.id,
+        title: row.title,
+        category: row.category,
+        original_price: Number(row.original_price),
+        discounted_price: Number(row.discounted_price),
+        quantity_available: row.quantity_available,
+        pickup_start: row.pickup_start,
+        pickup_end: row.pickup_end,
+        created_at: row.created_at,
+        produced_at: row.produced_at,
+        image_url: row.image_url || "",
         merchant: {
           business_name: merchantRecord?.business_name ?? "",
           district: merchantRecord?.district ?? "",
@@ -95,7 +70,7 @@ function MerchantProfile() {
         },
       })));
       setLoading(false);
-    };
+    }
 
     loadMerchant();
     return () => { cancelled = true; };
@@ -112,7 +87,7 @@ function MerchantProfile() {
       <section className="container mx-auto max-w-6xl px-4 py-10">
         <Card className="overflow-hidden rounded-3xl p-0">
           <div className="h-52 bg-gradient-to-br from-primary via-emerald-600 to-accent md:h-64">
-            {(merchant.cover_image_url || merchant.image_url) && <img src={merchant.cover_image_url || merchant.image_url} alt={merchant.business_name} className="h-full w-full object-cover opacity-95" />}
+            {(merchant.cover_image_url || merchant.image_url) && <img src={merchant.cover_image_url || merchant.image_url} alt={merchant.business_name} className="h-full w-full object-cover" />}
           </div>
           <div className="p-6 md:p-8">
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
@@ -136,7 +111,7 @@ function MerchantProfile() {
               </div>
             </div>
 
-            {(merchant.description || merchant.address || merchant.opening_hours || merchant.phone || merchant.email || merchant.instagram_url || merchant.website_url) && (
+            {(merchant.description || merchant.address || merchant.opening_hours || merchant.phone || merchant.email) && (
               <div className="mt-8 grid gap-4 md:grid-cols-[1.4fr_1fr]">
                 {merchant.description && <Card className="rounded-2xl p-4"><h2 className="font-semibold">About</h2><p className="mt-2 text-sm text-muted-foreground">{merchant.description}</p></Card>}
                 <Card className="rounded-2xl p-4">
@@ -146,8 +121,6 @@ function MerchantProfile() {
                     {merchant.opening_hours && <span className="inline-flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 text-primary" />{merchant.opening_hours}</span>}
                     {merchant.phone && <span className="inline-flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 text-primary" />{merchant.phone}</span>}
                     {merchant.email && <span className="inline-flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 text-primary" />{merchant.email}</span>}
-                    {merchant.instagram_url && <a className="inline-flex items-start gap-2 text-primary hover:underline" href={merchant.instagram_url} target="_blank" rel="noreferrer"><ExternalLink className="mt-0.5 h-4 w-4" />Instagram / social</a>}
-                    {merchant.website_url && <a className="inline-flex items-start gap-2 text-primary hover:underline" href={merchant.website_url} target="_blank" rel="noreferrer"><ExternalLink className="mt-0.5 h-4 w-4" />Website / menu</a>}
                   </div>
                 </Card>
               </div>
