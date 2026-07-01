@@ -40,6 +40,7 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
     try {
       const savedMerchant = await updateMyMerchantProfile({
         data: {
+          merchant_id: merchant.id,
           business_name: form.business_name,
           business_type: form.business_type,
           district: form.district,
