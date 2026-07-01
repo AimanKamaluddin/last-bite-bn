@@ -40,9 +40,6 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
       <Link to="/listing/$id" params={{ id: listing.id }} className="relative block h-32 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-44" aria-label={`View details for ${listing.title}`}>
         <img src={listing.image_url} alt={listing.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
         <Badge className="absolute left-2 top-2 rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold text-accent-foreground sm:left-3 sm:top-3 sm:px-3 sm:py-1 sm:text-xs">-{discountPct}%</Badge>
-        <div className="absolute inset-x-2 bottom-2 rounded-2xl bg-background/95 p-2 shadow-sm backdrop-blur sm:inset-x-3 sm:bottom-3">
-          <VendorBrand merchant={listing.merchant} variant="compact" showProfileLink={false} />
-        </div>
         {unavailable && <div className="absolute inset-0 grid place-items-center bg-background/75 text-sm font-semibold">{expired ? "Offer expired" : "Sold out"}</div>}
       </Link>
       <div className="space-y-2 p-3 sm:space-y-3 sm:p-4">
