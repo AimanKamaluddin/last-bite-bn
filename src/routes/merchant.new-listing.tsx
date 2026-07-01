@@ -98,7 +98,7 @@ function NewListing() {
             <F label="Pickup end"><Input type="time" value={form.pickup_end} onChange={(e) => setForm({ ...form, pickup_end: e.target.value })} /></F>
             <F label="Description" full><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></F>
             <F label="Allergen info" full><Input value={form.allergen_info} onChange={(e) => setForm({ ...form, allergen_info: e.target.value })} placeholder="Contains: gluten, dairy…" /></F>
-            <F label="Photos" full><ImageUpload multiple value={form.images} onChange={(v) => setForm({ ...form, images: v })} /></F>
+            <F label="Photos" full><ImageUpload multiple value={form.images} recommendedSize="1200 × 900 px landscape image (4:3) or larger" onChange={(v) => setForm({ ...form, images: v })} /></F>
             <div className="sm:col-span-2 flex items-center justify-between rounded-2xl bg-cream/60 p-3">
               <div><div className="font-medium">Visible to customers</div><div className="text-sm text-muted-foreground">Turn off to hide while editing.</div></div>
               <Switch checked={form.visible} onCheckedChange={(v) => setForm({ ...form, visible: v })} />
