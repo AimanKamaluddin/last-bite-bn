@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/upload/ImageUpload";
 import { CATEGORIES, DISTRICTS } from "@/lib/sample-data";
-import { supabase } from "@/integrations/supabase/client";
+import { updateMyMerchantProfile } from "@/lib/merchant-profile.functions";
 import { ExternalLink, Save, Store } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,27 +37,32 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
     if (!merchant?.id) return toast.error("Merchant profile not found.");
     setSaving(true);
 
-    const { data, error } = await (supabase as any).rpc("update_my_merchant_profile", {
-      p_business_name: form.business_name,
-      p_business_type: form.business_type,
-      p_district: form.district,
-      p_description: form.description || null,
-      p_image_url: form.image_url || null,
-      p_cover_image_url: form.cover_image_url || null,
-      p_address: form.address || null,
-      p_opening_hours: form.opening_hours || null,
-      p_phone: form.phone || null,
-      p_email: form.email || null,
-      p_tagline: form.tagline || null,
-      p_instagram_url: form.instagram_url || null,
-      p_website_url: form.website_url || null,
-    });
-    const savedMerchant = Array.isArray(data) ? data[0] : data;
+    try {
+      const savedMerchant = await updateMyMerchantProfile({
+        data: {
+          business_name: form.business_name,
+          business_type: form.business_type,
+          district: form.district,
+          description: form.description || null,
+          image_url: form.image_url || null,
+          cover_image_url: form.cover_image_url || null,
+          address: form.address || null,
+          opening_hours: form.opening_hours || null,
+          phone: form.phone || null,
+          email: form.email || null,
+          tagline: form.tagline || null,
+          instagram_url: form.instagram_url || null,
+          website_url: form.website_url || null,
+        },
+      });
 
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("Public profile updated.");
-    onSaved?.({ ...merchant, ...form, ...(savedMerchant ?? {}) });
+      toast.success("Public profile updated.");
+      onSaved?.({ ...merchant, ...form, ...(savedMerchant ?? {}) });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update public profile.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
