@@ -130,6 +130,7 @@ export type Database = {
           business_reg_no: string | null
           business_type: string
           contact_person: string | null
+          cover_image_url: string | null
           created_at: string
           description: string | null
           district: string
@@ -137,11 +138,14 @@ export type Database = {
           halal_status: string
           id: string
           image_url: string | null
+          instagram_url: string | null
           opening_hours: string | null
           phone: string | null
           rating: number | null
+          tagline: string | null
           updated_at: string
           user_id: string
+          website_url: string | null
         }
         Insert: {
           address?: string | null
@@ -150,6 +154,7 @@ export type Database = {
           business_reg_no?: string | null
           business_type: string
           contact_person?: string | null
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
           district: string
@@ -157,11 +162,14 @@ export type Database = {
           halal_status?: string
           id?: string
           image_url?: string | null
+          instagram_url?: string | null
           opening_hours?: string | null
           phone?: string | null
           rating?: number | null
+          tagline?: string | null
           updated_at?: string
           user_id: string
+          website_url?: string | null
         }
         Update: {
           address?: string | null
@@ -170,6 +178,7 @@ export type Database = {
           business_reg_no?: string | null
           business_type?: string
           contact_person?: string | null
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
           district?: string
@@ -177,11 +186,14 @@ export type Database = {
           halal_status?: string
           id?: string
           image_url?: string | null
+          instagram_url?: string | null
           opening_hours?: string | null
           phone?: string | null
           rating?: number | null
+          tagline?: string | null
           updated_at?: string
           user_id?: string
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -485,6 +497,7 @@ export type Database = {
           business_reg_no: string | null
           business_type: string
           contact_person: string | null
+          cover_image_url: string | null
           created_at: string
           description: string | null
           district: string
@@ -492,11 +505,14 @@ export type Database = {
           halal_status: string
           id: string
           image_url: string | null
+          instagram_url: string | null
           opening_hours: string | null
           phone: string | null
           rating: number | null
+          tagline: string | null
           updated_at: string
           user_id: string
+          website_url: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -514,6 +530,7 @@ export type Database = {
           business_reg_no: string | null
           business_type: string
           contact_person: string | null
+          cover_image_url: string | null
           created_at: string
           description: string | null
           district: string
@@ -521,11 +538,14 @@ export type Database = {
           halal_status: string
           id: string
           image_url: string | null
+          instagram_url: string | null
           opening_hours: string | null
           phone: string | null
           rating: number | null
+          tagline: string | null
           updated_at: string
           user_id: string
+          website_url: string | null
         }[]
         SetofOptions: {
           from: "*"
