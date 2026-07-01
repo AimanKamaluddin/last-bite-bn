@@ -14,6 +14,7 @@ import { formatTime12Hour } from "@/lib/time";
 import { OrderStatusNotice } from "@/components/orders/OrderStatusNotice";
 import { PickupWindowAlert } from "@/components/orders/PickupWindowAlert";
 import { PickupLocationCard } from "@/components/orders/PickupLocationCard";
+import { VendorBrand } from "@/components/merchants/VendorBrand";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { CustomerNotifications } from "@/components/notifications/NotificationPanel";
 import { toast } from "sonner";
@@ -52,9 +53,8 @@ function Dashboard() {
         const merchantIds = [...new Set(rows.map((o: any) => o.merchant_id).filter(Boolean))];
         const [{ data: listings }, { data: merchants }] = await Promise.all([
           listingIds.length ? supabase.from("listings").select("id, title, image_url, pickup_start, pickup_end").in("id", listingIds) : Promise.resolve({ data: [] as any[] }),
-          merchantIds.length ? (supabase as any).from("merchants_public").select("id, business_name, district, address, phone, opening_hours").in("id", merchantIds) : Promise.resolve({ data: [] as any[] }),
+          merchantIds.length ? (supabase as any).from("merchants_public").select("id, business_name, business_type, district, address, phone, opening_hours, image_url, rating").in("id", merchantIds) : Promise.resolve({ data: [] as any[] }),
         ]);
-
         if (cancelled) return;
         const listingById = new Map((listings ?? []).map((l: any) => [l.id, l]));
         const merchantById = new Map((merchants ?? []).map((m: any) => [m.id, m]));
@@ -63,14 +63,12 @@ function Dashboard() {
 
       const savedMerchantIds = [...new Set((savedRows ?? []).map((s: any) => s.merchant_id).filter(Boolean))];
       if (savedMerchantIds.length) {
-        const { data: savedMerchants } = await (supabase as any).from("merchants_public").select("id, business_name, district, image_url").in("id", savedMerchantIds);
+        const { data: savedMerchants } = await (supabase as any).from("merchants_public").select("id, business_name, business_type, district, image_url, rating").in("id", savedMerchantIds);
         if (!cancelled) {
           const merchantById = new Map((savedMerchants ?? []).map((m: any) => [m.id, m]));
           setSaved((savedRows ?? []).map((s: any) => ({ merchant_id: s.merchant_id, merchants: merchantById.get(s.merchant_id) ?? null })));
         }
-      } else if (!cancelled) {
-        setSaved([]);
-      }
+      } else if (!cancelled) setSaved([]);
 
       if (!cancelled) setBusy(false);
     }
@@ -92,23 +90,15 @@ function Dashboard() {
     const { data: cancelledOrder, error: orderError } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", id).eq("user_id", user!.id).eq("status", "reserved").select("id").maybeSingle();
     if (orderError) return toast.error(orderError.message);
     if (!cancelledOrder) return toast.error("This order could not be cancelled. It may already have been updated.");
-
     let restoredQuantity = 0;
     if (order.listing_id && quantityToRestore > 0) {
       const { data: listing, error: listingError } = await supabase.from("listings").select("quantity_available").eq("id", order.listing_id).maybeSingle();
-      if (listingError) {
-        await supabase.from("orders").update({ status: "reserved" }).eq("id", id).eq("user_id", user!.id).eq("status", "cancelled");
-        return toast.error(`Order was not cancelled because stock could not be restored: ${listingError.message}`);
-      }
+      if (listingError) { await supabase.from("orders").update({ status: "reserved" }).eq("id", id).eq("user_id", user!.id).eq("status", "cancelled"); return toast.error(`Order was not cancelled because stock could not be restored: ${listingError.message}`); }
       const nextQuantity = Number(listing?.quantity_available ?? 0) + quantityToRestore;
       const { error: stockError } = await supabase.from("listings").update({ quantity_available: nextQuantity }).eq("id", order.listing_id);
-      if (stockError) {
-        await supabase.from("orders").update({ status: "reserved" }).eq("id", id).eq("user_id", user!.id).eq("status", "cancelled");
-        return toast.error(`Order was not cancelled because stock could not be restored: ${stockError.message}`);
-      }
+      if (stockError) { await supabase.from("orders").update({ status: "reserved" }).eq("id", id).eq("user_id", user!.id).eq("status", "cancelled"); return toast.error(`Order was not cancelled because stock could not be restored: ${stockError.message}`); }
       restoredQuantity = quantityToRestore;
     }
-
     setOrders((o) => o.map((x) => (x.id === id ? { ...x, status: "cancelled" } : x)));
     toast.warning(restoredQuantity > 0 ? `Order cancelled. ${restoredQuantity} portion${restoredQuantity === 1 ? "" : "s"} returned to stock.` : "Order cancelled. This reservation can no longer be picked up.");
   };
@@ -126,7 +116,7 @@ function Dashboard() {
           <TabsContent value="upcoming" className="mt-6">{busy ? <Skel /> : upcoming.length === 0 ? <Empty msg="No upcoming pickups." /> : <div className="grid gap-4">{upcoming.map((o, i) => <div key={o.id}>{i === 2 && <AdSlot size="inline" id="ad-space-18-customer-orders-inline" slotCode="AD SPACE 18" label="AD SPACE 18 customer orders inline" />}<OrderRow o={o} onCancel={() => cancel(o.id)} /></div>)}</div>}</TabsContent>
           <TabsContent value="notifications" className="mt-6">{busy ? <Skel /> : <CustomerNotifications orders={orders} />}</TabsContent>
           <TabsContent value="past" className="mt-6">{busy ? <Skel /> : past.length === 0 ? <Empty msg="No past orders yet." /> : <div className="grid gap-4">{past.map((o) => <OrderRow key={o.id} o={o} review={reviews[o.id]} onReviewSaved={onReviewSaved} userId={user!.id} />)}</div>}</TabsContent>
-          <TabsContent value="saved" className="mt-6">{busy ? <Skel /> : saved.length === 0 ? <Empty msg="You haven't saved any merchants yet." /> : <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">{saved.map((s) => <Card key={s.merchant_id} className="overflow-hidden rounded-3xl p-0">{s.merchants?.image_url && <img src={s.merchants.image_url} alt="" className="h-32 w-full object-cover" />}<div className="p-4"><div className="font-semibold">{s.merchants?.business_name ?? "Merchant"}</div><div className="text-sm text-muted-foreground">{s.merchants?.district}</div></div></Card>)}</div>}</TabsContent>
+          <TabsContent value="saved" className="mt-6">{busy ? <Skel /> : saved.length === 0 ? <Empty msg="You haven't saved any merchants yet." /> : <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">{saved.map((s) => <Card key={s.merchant_id} className="rounded-3xl p-4"><VendorBrand merchant={s.merchants} variant="card" /></Card>)}</div>}</TabsContent>
         </Tabs>
       </section>
     </SiteLayout>
@@ -137,26 +127,16 @@ function OrderRow({ o, onCancel, review, onReviewSaved, userId }: { o: any; onCa
   const upcoming = ["reserved", "ready"].includes(o.status);
   const pickupTimeRaw = o.pickup_time || String(o.payment_method ?? "").split("pickup_time=")[1]?.split("|")[0] || "";
   const pickupTime = formatTime12Hour(pickupTimeRaw);
-
   return (
     <Card className="rounded-3xl p-4">
       <div className="grid gap-3">
         <OrderStatusNotice status={o.status} audience="buyer" />
+        <VendorBrand merchant={o.merchants} variant="inline" />
         {upcoming && <PickupWindowAlert pickupStart={o.listings?.pickup_start || pickupTimeRaw} pickupEnd={o.listings?.pickup_end || pickupTimeRaw} compact />}
         {upcoming && <PickupLocationCard merchant={o.merchants} pickupStart={o.listings?.pickup_start || pickupTimeRaw} pickupEnd={o.listings?.pickup_end || pickupTimeRaw} selectedPickupTime={pickupTime} compact />}
         <div className="flex items-center gap-4">
           {o.listings?.image_url && <img src={o.listings.image_url} alt="" className="h-16 w-16 rounded-xl object-cover" />}
-          <div className="flex-1">
-            <div className="font-semibold">{o.listings?.title ?? "Reserved surprise bag"}</div>
-            <div className="text-sm text-muted-foreground">{o.merchants?.business_name ?? "Merchant"}</div>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge>
-              <span className="text-xs text-muted-foreground">Code: <strong>{o.pickup_code}</strong></span>
-              {pickupTime && <Badge variant="outline" className="rounded-full text-xs"><Clock className="mr-1 h-3 w-3" />Pickup {pickupTime}</Badge>}
-              {upcoming && <Badge variant="outline" className="rounded-full text-xs"><Banknote className="mr-1 h-3 w-3" />Pay at pickup</Badge>}
-            </div>
-            {pickupTime && upcoming && <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900"><span className="font-medium">Only collect during the pickup window. Selected time:</span> <strong>{pickupTime}</strong></div>}
-          </div>
+          <div className="flex-1"><div className="font-semibold">{o.listings?.title ?? "Reserved surprise bag"}</div><div className="text-sm text-muted-foreground">From {o.merchants?.business_name ?? "Merchant"}</div><div className="mt-1 flex flex-wrap items-center gap-2"><Badge variant="secondary" className="rounded-full capitalize">{o.status}</Badge><span className="text-xs text-muted-foreground">Code: <strong>{o.pickup_code}</strong></span>{pickupTime && <Badge variant="outline" className="rounded-full text-xs"><Clock className="mr-1 h-3 w-3" />Pickup {pickupTime}</Badge>}{upcoming && <Badge variant="outline" className="rounded-full text-xs"><Banknote className="mr-1 h-3 w-3" />Pay at pickup</Badge>}</div>{pickupTime && upcoming && <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900"><span className="font-medium">Only collect during the pickup window. Selected time:</span> <strong>{pickupTime}</strong></div>}</div>
           <div className="text-right"><div className="font-semibold">{formatBND(Number(o.total_price))}</div>{onCancel && o.status === "reserved" && <Button variant="ghost" size="sm" className="mt-2" onClick={onCancel}>Cancel</Button>}</div>
         </div>
       </div>
@@ -169,18 +149,7 @@ function ReviewForm({ order, existing, userId, onSaved }: { order: any; existing
   const [rating, setRating] = useState(existing?.rating ?? 5);
   const [comment, setComment] = useState(existing?.comment ?? "");
   const [saving, setSaving] = useState(false);
-
-  const save = async () => {
-    setSaving(true);
-    const payload = { order_id: order.id, user_id: userId, merchant_id: order.merchant_id, listing_id: order.listing_id, rating, comment };
-    const query = existing ? (supabase as any).from("reviews").update(payload).eq("id", existing.id).select("*").single() : (supabase as any).from("reviews").insert(payload).select("*").single();
-    const { data, error } = await query;
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success(existing ? "Review updated" : "Review submitted");
-    onSaved?.(data);
-  };
-
+  const save = async () => { setSaving(true); const payload = { order_id: order.id, user_id: userId, merchant_id: order.merchant_id, listing_id: order.listing_id, rating, comment }; const query = existing ? (supabase as any).from("reviews").update(payload).eq("id", existing.id).select("*").single() : (supabase as any).from("reviews").insert(payload).select("*").single(); const { data, error } = await query; setSaving(false); if (error) return toast.error(error.message); toast.success(existing ? "Review updated" : "Review submitted"); onSaved?.(data); };
   return <div className="mt-4 rounded-2xl border bg-muted/30 p-4"><div className="font-medium">{existing ? "Your review" : "Rate your pickup"}</div><div className="mt-2 flex gap-1">{[1,2,3,4,5].map((n) => <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} stars`}><Star className={`h-6 w-6 ${n <= rating ? "fill-sun text-sun" : "text-muted-foreground/40"}`} /></button>)}</div><Textarea className="mt-3" rows={3} placeholder="Share your experience with this merchant or food item…" value={comment} onChange={(e) => setComment(e.target.value)} /><Button className="mt-3 rounded-full" size="sm" disabled={saving} onClick={save}>{saving ? "Saving…" : existing ? "Update review" : "Submit review"}</Button></div>;
 }
 
