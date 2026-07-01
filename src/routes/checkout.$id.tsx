@@ -5,8 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PickupWindowAlert } from "@/components/orders/PickupWindowAlert";
+import { PickupLocationCard } from "@/components/orders/PickupLocationCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { getPublicMerchantProfile } from "@/lib/public-merchant.functions";
 import { sampleListings, formatBND } from "@/lib/sample-data";
 import { AlertTriangle, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -32,7 +34,64 @@ function Checkout() {
   const [placing, setPlacing] = useState(false);
   const [pickupTime, setPickupTime] = useState("");
 
-  useEffect(() => { let cancelled = false; (async () => { setListingLoading(true); setListingError(null); setPickupTime(""); const local = sampleListings.find((l) => l.id === id); if (local) { if (!cancelled) { setListing(local); setListingLoading(false); } return; } const { data, error } = await (supabase as any).from("listings").select("*").eq("id", id).maybeSingle(); if (cancelled) return; if (error) { setListing(null); setListingError(error.message); setListingLoading(false); return; } if (!data) { setListing(null); setListingLoading(false); return; } const { data: merchant } = await (supabase as any).from("merchants_public").select("business_name, district, rating, business_type").eq("id", data.merchant_id).maybeSingle(); setListing({ ...data, merchant: { business_name: merchant?.business_name ?? "", district: merchant?.district ?? "", rating: Number(merchant?.rating ?? 0), business_type: merchant?.business_type ?? "" } }); setListingLoading(false); })(); return () => { cancelled = true; }; }, [id]);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadListing() {
+      setListingLoading(true);
+      setListingError(null);
+      setPickupTime("");
+
+      const local = sampleListings.find((l) => l.id === id);
+      if (local) {
+        if (!cancelled) {
+          setListing(local);
+          setListingLoading(false);
+        }
+        return;
+      }
+
+      const { data, error } = await (supabase as any).from("listings").select("*").eq("id", id).maybeSingle();
+      if (cancelled) return;
+
+      if (error) {
+        setListing(null);
+        setListingError(error.message);
+        setListingLoading(false);
+        return;
+      }
+
+      if (!data) {
+        setListing(null);
+        setListingLoading(false);
+        return;
+      }
+
+      let merchant: any = null;
+      try {
+        merchant = await getPublicMerchantProfile({ data: { id: data.merchant_id } });
+      } catch (err) {
+        console.error("Checkout merchant lookup failed", err);
+      }
+
+      setListing({
+        ...data,
+        merchant: {
+          business_name: merchant?.business_name ?? "Merchant",
+          district: merchant?.district ?? "",
+          rating: Number(merchant?.rating ?? 0),
+          business_type: merchant?.business_type ?? "",
+          address: merchant?.address ?? "",
+          phone: merchant?.phone ?? "",
+          opening_hours: merchant?.opening_hours ?? "",
+        },
+      });
+      setListingLoading(false);
+    }
+
+    loadListing();
+    return () => { cancelled = true; };
+  }, [id]);
 
   if (loading) return <SiteLayout><div className="p-6 sm:p-10">Loading…</div></SiteLayout>;
   if (!isAuthenticated) return <Navigate to="/auth" search={{ redirect: `/checkout/${id}` }} />;
@@ -50,9 +109,72 @@ function Checkout() {
   const pickupValid = Boolean(pickupTime) && slots.includes(pickupTime);
   const pickupDisplay = pickupValid ? formatTime(pickupTime) : "";
 
-  const place = async () => { if (!user) return; if (isPastPickup(listing.pickup_end)) { toast.error("This offer has expired."); return; } if (!pickupValid) { toast.error("Choose one pickup time before confirming."); return; } setPlacing(true); if (!listing.merchant_id) { setPlacing(false); const fakeCode = genCode(); toast.success("Reservation confirmed — collect only at your selected pickup time."); navigate({ to: "/order/$id", params: { id: `demo-${fakeCode}` }, search: { code: fakeCode, demo: 1, pickupTime: pickupDisplay } as any }); return; } const pickup_code = genCode(); const { data, error } = await (supabase as any).from("orders").insert({ user_id: user.id, listing_id: listing.id, merchant_id: listing.merchant_id, quantity: qty, total_price: total, commission_amount: 0, merchant_payout: total, pickup_code, status: "reserved", payment_status: "pending", payment_method: `pay_at_pickup|pickup_time=${pickupDisplay}` }).select("id").single(); if (!error && data) await supabase.from("listings").update({ quantity_available: Math.max(0, listing.quantity_available - qty) }).eq("id", listing.id); setPlacing(false); if (error) return toast.error(error.message); toast.success("Reservation confirmed — collect only at your selected pickup time."); navigate({ to: "/order/$id", params: { id: data!.id }, search: { pickupTime: pickupDisplay } as any }); };
+  const place = async () => {
+    if (!user) return;
+    if (isPastPickup(listing.pickup_end)) {
+      toast.error("This offer has expired.");
+      return;
+    }
+    if (!pickupValid) {
+      toast.error("Choose one pickup time before confirming.");
+      return;
+    }
 
-  return <SiteLayout><section className="container mx-auto grid max-w-4xl gap-6 px-3 py-6 pb-40 sm:px-4 sm:py-10 md:grid-cols-[1.2fr_1fr] md:gap-8 md:pb-10"><div className="space-y-5 sm:space-y-6"><h1 className="text-3xl font-bold leading-tight">Checkout</h1><PickupWindowAlert pickupStart={listing.pickup_start} pickupEnd={listing.pickup_end} /><Card className="rounded-3xl p-4 sm:p-5"><div className="flex items-center gap-3 sm:gap-4"><img src={listing.image_url} className="h-20 w-20 shrink-0 rounded-xl object-cover" alt="" /><div className="min-w-0"><div className="line-clamp-2 font-semibold leading-tight">{listing.title}</div><div className="truncate text-sm text-muted-foreground">{listing.merchant?.business_name ?? listing.merchants?.business_name}</div></div></div><div className="mt-5 flex items-center justify-between gap-3"><span className="text-sm font-medium">Quantity</span><div className="flex items-center gap-2"><Button size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setQty(Math.max(1, qty - 1))}><Minus className="h-4 w-4" /></Button><span className="w-8 text-center font-semibold">{qty}</span><Button size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setQty(Math.min(max, qty + 1))}><Plus className="h-4 w-4" /></Button></div></div><div className="mt-4 rounded-2xl bg-cream/60 p-4 text-sm">Pickup window: <strong>{formatTime(listing.pickup_start)} – {formatTime(listing.pickup_end)}</strong></div><div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><div className="flex items-start gap-2 font-bold"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> Required: choose your pickup time</div><p className="mt-2 text-xs font-medium">Select one pickup time below. You can only collect during the merchant's pickup window.</p></div><div className="mt-4 grid gap-2"><Label className="text-base font-bold">Your pickup time <span className="text-destructive">*</span></Label><div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{slots.map((slot) => <Button key={slot} type="button" variant={pickupTime === slot ? "default" : "outline"} className="h-11 rounded-full" onClick={() => setPickupTime(slot)}>{formatTime(slot)}</Button>)}</div>{!pickupValid && <p className="text-xs font-bold text-amber-700">Choose one time before confirming.</p>}<p className="text-xs text-muted-foreground">Times are shown in 15-minute slots between {formatTime(listing.pickup_start)} and {formatTime(listing.pickup_end)}.</p></div></Card><Card className="rounded-3xl p-4 sm:p-5"><h2 className="font-semibold">Payment</h2><p className="mt-2 text-sm text-muted-foreground">You'll pay the merchant when you collect your order.</p></Card><Card className="rounded-3xl border-primary/20 p-4 shadow-sm md:hidden"><div className="flex items-end justify-between gap-3"><div><div className="text-xs text-muted-foreground">Total at pickup</div><div className="text-3xl font-bold leading-none text-primary">{formatBND(total)}</div></div>{pickupValid ? <div className="text-right text-xs font-medium text-amber-700">Pickup at<br />{pickupDisplay}</div> : <div className="text-right text-xs font-bold text-amber-700">Choose<br />pickup time</div>}</div><Button onClick={place} disabled={placing || !pickupValid} className="mt-4 h-14 w-full rounded-full text-base font-bold">{placing ? "Confirming…" : pickupValid ? "Confirm reservation" : "Choose pickup time first"}</Button></Card></div><aside className="hidden md:block"><Card className="sticky top-24 rounded-3xl p-6"><OrderSummary qty={qty} total={total} pickupTime={pickupDisplay} placing={placing} place={place} disabled={!pickupValid} /></Card></aside></section><div className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/98 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur md:hidden"><div className="mx-auto max-w-xl"><Button onClick={place} disabled={placing || !pickupValid} className="h-14 w-full rounded-full text-base font-bold shadow-lg">{placing ? "Confirming…" : pickupValid ? "Confirm reservation" : "Choose pickup time"}</Button></div></div></SiteLayout>;
+    setPlacing(true);
+    if (!listing.merchant_id) {
+      setPlacing(false);
+      const fakeCode = genCode();
+      toast.success("Reservation confirmed — collect only at your selected pickup time.");
+      navigate({ to: "/order/$id", params: { id: `demo-${fakeCode}` }, search: { code: fakeCode, demo: 1, pickupTime: pickupDisplay } as any });
+      return;
+    }
+
+    const pickup_code = genCode();
+    const { data, error } = await (supabase as any).from("orders").insert({ user_id: user.id, listing_id: listing.id, merchant_id: listing.merchant_id, quantity: qty, total_price: total, commission_amount: 0, merchant_payout: total, pickup_code, status: "reserved", payment_status: "pending", payment_method: `pay_at_pickup|pickup_time=${pickupDisplay}` }).select("id").single();
+    if (!error && data) await supabase.from("listings").update({ quantity_available: Math.max(0, listing.quantity_available - qty) }).eq("id", listing.id);
+    setPlacing(false);
+    if (error) return toast.error(error.message);
+    toast.success("Reservation confirmed — collect only at your selected pickup time.");
+    navigate({ to: "/order/$id", params: { id: data!.id }, search: { pickupTime: pickupDisplay } as any });
+  };
+
+  return (
+    <SiteLayout>
+      <section className="container mx-auto grid max-w-4xl gap-6 px-3 py-6 pb-40 sm:px-4 sm:py-10 md:grid-cols-[1.2fr_1fr] md:gap-8 md:pb-10">
+        <div className="space-y-5 sm:space-y-6">
+          <h1 className="text-3xl font-bold leading-tight">Checkout</h1>
+          <PickupWindowAlert pickupStart={listing.pickup_start} pickupEnd={listing.pickup_end} />
+          <PickupLocationCard merchant={listing.merchant} pickupStart={listing.pickup_start} pickupEnd={listing.pickup_end} selectedPickupTime={pickupDisplay} />
+
+          <Card className="rounded-3xl p-4 sm:p-5">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <img src={listing.image_url} className="h-20 w-20 shrink-0 rounded-xl object-cover" alt="" />
+              <div className="min-w-0">
+                <div className="line-clamp-2 font-semibold leading-tight">{listing.title}</div>
+                <div className="truncate text-sm text-muted-foreground">{listing.merchant?.business_name ?? listing.merchants?.business_name}</div>
+              </div>
+            </div>
+            <div className="mt-5 flex items-center justify-between gap-3">
+              <span className="text-sm font-medium">Quantity</span>
+              <div className="flex items-center gap-2">
+                <Button size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setQty(Math.max(1, qty - 1))}><Minus className="h-4 w-4" /></Button>
+                <span className="w-8 text-center font-semibold">{qty}</span>
+                <Button size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setQty(Math.min(max, qty + 1))}><Plus className="h-4 w-4" /></Button>
+              </div>
+            </div>
+            <div className="mt-4 rounded-2xl bg-cream/60 p-4 text-sm">Pickup window: <strong>{formatTime(listing.pickup_start)} – {formatTime(listing.pickup_end)}</strong></div>
+            <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><div className="flex items-start gap-2 font-bold"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> Required: choose your pickup time</div><p className="mt-2 text-xs font-medium">Select one pickup time below. You can only collect during the merchant's pickup window.</p></div>
+            <div className="mt-4 grid gap-2"><Label className="text-base font-bold">Your pickup time <span className="text-destructive">*</span></Label><div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{slots.map((slot) => <Button key={slot} type="button" variant={pickupTime === slot ? "default" : "outline"} className="h-11 rounded-full" onClick={() => setPickupTime(slot)}>{formatTime(slot)}</Button>)}</div>{!pickupValid && <p className="text-xs font-bold text-amber-700">Choose one time before confirming.</p>}<p className="text-xs text-muted-foreground">Times are shown in 15-minute slots between {formatTime(listing.pickup_start)} and {formatTime(listing.pickup_end)}.</p></div>
+          </Card>
+
+          <Card className="rounded-3xl p-4 sm:p-5"><h2 className="font-semibold">Payment</h2><p className="mt-2 text-sm text-muted-foreground">You'll pay the merchant when you collect your order.</p></Card>
+          <Card className="rounded-3xl border-primary/20 p-4 shadow-sm md:hidden"><div className="flex items-end justify-between gap-3"><div><div className="text-xs text-muted-foreground">Total at pickup</div><div className="text-3xl font-bold leading-none text-primary">{formatBND(total)}</div></div>{pickupValid ? <div className="text-right text-xs font-medium text-amber-700">Pickup at<br />{pickupDisplay}</div> : <div className="text-right text-xs font-bold text-amber-700">Choose<br />pickup time</div>}</div><Button onClick={place} disabled={placing || !pickupValid} className="mt-4 h-14 w-full rounded-full text-base font-bold">{placing ? "Confirming…" : pickupValid ? "Confirm reservation" : "Choose pickup time first"}</Button></Card>
+        </div>
+        <aside className="hidden md:block"><Card className="sticky top-24 rounded-3xl p-6"><OrderSummary qty={qty} total={total} pickupTime={pickupDisplay} placing={placing} place={place} disabled={!pickupValid} /></Card></aside>
+      </section>
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/98 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur md:hidden"><div className="mx-auto max-w-xl"><Button onClick={place} disabled={placing || !pickupValid} className="h-14 w-full rounded-full text-base font-bold shadow-lg">{placing ? "Confirming…" : pickupValid ? "Confirm reservation" : "Choose pickup time"}</Button></div></div>
+    </SiteLayout>
+  );
 }
 
 function OrderSummary({ qty, total, pickupTime, placing, place, disabled }: { qty: number; total: number; pickupTime: string; placing: boolean; place: () => void; disabled: boolean }) { return <><h2 className="font-semibold">Order summary</h2><Row label={`Subtotal × ${qty}`} value={formatBND(total)} />{!disabled ? <Row label="Pickup time" value={pickupTime} /> : <Row label={<span className="font-bold text-amber-700">Pickup time required</span>} value={<span className="font-bold text-amber-700">Not selected</span>} />}<Row label="Service fee" value="B$0.00" /><div className="my-3 h-px bg-border" /><p className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">You must choose one pickup time before confirming.</p><Row label={<span className="font-semibold">Total to pay at pickup</span>} value={<span className="text-lg font-bold">{formatBND(total)}</span>} /><Button onClick={place} disabled={placing || disabled} className="mt-5 w-full rounded-full" size="lg">{placing ? "Confirming…" : !disabled ? "Confirm reservation" : "Choose pickup time first"}</Button><p className="mt-3 text-xs text-muted-foreground">No payment is taken online.</p></>; }
