@@ -28,9 +28,10 @@ interface Props {
   onChange: (value: any) => void;
   multiple?: boolean;
   max?: number;
+  recommendedSize?: string;
 }
 
-export function ImageUpload({ value, onChange, multiple = false, max = 6 }: Props) {
+export function ImageUpload({ value, onChange, multiple = false, max = 6, recommendedSize }: Props) {
   const { user } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -108,6 +109,7 @@ export function ImageUpload({ value, onChange, multiple = false, max = 6 }: Prop
             {busy ? "Uploading…" : multiple ? `Add photos (${urls.length}/${max})` : "Upload photo"}
           </Button>
           <p className="text-xs text-muted-foreground">JPG, PNG or WebP · up to 5MB each{multiple ? ` · up to ${max} photos` : ""}.</p>
+          {recommendedSize && <p className="text-xs text-muted-foreground">Recommended size: {recommendedSize}</p>}
         </>
       )}
     </div>
