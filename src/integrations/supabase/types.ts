@@ -561,6 +561,53 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_my_merchant_profile: {
+        Args: {
+          p_address?: string
+          p_business_name: string
+          p_business_type: string
+          p_cover_image_url?: string
+          p_description?: string
+          p_district: string
+          p_email?: string
+          p_image_url?: string
+          p_instagram_url?: string
+          p_opening_hours?: string
+          p_phone?: string
+          p_tagline?: string
+          p_website_url?: string
+        }
+        Returns: {
+          address: string | null
+          approval_status: string
+          business_name: string
+          business_reg_no: string | null
+          business_type: string
+          contact_person: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          district: string
+          email: string | null
+          halal_status: string
+          id: string
+          image_url: string | null
+          instagram_url: string | null
+          opening_hours: string | null
+          phone: string | null
+          rating: number | null
+          tagline: string | null
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "merchants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role: "customer" | "merchant" | "admin"
