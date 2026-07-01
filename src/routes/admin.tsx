@@ -188,7 +188,7 @@ function AdminPanel() {
 
   const updateListing = async (id: string, changes: Partial<Listing>) => {
     setActionId(id);
-    const { error } = await supabase.from("listings").update(changes).eq("id", id);
+    const { error } = await (supabase as any).from("listings").update(changes).eq("id", id);
     if (error) {
       setActionId(null);
       return toast.error(error.message);
