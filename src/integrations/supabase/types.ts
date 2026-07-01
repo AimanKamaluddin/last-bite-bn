@@ -59,7 +59,6 @@ export type Database = {
           original_price: number
           pickup_end: string
           pickup_start: string
-          produced_at: string | null
           quantity_available: number
           status: string
           title: string
@@ -80,7 +79,6 @@ export type Database = {
           original_price: number
           pickup_end: string
           pickup_start: string
-          produced_at?: string | null
           quantity_available?: number
           status?: string
           title: string
@@ -101,7 +99,6 @@ export type Database = {
           original_price?: number
           pickup_end?: string
           pickup_start?: string
-          produced_at?: string | null
           quantity_available?: number
           status?: string
           title?: string
@@ -245,17 +242,308 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orders_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants_public"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          merchant_id: string
+          order_id: string | null
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          merchant_id: string
+          order_id?: string | null
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          merchant_id?: string
+          order_id?: string | null
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_merchants: {
+        Row: {
+          created_at: string
+          id: string
+          merchant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          merchant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          merchant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_merchants_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_merchants_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      merchants_public: {
+        Row: {
+          approval_status: string | null
+          business_name: string | null
+          business_type: string | null
+          created_at: string | null
+          description: string | null
+          district: string | null
+          halal_status: string | null
+          id: string | null
+          image_url: string | null
+          opening_hours: string | null
+          rating: number | null
+        }
+        Insert: {
+          approval_status?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          halal_status?: string | null
+          id?: string | null
+          image_url?: string | null
+          opening_hours?: string | null
+          rating?: number | null
+        }
+        Update: {
+          approval_status?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          halal_status?: string | null
+          id?: string | null
+          image_url?: string | null
+          opening_hours?: string | null
+          rating?: number | null
+        }
+        Relationships: []
+      }
+      reviews_public: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string | null
+          merchant_id: string | null
+          rating: number | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          merchant_id?: string | null
+          rating?: number | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          merchant_id?: string | null
+          rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      admin_list_merchants: {
+        Args: never
+        Returns: {
+          address: string | null
+          approval_status: string
+          business_name: string
+          business_reg_no: string | null
+          business_type: string
+          contact_person: string | null
+          created_at: string
+          description: string | null
+          district: string
+          email: string | null
+          halal_status: string
+          id: string
+          image_url: string | null
+          opening_hours: string | null
+          phone: string | null
+          rating: number | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "merchants"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_my_merchant: {
+        Args: never
+        Returns: {
+          address: string | null
+          approval_status: string
+          business_name: string
+          business_reg_no: string | null
+          business_type: string
+          contact_person: string | null
+          created_at: string
+          description: string | null
+          district: string
+          email: string | null
+          halal_status: string
+          id: string
+          image_url: string | null
+          opening_hours: string | null
+          phone: string | null
+          rating: number | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "merchants"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "customer" | "merchant" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -382,6 +670,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["customer", "merchant", "admin"],
+    },
   },
 } as const
