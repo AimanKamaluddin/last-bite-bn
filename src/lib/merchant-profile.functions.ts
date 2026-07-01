@@ -50,16 +50,35 @@ export const updateMyMerchantProfile = createServerFn({ method: "POST" })
       updated_at: new Date().toISOString(),
     };
 
-    const { data: merchant, error } = await supabaseAdmin
+    const { data: ownedMerchant, error: ownershipError } = await supabaseAdmin
       .from("merchants")
-      .update(payload)
+      .select("id")
       .eq("id", data.merchant_id)
       .eq("user_id", context.userId)
-      .select("*")
       .maybeSingle();
 
-    if (error) throw new Error(error.message);
-    if (!merchant) throw new Error("Merchant profile not found or you do not have permission to edit it.");
+    if (ownershipError) throw new Error(ownershipError.message);
+    if (!ownedMerchant) throw new Error("Merchant profile not found or you do not have permission to edit it.");
+
+    // The app currently expects one merchant profile per user, but some accounts can
+    // have duplicate merchant rows. Keep those rows in sync so the dashboard cannot
+    // reload an older duplicate and make the update look like it reverted.
+    const { error: updateError } = await supabaseAdmin
+      .from("merchants")
+      .update(payload)
+      .eq("user_id", context.userId);
+
+    if (updateError) throw new Error(updateError.message);
+
+    const { data: merchant, error: fetchError } = await supabaseAdmin
+      .from("merchants")
+      .select("*")
+      .eq("id", data.merchant_id)
+      .eq("user_id", context.userId)
+      .maybeSingle();
+
+    if (fetchError) throw new Error(fetchError.message);
+    if (!merchant) throw new Error("Merchant profile was updated, but could not be reloaded.");
 
     return merchant;
   });
