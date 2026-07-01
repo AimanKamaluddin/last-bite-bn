@@ -37,50 +37,27 @@ export function MerchantProfileSettingsRpc({ merchant, onSaved }: { merchant: an
     if (!merchant?.id) return toast.error("Merchant profile not found.");
     setSaving(true);
 
-    const basePayload = {
-      business_name: form.business_name,
-      business_type: form.business_type,
-      district: form.district,
-      description: form.description || null,
-      image_url: form.image_url || null,
-      address: form.address || null,
-      opening_hours: form.opening_hours || null,
-      phone: form.phone || null,
-      email: form.email || null,
-      updated_at: new Date().toISOString(),
-    };
-
-    const extendedPayload = {
-      ...basePayload,
-      tagline: form.tagline || null,
-      cover_image_url: form.cover_image_url || null,
-      instagram_url: form.instagram_url || null,
-      website_url: form.website_url || null,
-    };
-
-    let { data, error } = await (supabase as any)
-      .from("merchants")
-      .update(extendedPayload)
-      .eq("id", merchant.id)
-      .select("*")
-      .single();
-
-    if (error && /tagline|cover_image_url|instagram_url|website_url|schema cache/i.test(error.message ?? "")) {
-      const retry = await (supabase as any)
-        .from("merchants")
-        .update(basePayload)
-        .eq("id", merchant.id)
-        .select("*")
-        .single();
-      data = retry.data;
-      error = retry.error;
-      if (!error) toast.warning("Core profile saved. Extra fields will save after the new database migration is applied.");
-    }
+    const { data, error } = await (supabase as any).rpc("update_my_merchant_profile", {
+      p_business_name: form.business_name,
+      p_business_type: form.business_type,
+      p_district: form.district,
+      p_description: form.description || null,
+      p_image_url: form.image_url || null,
+      p_cover_image_url: form.cover_image_url || null,
+      p_address: form.address || null,
+      p_opening_hours: form.opening_hours || null,
+      p_phone: form.phone || null,
+      p_email: form.email || null,
+      p_tagline: form.tagline || null,
+      p_instagram_url: form.instagram_url || null,
+      p_website_url: form.website_url || null,
+    });
+    const savedMerchant = Array.isArray(data) ? data[0] : data;
 
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Public profile updated.");
-    onSaved?.({ ...merchant, ...form, ...(data ?? {}) });
+    onSaved?.({ ...merchant, ...form, ...(savedMerchant ?? {}) });
   };
 
   return (
