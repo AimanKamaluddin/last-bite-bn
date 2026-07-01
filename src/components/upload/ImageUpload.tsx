@@ -6,6 +6,7 @@ import { Upload, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 5; // 5 years
+const DEFAULT_MULTI_PHOTO_SIZE = "1200 × 900 px landscape image (4:3) or larger";
 
 async function uploadOne(file: File, userId: string): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("Only image files are allowed");
@@ -37,6 +38,7 @@ export function ImageUpload({ value, onChange, multiple = false, max = 6, recomm
   const [busy, setBusy] = useState(false);
 
   const urls = multiple ? (Array.isArray(value) ? value : value ? [value as string] : []) : value ? [value as string] : [];
+  const sizeHint = recommendedSize ?? (multiple ? DEFAULT_MULTI_PHOTO_SIZE : undefined);
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || !files.length || !user) return;
@@ -109,7 +111,7 @@ export function ImageUpload({ value, onChange, multiple = false, max = 6, recomm
             {busy ? "Uploading…" : multiple ? `Add photos (${urls.length}/${max})` : "Upload photo"}
           </Button>
           <p className="text-xs text-muted-foreground">JPG, PNG or WebP · up to 5MB each{multiple ? ` · up to ${max} photos` : ""}.</p>
-          {recommendedSize && <p className="text-xs text-muted-foreground">Recommended size: {recommendedSize}</p>}
+          {sizeHint && <p className="text-xs text-muted-foreground">Recommended size: {sizeHint}</p>}
         </>
       )}
     </div>
